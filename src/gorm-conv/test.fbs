@@ -1,0 +1,24 @@
+namespace GORM;
+
+table GORM_Table_account
+    id:int;
+    account:string;
+    allbinary:[ubyte];
+}
+
+table GORM_Table_bag
+    id:int;
+    allbinary:[ubyte];
+}
+
+union GORM_Tables {
+    GORM_Table_account,
+    GORM_Table_bag,
+}
+
+table GORM_REQ {
+    Table:GORM_Tables;
+    Where:string;
+}
+
+root_type GORM_REQ;

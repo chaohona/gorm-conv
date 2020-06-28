@@ -1,0 +1,9 @@
+<?xml version="2.0" encoding="UTF-8"?>
+<!--uint8,int16,int32,int64,uint16,uint32,uint64,double,string,blob-->
+<giant-game vesion="1">
+	<table name="account" primarykey="id" version="1" splittablekey="id" splittablenum="128">
+		<column name="id" type="int" defaultvalue="0" desc="用户id"/>
+		<column name="account" type="string" size="128" notnull="true" desc="用户名字"/>
+		<index name="account_id" columns="id"/>
+	</table>
+</giant-game>
