@@ -728,6 +728,7 @@ func CppFieldsMapDefine(games []XmlCfg, outpath string) int {
 #include "gorm_pb_proto.pb.h"
 #include "gorm_mempool.h"
 #include "mysql.h"
+#include "gorm_hash.h"
 
 namespace gorm{
 
@@ -741,6 +742,10 @@ namespace gorm{
 	// >> 输出函数声明
 	if 0 != CppFieldsMapDefine5(games, f) {
 		fmt.Println("CppFieldsMapDefine5 failed")
+		return -1
+	}
+	if 0 != GORM_TableHash(games, f) {
+		fmt.Println("GORM_TableHash failed.")
 		return -1
 	}
 	if 0 != GetCustomerPbMsgDefine(games, f) {
