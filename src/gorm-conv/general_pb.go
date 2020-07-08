@@ -145,7 +145,7 @@ func GeneralPBColumnIndex(games []XmlCfg, f *os.File) int {
 			}
 
 			outPre := "	GORM_PB_FIELD_" + strings.ToUpper(table.Name) + "_"
-			out := outPre
+			out := ""
 			_, err = f.WriteString(out)
 			if err != nil {
 				fmt.Println(err.Error())
