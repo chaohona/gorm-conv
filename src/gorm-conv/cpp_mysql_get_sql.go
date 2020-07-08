@@ -61,7 +61,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One(table TableInfo, strsqllen string, f *
 			if col.Name != cname {
 				continue
 			}
-			var colType string = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+			var colType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 			f.WriteString("    const ")
 			f.WriteString(colType)
 			f.WriteString(" ")

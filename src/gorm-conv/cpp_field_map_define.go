@@ -808,6 +808,10 @@ namespace gorm{
 		fmt.Println("CPPFieldsMapGetTableFieldValue failed")
 		return -1
 	}
+	if 0 != CPPFieldsMapPack_VERSION_SQL(games, f) {
+		fmt.Println("CPPFieldsMapPack_VERSION_SQL failed.")
+		return -1
+	}
 	if 0 != CPPFieldsMapPackInsertSQL(games, f) {
 		fmt.Println("CPPFieldsMapPackInsertSQL failed.")
 		return -1

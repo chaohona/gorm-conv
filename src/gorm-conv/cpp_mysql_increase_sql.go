@@ -47,7 +47,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table TableInfo) (string, s
 
 func CPPFieldsMapPackIncreaseSQL_ForTables_COL2SQL_FORVARIABLE(table TableInfo, col TableColumn, f *os.File) int {
 	// 如果不在splitfields，并且是字符串类型则直接跳过
-	var vtype string = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+	var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 	if vtype == "string" {
 		var bmatch bool = false
 		for _, c := range table.SplitInfo.SplitCols {
@@ -116,7 +116,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table TableInfo, f *os.File)
 	var vtype string
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		vtype = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		vtype = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			var bmatch bool = false
 			for _, c := range table.SplitInfo.SplitCols {
@@ -138,13 +138,13 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table TableInfo, f *os.File)
 	f.WriteString("    GORM_MemPoolData *buffer_" + table.Name + "_where = nullptr;\n")
 	f.WriteString("    buffer_" + table.Name + "_where = GORM_MemPool::Instance()->GetData(iWhereLen);\n")
 	f.WriteString("    char *szWhereBegin = buffer_" + table.Name + "_where->m_uszData;\n")
-	f.WriteString("    iWhereLen = snprintf(szWhereBegin, iWhereLen, " + strings.ToUpper(table.Name) + "INCREASEWHERESQL ")
+	f.WriteString("    iWhereLen += snprintf(szWhereBegin+iWhereLen, buffer_" + table.Name + "_where->m_sCapacity, " + strings.ToUpper(table.Name) + "INCREASEWHERESQL ")
 	for _, colname := range table.SplitInfo.SplitCols {
 		for _, preCol := range table.TableColumns {
 			if colname != preCol.Name {
 				continue
 			}
-			vtype = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
+			vtype = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
 			if vtype == "string" {
 				f.WriteString(", sz_" + table.Name + "_" + preCol.Name)
 			} else {
@@ -153,6 +153,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table TableInfo, f *os.File)
 		}
 	}
 	f.WriteString(");\n")
+	f.WriteString("    iWhereLen += GORM_GETVERSION_WHERE(szWhereBegin+iWhereLen, buffer_" + table.Name + "_where->m_sCapacity-iWhereLen, GORM_CheckDataVerType(header.verpolice()), " + table.Name + "_version);\n")
 	f.WriteString("    buffer_" + table.Name + "_where->m_sUsedSize = iWhereLen;\n")
 	f.WriteString("\n")
 	return 0
@@ -162,7 +163,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 	f.WriteString("    int iLen = iSqlLen + 128 + pMsg->ByteSizeLong() ")
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		var vtype string = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			var bmatch bool = false
 			for _, c := range table.SplitInfo.SplitCols {
@@ -190,17 +191,21 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 	f.WriteString("    szSQLBegin += iSqlLen;\n")
 	f.WriteString("    pReqData->m_sUsedSize = iSqlLen;\n")
 	f.WriteString("    int iDataLen = 0;\n")
-	f.WriteString("    int iSetField = 0;\n")
+	f.WriteString("    int iSetField = 1;\n")
+	f.WriteString("    iDataLen  = GORM_GETVERSION_SET(szSQLBegin, iLen, GORM_CheckDataVerType(header.verpolice()), " + table.Name + "_version);\n")
+	f.WriteString("    szSQLBegin += iDataLen;\n")
+	f.WriteString("    pReqData->m_sUsedSize += iDataLen;\n")
+	f.WriteString("    iLen -= iDataLen;\n")
+	f.WriteString("    iDataLen = 0;\n")
 	f.WriteString("    for (int i=0; i<vFields.size(); i++)\n")
 	f.WriteString("    {\n")
 	f.WriteString("        int iFieldId = vFields[i];\n")
 	f.WriteString("        if (")
 
 	var upTableName string = strings.ToUpper(table.Name)
-	for idx, colname := range table.SplitInfo.SplitCols {
-		if idx != 0 {
-			f.WriteString(" || ")
-		}
+	f.WriteString("GORM_PB_FIELD_" + upTableName + "_VERSION == iFieldId")
+	for _, colname := range table.SplitInfo.SplitCols {
+		f.WriteString(" || ")
 		f.WriteString("GORM_PB_FIELD_" + upTableName + "_" + strings.ToUpper(colname) + " == iFieldId")
 	}
 	f.WriteString(")\n")
@@ -209,7 +214,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 	f.WriteString("        switch (iFieldId)\n")
 	f.WriteString("        {\n")
 	for _, col := range table.TableColumns {
-		var vtype string = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			continue
 		}
@@ -315,7 +320,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
 
 			// 释放buffer
 			for _, col := range table.TableColumns {
-				var vtype string = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+				var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 				if vtype != "string" {
 					continue
 				}

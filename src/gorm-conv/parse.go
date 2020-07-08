@@ -159,6 +159,14 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 		}
 		for idx, _ := range result.DB.TableList {
 			table := &result.DB.TableList[idx]
+			var TableColumns []TableColumn
+			TableColumns = append(TableColumns, TableColumn{
+				Name:         "version",
+				Type:         "uint64",
+				DefaultValue: "0",
+			})
+			TableColumns = append(TableColumns, table.TableColumns...)
+			table.TableColumns = TableColumns
 			if table.Version == 0 {
 				fmt.Println("table must has version attributer, and big than 0.")
 				return nil, -1

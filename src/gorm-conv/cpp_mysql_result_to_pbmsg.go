@@ -54,7 +54,7 @@ func GORM_MySQLResult2PbMSG_Table(table TableInfo, f *os.File) int {
 	for idx, col := range table.TableColumns {
 		var idxStr string = strconv.FormatInt(int64(idx), 10)
 		valStr, emptyStr := GORM_MySQLResult2PbMSG_Table_Col(idxStr, col)
-		f.WriteString("    if (nullptr != row[" + idxStr + "])\n")
+		f.WriteString("    if (nullptr != row[" + idxStr + "] && lengths[" + idxStr + "] > 0)\n")
 		f.WriteString("        pPbTable->set_" + col.Name + "(" + valStr + ");\n")
 		f.WriteString("    else\n")
 		f.WriteString("        pPbTable->set_" + col.Name + "(" + emptyStr + ");\n")

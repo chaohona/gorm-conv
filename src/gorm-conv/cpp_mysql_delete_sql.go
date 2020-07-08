@@ -61,7 +61,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL_NoSplit(table TableInfo, f *os.
 		f.WriteString("            if(i==0)\n")
 		var format string = CPPFieldPackSQL_COL_FORMAT(col.Type)
 		var snprintfstr string = col.Name + "=" + format + "\", table_" + table.Name + "." + col.Name + "()"
-		if CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type) == "string" {
+		if CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type) == "string" {
 			snprintfstr += ".c_str()"
 		}
 		snprintfstr += ");\n"
@@ -107,7 +107,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table TableInfo, f *os.File) in
 			if col.Name != cname {
 				continue
 			}
-			var colType string = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+			var colType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 			f.WriteString("    const ")
 			f.WriteString(colType)
 			f.WriteString(" ")

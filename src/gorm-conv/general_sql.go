@@ -115,7 +115,7 @@ func GeneralSQLColumn(c TableColumn) (string, int) {
 }
 
 func CreateTableSQL(table TableInfo) ([]byte, int) {
-	var strOut string
+	var strOut string // = "    `version` bigint DEFAULT 0,\n"
 	for idx, c := range table.TableColumns {
 		column, ret := GeneralSQLColumn(c)
 		column = "    " + column

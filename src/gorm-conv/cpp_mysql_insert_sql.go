@@ -31,7 +31,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_DefineSQL(table TableInfo) string {
 	return DefineSQL
 }
 
-func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(colType string) string {
+/*func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(colType string) string {
 	switch colType {
 	case "int8", "int16", "int32", "int":
 		{
@@ -56,7 +56,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(colType string) stri
 	}
 
 	return "string"
-}
+}*/
 
 func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
 	var len_str string = "    int iLen = iSqlLen + 128"
@@ -65,7 +65,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table TableInfo, f *os.File) in
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name
 		f.WriteString("\n")
-		var cppType string = CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		f.WriteString("    const " + cppType + " ")
 		if cppType == "string" {
 			f.WriteString("&")

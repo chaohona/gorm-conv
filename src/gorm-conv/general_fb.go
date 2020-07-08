@@ -43,10 +43,10 @@ func OutPutFB(table TableInfo, f *os.File) int {
 		fmt.Println(err.Error())
 	}
 	for _, column := range table.TableColumns {
-		if column.Name == "version" {
+		/*if column.Name == "version" {
 			fmt.Println("there should not version columns")
 			return -1
-		}
+		}*/
 		_ = column
 		c := GetFBString(column)
 		_, err = f.WriteString(string("    "))

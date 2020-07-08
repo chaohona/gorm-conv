@@ -5,6 +5,37 @@ import (
 	"strings"
 )
 
+func CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(colType string) string {
+	switch colType {
+	case "int8", "int16", "int32", "int":
+		{
+			return "int32"
+		}
+	case "uint8", "uint16", "uint32":
+		{
+			return "uint32"
+		}
+	case "int64":
+		{
+			return "int64"
+		}
+	case "uint64":
+		{
+			return "uint64"
+		}
+	case "double":
+		{
+			return "double"
+		}
+	default:
+		{
+			return "string"
+		}
+	}
+
+	return "string"
+}
+
 func CPPTypeLen(colType string) int {
 	switch colType {
 	case "int8", "uint8":
