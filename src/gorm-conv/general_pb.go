@@ -50,13 +50,13 @@ func GetPBString(c TableColumn) string {
 }
 
 func OutPutPBTable(table TableInfo, f *os.File) int {
-	version := "    fixed64	version = 1;\n"
+	/*version := "    fixed64	version = 1;\n"
 	_, err := f.WriteString(version)
 	if err != nil {
 		fmt.Println(err.Error())
 		return -1
-	}
-	var index int64 = 1
+	}*/
+	var index int64 = 0
 	for _, c := range table.TableColumns {
 		index += 1
 		pbStr := GetPBString(c)
@@ -67,7 +67,7 @@ func OutPutPBTable(table TableInfo, f *os.File) int {
 		str := "    " + pbStr + " = "
 		str += strconv.FormatInt(index, 10)
 		str += ";\n"
-		_, err = f.WriteString(str)
+		_, err := f.WriteString(str)
 		if err != nil {
 			fmt.Println(err.Error())
 			return -1
@@ -90,9 +90,9 @@ func GeneralPBFile(game XmlCfg, outpath string) int {
 	}
 	// 1、输出开头
 	var header string = `syntax = "proto3";
-package gorm;
+	package gorm;
 
-`
+	`
 	_, err = f.WriteString(header)
 	if err != nil {
 		fmt.Println(err.Error())
