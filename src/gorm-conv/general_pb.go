@@ -134,7 +134,7 @@ func GeneralPBFile(game XmlCfg, outpath string) int {
 func GeneralPBColumnIndex(games []XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
-			var colIndex int64 = 1
+			var colIndex int64 = 0
 			var enum string = "enum GORM_PB_"
 			enum += strings.ToUpper(table.Name)
 			enum += "_FIELD_INDEX\n{\n"
@@ -145,7 +145,7 @@ func GeneralPBColumnIndex(games []XmlCfg, f *os.File) int {
 			}
 
 			outPre := "	GORM_PB_FIELD_" + strings.ToUpper(table.Name) + "_"
-			out := outPre + "VERSION = 0;\n"
+			out := outPre
 			_, err = f.WriteString(out)
 			if err != nil {
 				fmt.Println(err.Error())
