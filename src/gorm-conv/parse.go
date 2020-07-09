@@ -26,7 +26,7 @@ type SplitInfo struct {
 }
 
 type PrimaryKey struct {
-	Column string `xml:"column,attr"`
+	Column string
 }
 
 type TableColumn struct {
@@ -38,13 +38,12 @@ type TableColumn struct {
 }
 
 type TableInfo struct {
-	Name string `xml:"name,attr"`
-	//PrimaryKey   string        `xml:"primarykey,attr"`
+	Name         string        `xml:"name,attr"`
 	Version      int           `xml:"version,attr"`
 	TableColumns []TableColumn `xml:"column"`
 	TableIndex   []TableIndex  `xml:"index"`
 	SplitInfo    SplitInfo     `xml:"splitinfo"`
-	PrimaryKey   PrimaryKey    `xml:"primarykey"`
+	PrimaryKey   PrimaryKey
 }
 
 type DbTables struct {
@@ -159,6 +158,7 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 		}
 		for idx, _ := range result.DB.TableList {
 			table := &result.DB.TableList[idx]
+			table.PrimaryKey.Column = table.SplitInfo.Columns
 			var TableColumns []TableColumn
 			TableColumns = append(TableColumns, TableColumn{
 				Name:         "version",

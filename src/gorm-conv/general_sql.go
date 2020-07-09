@@ -131,14 +131,34 @@ func CreateTableSQL(table TableInfo) ([]byte, int) {
 		for _, tIndex := range table.TableIndex {
 
 			if tIndex.Unique {
-				strOut += ",\n    UNIQUE INDEX " + tIndex.Name + "(" + tIndex.Columns + ")"
+				strOut += ",\n    UNIQUE INDEX " + tIndex.Name + "("
 			} else {
-				strOut += ",\n    INDEX " + tIndex.Name + "(" + tIndex.Columns + ")"
+				strOut += ",\n    INDEX " + tIndex.Name + "("
 			}
+			var cols []string = strings.Split(tIndex.Columns, ",")
+			for idx, c := range cols {
+				if idx != 0 {
+					strOut += ","
+				}
+				strOut += "`"
+				strOut += c
+				strOut += "`"
+			}
+			strOut += ")"
 		}
 	}
 	if table.PrimaryKey.Column != "" {
-		strOut += ",\n    PRIMARY KEY (`" + table.PrimaryKey.Column + "`)"
+		var cols []string = strings.Split(table.PrimaryKey.Column, ",")
+		strOut += ",\n    PRIMARY KEY ("
+		for idx, c := range cols {
+			if idx != 0 {
+				strOut += ","
+			}
+			strOut += "`"
+			strOut += c
+			strOut += "`"
+		}
+		strOut += ")"
 	}
 	strOut += "\n) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n"
 	return []byte(strOut), 0

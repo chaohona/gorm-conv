@@ -246,7 +246,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables(games []XmlCfg, f *os.File) int {
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")
 			f.WriteString("    if (pMsg->tables_size() == 0)\n")
 			f.WriteString("        return GORM_REQ_NO_RECORDS;\n\n")
-			f.WriteString("    GORM_PB_TABLE table = pMsg->tables(0);\n")
+			f.WriteString("    const GORM_PB_TABLE &table = pMsg->tables(0);\n")
 			f.WriteString("    if (!table.has_" + table.Name + "())\n")
 			f.WriteString("        return GORM_REQ_NO_RECORDS;\n\n")
 			f.WriteString("    const GORM_PB_REQ_HEADER &header = pMsg->header();\n")
@@ -262,7 +262,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables(games []XmlCfg, f *os.File) int {
 			//f.WriteString(";\n")
 			f.WriteString("    int iTmpLen = 0;\n\n")
 
-			f.WriteString("    GORM_PB_Table_" + table.Name + " table_" + table.Name + " = table." + table.Name + "();\n\n")
+			f.WriteString("    const GORM_PB_Table_" + table.Name + " &table_" + table.Name + " = table." + table.Name + "();\n\n")
 
 			if table.SplitInfo.Columns == "" {
 				return -1

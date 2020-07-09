@@ -36,7 +36,7 @@ func CPPFieldsMapPack_VERSION_SQL(games []XmlCfg, f *os.File) int {
 	f.WriteString("    {\n")
 	f.WriteString("    case CHECKDATAVERSION_AUTOINCREASE:\n")
 	f.WriteString("    {\n")
-	f.WriteString("        iDataLen = snprintf(szSQLBegin, iLen, \", and `version`=%llu\", ulVersion);\n")
+	f.WriteString("        iDataLen = snprintf(szSQLBegin, iLen, \" and `version`=%llu\", ulVersion);\n")
 	f.WriteString("        break;\n")
 	f.WriteString("    }\n")
 	f.WriteString("    case NOCHECKDATAVERSION_OVERWRITE:\n")

@@ -27,9 +27,11 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table TableInfo) string {
 		}
 		DefineSQL += CPPFieldPackSQL_COL_FORMAT(col.Type)
 	}
-	DefineSQL += ") ON DUPLICATE KEY UPDATE"
-	var totalIdx int = 0
+	DefineSQL += ") ON DUPLICATE KEY UPDATE `version`=`version`+1"
 	for _, col := range table.TableColumns {
+		if col.Name == "version" {
+			continue
+		}
 		var match bool = false
 		for _, cname := range table.SplitInfo.SplitCols {
 			if col.Name == cname {
@@ -40,10 +42,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table TableInfo) string {
 		if match {
 			continue
 		}
-		totalIdx += 1
-		if totalIdx != 1 {
-			DefineSQL += ","
-		}
+		DefineSQL += ","
 		DefineSQL += " `"
 		DefineSQL += col.Name
 		DefineSQL += "`="
@@ -53,33 +52,6 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table TableInfo) string {
 	return DefineSQL
 }
 
-func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL_GetCPPType(colType string) string {
-	switch colType {
-	case "int8", "int16", "int32", "int":
-		{
-			return "int32"
-		}
-	case "uint8", "uint16", "uint32":
-		{
-			return "uint32"
-		}
-	case "int64":
-		{
-			return "int64"
-		}
-	case "uint64":
-		{
-			return "uint64"
-		}
-	default:
-		{
-			return "string"
-		}
-	}
-
-	return "string"
-}
-
 func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
 	var len_str string = "    int iLen = iSqlLen + 128"
 	var sprintf_str string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "REPLACESQL"
@@ -87,7 +59,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) i
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name
 		f.WriteString("\n")
-		var cppType string = CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		f.WriteString("    const " + cppType + " ")
 		if cppType == "string" {
 			f.WriteString("&")
@@ -124,6 +96,9 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) i
 		}
 	}
 	for _, col := range table.TableColumns {
+		if col.Name == "version" {
+			continue
+		}
 		var match bool = false
 		for _, cname := range table.SplitInfo.SplitCols {
 			if col.Name == cname {
@@ -135,7 +110,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) i
 			continue
 		}
 		sprintf_str += ","
-		var cppType string = CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		var col_type_name string = table.Name + "_" + col.Name
 		if cppType == "string" {
 			sprintf_str += " sz_" + col_type_name
