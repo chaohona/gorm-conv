@@ -10,6 +10,9 @@ func GeneralCppCodes(games []XmlCfg, outpath string) int {
 	if 0 != CppFieldsMapDefine(games, outpath) {
 		fmt.Println("general cpp codes file gorm_fields_map_define.cc failed:", outpath)
 	}
+	if 0 != CppRedisDefine(games, outpath) {
+		fmt.Println("general cpp codes file gorm_redis_define.cc failed:", outpath)
+	}
 
 	return 0
 }

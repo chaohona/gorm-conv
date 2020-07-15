@@ -46,6 +46,16 @@ type TableInfo struct {
 	PrimaryKey   PrimaryKey
 }
 
+func (this *TableInfo) GetColumn(name string) TableColumn {
+	for _, tc := range this.TableColumns {
+		if name == tc.Name {
+			return tc
+		}
+	}
+
+	return TableColumn{}
+}
+
 type DbTables struct {
 	Name     string `xml:"name,attr"`
 	SplitKey string `xml:"splittablekey,attr"`

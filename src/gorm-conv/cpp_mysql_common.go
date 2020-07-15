@@ -5,6 +5,33 @@ import (
 	"strings"
 )
 
+func CPPFieldsMapPackSQL_ForTables_COL2SQL_GET_LONG_ULONG(colType string) string {
+	switch colType {
+	case "int8", "int16", "int32", "int":
+		{
+			return "long"
+		}
+	case "uint8", "uint16", "uint32":
+		{
+			return "ulong"
+		}
+	case "int64":
+		{
+			return "long"
+		}
+	case "uint64":
+		{
+			return "ulong"
+		}
+	case "double":
+		{
+			return "long"
+		}
+	}
+
+	return "ulong"
+}
+
 func CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(colType string) string {
 	switch colType {
 	case "int8", "int16", "int32", "int":
@@ -73,7 +100,38 @@ func CPPField_CPPType(colType string) string {
 			return "string"
 		}
 	}
-	return ""
+	return "string"
+}
+
+func CPPFieldPackRedis_COL_FORMAT(colType string) string {
+	var DefineSQL string
+	switch colType {
+	case "int8", "int16", "int32", "int":
+		{
+			DefineSQL = "%d"
+		}
+	case "uint8", "uint16", "uint32":
+		{
+			DefineSQL = "%u"
+		}
+	case "int64":
+		{
+			DefineSQL = "%ll"
+		}
+	case "uint64":
+		{
+			DefineSQL = "%llu"
+		}
+	case "double":
+		{
+			DefineSQL = "%f"
+		}
+	default:
+		{
+			DefineSQL = "%s"
+		}
+	}
+	return DefineSQL
 }
 
 func CPPFieldPackSQL_COL_FORMAT(colType string) string {

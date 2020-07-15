@@ -31,33 +31,6 @@ func CPPFieldsMapPackInsertSQL_ForTables_DefineSQL(table TableInfo) string {
 	return DefineSQL
 }
 
-/*func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL_GetCPPType(colType string) string {
-	switch colType {
-	case "int8", "int16", "int32", "int":
-		{
-			return "int32"
-		}
-	case "uint8", "uint16", "uint32":
-		{
-			return "uint32"
-		}
-	case "int64":
-		{
-			return "int64"
-		}
-	case "uint64":
-		{
-			return "uint64"
-		}
-	default:
-		{
-			return "string"
-		}
-	}
-
-	return "string"
-}*/
-
 func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
 	var len_str string = "    int iLen = iSqlLen + 128"
 	var sprintf_str string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "INSERTSQL"
