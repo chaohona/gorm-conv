@@ -15,9 +15,10 @@ var (
 	outputpath = flag.String("O", "./", "output files path")
 	cppoutpath = flag.String("cpppath", "./src/tables/", "cpp codes file out")
 	// 输出类型flatbuffers,还是protobuffers配置文件
-	fbtype  = flag.String("fb", "", "general flatbuffers files")
-	pbtype  = flag.String("pb", "", "general protobuffers files")
-	sqltype = flag.String("sql", "", "general sql files")
+	fbtype   = flag.String("fb", "", "general flatbuffers files")
+	pbtype   = flag.String("pb", "", "general protobuffers files")
+	sqltype  = flag.String("sql", "", "general sql files")
+	codetype = flag.String("codetype", "client", "client codes or server codes")
 )
 
 func usage() {
@@ -58,11 +59,11 @@ func main() {
 		}
 	}
 	if fbtype != nil {
-		ret = GeneralFBFiles(games, *outputpath)
+		/*ret = GeneralFBFiles(games, *outputpath)
 		if ret != 0 {
 			fmt.Println("generate fbs file got error.")
 			return
-		}
+		}*/
 	}
 	if pbtype != nil {
 		ret = GeneralPBFiles(games, *outputpath)
@@ -71,9 +72,13 @@ func main() {
 			return
 		}
 	}
+	var bServerCodes bool = false
+	if codetype != nil && *codetype == "server" {
+		bServerCodes = true
+	}
 	// 自动生成代码
 	if cppoutpath != nil {
-		ret = GeneralCppCodes(games, *cppoutpath)
+		ret = GeneralCppCodes(games, *cppoutpath, bServerCodes)
 		if ret != 0 {
 			fmt.Println("generate cpp codes got error.")
 			return

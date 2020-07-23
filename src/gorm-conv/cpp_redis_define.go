@@ -31,7 +31,7 @@ func CppRedisDefine_Opt(opt string, games []XmlCfg, f *os.File) int {
 }
 
 func CppRedisDefine(games []XmlCfg, outpath string) int {
-	outfile := outpath + "gorm_redis_define.cc"
+	outfile := outpath + "/server/gorm_redis_define.cc"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println(err.Error())

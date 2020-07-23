@@ -724,10 +724,10 @@ func CppFieldsMapDefine(games []XmlCfg, outpath string) int {
 	err = f.Truncate(0)
 
 	// 1、输出固定的头/////////////////////////
+	//#include "mysql.h"
 	var header string = `#include "gorm_table_field_map_define.h"
 #include "gorm_pb_proto.pb.h"
 #include "gorm_mempool.h"
-#include "mysql.h"
 #include "gorm_hash.h"
 
 namespace gorm{
@@ -808,42 +808,7 @@ namespace gorm{
 		fmt.Println("CPPFieldsMapGetTableFieldValue failed")
 		return -1
 	}
-	if 0 != CPPFieldsMapPack_VERSION_SQL(games, f) {
-		fmt.Println("CPPFieldsMapPack_VERSION_SQL failed.")
-		return -1
-	}
-	if 0 != CPPFieldsMapPackInsertSQL(games, f) {
-		fmt.Println("CPPFieldsMapPackInsertSQL failed.")
-		return -1
-	}
-	if 0 != CPPFieldsMapPackGetSQL(games, f) {
-		fmt.Println("CPPFieldsMapPackGetSQL failed.")
-		return -1
-	}
-	if 0 != CPPFieldsMapPackDeleteSQL(games, f) {
-		fmt.Println("CPPFieldsMapPackGetSQL failed.")
-		return -1
-	}
-	if 0 != CPPFieldsMapPackUpdateSQL(games, f) {
-		fmt.Println("CPPFieldsMapPackUpdateSQL failed.")
-		return -1
-	}
-	if 0 != CPPFieldsMapPackIncreaseSQL(games, f) {
-		fmt.Println("CPPFieldsMapPackIncreaseSQL failed.")
-		return -1
-	}
-	if 0 != CPPFieldsMapPackReplaceSQL(games, f) {
-		fmt.Println("CPPFieldsMapPackReplaceSQL failed.")
-		return -1
-	}
-	if 0 != CPPFieldsMapPackBatchGetSQL(games, f) {
-		fmt.Println("CPPFieldsMapPackBatchGetSQL failed.")
-		return -1
-	}
-	if 0 != GORM_MySQLResult2PbMSG(games, f) {
-		fmt.Println("GORM_MySQLResult2PbMSG failed.")
-		return -1
-	}
+
 	// 6、输出结尾
 	var end string = "\n}"
 	_, err = f.WriteString(end)
