@@ -268,6 +268,35 @@ package gorm;
 		return -1
 	}
 
+	// 输出列的类型
+	var columns string = `
+enum GORM_PB_COLUMN_TYPE
+{
+	GORM_PB_COLUMN_TYPE_INVALID = 0;
+	GORM_PB_COLUMN_TYPE_INT		= 1;
+	GORM_PB_COLUMN_TYPE_UINT 	= 2;
+	GORM_PB_COLUMN_TYPE_DOUBLE	= 3;
+	GORM_PB_COLUMN_TYPE_STRING	= 4;
+}
+
+message GORM_PB_COLUMN_VALUE
+{
+	GORM_PB_COLUMN_TYPE	type 		= 1;
+	uint64				uintvalue 	= 2;
+	int64				intvalue 	= 3;
+	double				doublevalue = 4;
+	string				stringvalue	= 5;
+}
+
+message GORM_PB_COLUMN
+{
+	string  				name 	= 1;				// 列名
+	GORM_PB_COLUMN_VALUE 	value 	= 2;	// 存储的数据
+}
+
+`
+	f.WriteString(columns)
+
 	// 输出所有表的集合
 	/*
 		message GORM_PB_TABLE
@@ -276,8 +305,16 @@ package gorm;
 			GORM_PB_Table_bag bag = 2;
 		}
 	*/
+	var custom_columns string = `
+message GORM_PB_CUSTEM_COLUMNS
+{
+	repeated	GORM_PB_COLUMN	columns 	= 1;
+}
+`
+	f.WriteString(custom_columns)
 	var table string = `message GORM_PB_TABLE
 {
+	GORM_PB_CUSTEM_COLUMNS	custom_columns = 1;
 `
 	_, err = f.WriteString(table)
 	if err != nil {
@@ -285,7 +322,7 @@ package gorm;
 		return -1
 	}
 
-	tableIndx = 0
+	tableIndx = 1
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			//GORM_PB_Table_account account = 1;

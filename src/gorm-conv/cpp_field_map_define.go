@@ -604,8 +604,21 @@ func CPPFieldsMapGetTableFieldValue(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func GetCustomerPbMsgDefine(games []XmlCfg, f *os.File) int {
-	f.WriteString("int GetCustomerPbMsgDefine(int iTableId, PB_MSG_PTR &pMsgPtr)\n")
+func GetCustomPbMsg(games []XmlCfg, f *os.File) int {
+	var customFunc string = `
+int GORM_GetCustomPbMsg(PB_MSG_PTR &pMsgPtr)
+{
+    pMsgPtr = new GORM_PB_CUSTEM_COLUMNS();
+    return GORM_OK;
+}
+`
+	f.WriteString(customFunc)
+
+	return 0
+}
+
+func GetTablePbMsgDefine(games []XmlCfg, f *os.File) int {
+	f.WriteString("int GetTablePbMsgDefine(int iTableId, PB_MSG_PTR &pMsgPtr)\n")
 	f.WriteString("{\n")
 
 	totalIdx := 0
@@ -726,6 +739,7 @@ func CppFieldsMapDefine(games []XmlCfg, outpath string) int {
 	// 1、输出固定的头/////////////////////////
 	//#include "mysql.h"
 	var header string = `#include "gorm_table_field_map_define.h"
+#include "gorm_pb_tables_inc.pb.h"
 #include "gorm_pb_proto.pb.h"
 #include "gorm_mempool.h"
 #include "gorm_hash.h"
@@ -748,7 +762,11 @@ namespace gorm{
 		fmt.Println("GORM_TableHash failed.")
 		return -1
 	}
-	if 0 != GetCustomerPbMsgDefine(games, f) {
+	if 0 != GetCustomPbMsg(games, f) {
+		fmt.Println("GetCustomPbMsg failed")
+		return -1
+	}
+	if 0 != GetTablePbMsgDefine(games, f) {
 		fmt.Println("GetCustomerPbMsgDefine failed")
 		return -1
 	}

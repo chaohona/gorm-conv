@@ -279,7 +279,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
 
 			f.WriteString("int GORM_PackIncreaseSQL")
 			f.WriteString(strings.ToUpper(table.Name))
-			f.WriteString("(MYSQL* mysql, const GORM_PB_INCREASE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, const GORM_PB_INCREASE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    if (!pMsg->has_header())\n")
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")
@@ -339,6 +339,10 @@ func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
 			}
 
 			f.WriteString("    \n")
+
+			f.WriteString("#ifdef GORM_DEBUG\n")
+			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
+			f.WriteString("#endif\n")
 			f.WriteString("    return GORM_OK;\n")
 			f.WriteString("}\n")
 		}

@@ -166,7 +166,7 @@ func CPPFieldPackSQL_COL_FORMAT(colType string) string {
 }
 
 func CPPFields_GORM_PackSQL_TEMPLATE(opt string, games []XmlCfg, f *os.File) int {
-	f.WriteString("int GORM_Pack" + opt + "SQL(MYSQL* mysql, int iTableId, const GORM_PB_" + strings.ToUpper(opt) + "_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_Pack" + opt + "SQL(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableId, const GORM_PB_" + strings.ToUpper(opt) + "_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	totalIndex := 0
 	for _, game := range games {
@@ -182,7 +182,7 @@ func CPPFields_GORM_PackSQL_TEMPLATE(opt string, games []XmlCfg, f *os.File) int
 			f.WriteString(":\n")
 			f.WriteString("        return GORM_Pack" + opt + "SQL")
 			f.WriteString(BigTable)
-			f.WriteString("(mysql, pMsg, pReqData);\n")
+			f.WriteString("(pMySQLEvent, mysql, pMsg, pReqData);\n")
 			f.WriteString("    \n")
 		}
 	}

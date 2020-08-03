@@ -165,7 +165,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables(games []XmlCfg, f *os.File) int {
 			}
 			f.WriteString("int GORM_PackReplaceSQL")
 			f.WriteString(BigTable)
-			f.WriteString("(MYSQL* mysql, const GORM_PB_REPLACE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, const GORM_PB_REPLACE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    int iTableNum = pMsg->tables_size();\n")
 			f.WriteString("    if (iTableNum == 0)\n")
@@ -177,6 +177,10 @@ func CPPFieldsMapPackReplaceSQL_ForTables(games []XmlCfg, f *os.File) int {
 			f.WriteString("        if (!table.has_" + table.Name + "())\n")
 			f.WriteString("            return GORM_REQ_NO_RECORDS;\n")
 			f.WriteString("        const GORM_PB_Table_" + table.Name + " &table_" + table.Name + " = table." + table.Name + "();\n")
+
+			f.WriteString("#ifdef GORM_DEBUG\n")
+			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
+			f.WriteString("#endif\n")
 			f.WriteString("        return GORM_PackReplaceSQL" + BigTable + "_One(mysql, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")

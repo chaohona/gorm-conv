@@ -19,6 +19,8 @@ func gorm_general_mysql_define(games []XmlCfg, outpath string) int {
 	// 1、输出固定的头/////////////////////////
 	var header string = `#include "gorm_server_table_define.h"
 #include "gorm_table_field_map_define.h"
+#include "gorm_server_table_stable.h"
+#include "gorm_mysql_conn_pool.h"
 #include "gorm_pb_proto.pb.h"
 #include "gorm_mempool.h"
 #include "gorm_hash.h"
