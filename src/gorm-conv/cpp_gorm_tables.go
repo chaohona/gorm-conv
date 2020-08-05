@@ -36,7 +36,8 @@ func CppGormTables_H(games []XmlCfg, outpath string) int {
 	for _, game := range games {
 		_ = game
 		file := game.File[0 : len(game.File)-4]
-		f.WriteString(`#include "` + file + `.pb.h"\n`)
+		f.WriteString(`#include "` + file + `.pb.h"`)
+		f.WriteString("\n")
 	}
 
 	f.WriteString("\n#endif")

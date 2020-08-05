@@ -5,6 +5,33 @@ import (
 	"strings"
 )
 
+func CPPFieldInitTableColumnInfo_ForTable_COLTYPE(colType string) string {
+	switch colType {
+	case "int8", "int16", "int32", "int":
+		{
+			return "GORM_PB_COLUMN_TYPE_INT"
+		}
+	case "uint8", "uint16", "uint32":
+		{
+			return "GORM_PB_COLUMN_TYPE_UINT"
+		}
+	case "int64":
+		{
+			return "GORM_PB_COLUMN_TYPE_INT"
+		}
+	case "uint64":
+		{
+			return "GORM_PB_COLUMN_TYPE_UINT"
+		}
+	case "double":
+		{
+			return "GORM_PB_COLUMN_TYPE_DOUBLE"
+		}
+	}
+
+	return "GORM_PB_COLUMN_TYPE_STRING"
+}
+
 func CPPFieldsMapPackSQL_ForTables_COL2SQL_GET_LONG_ULONG(colType string) string {
 	switch colType {
 	case "int8", "int16", "int32", "int":

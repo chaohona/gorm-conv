@@ -107,7 +107,7 @@ func CppFieldsMapDefine3(games []XmlCfg, f *os.File) int {
 			tableName := strings.ToUpper(table.Name)
 			var header = "int GORM_SetTable" + tableName + "Id2Name(OUT FieldId2Name &mapId2Name)\n"
 			header += "{\n"
-			header += "    mapId2Name[GORM_PB_FIELD_" + tableName + "_VERSION] = \"version\";\n"
+			//header += "    mapId2Name[GORM_PB_FIELD_" + tableName + "_VERSION] = \"version\";\n"
 			f.WriteString(header)
 			for _, col := range table.TableColumns {
 				colName := strings.ToUpper(col.Name)
@@ -133,7 +133,7 @@ func CppFieldsMapDefine4(games []XmlCfg, f *os.File) int {
 			tableName := strings.ToUpper(table.Name)
 			var header = "int GORM_SetTable" + tableName + "Name2Id(OUT FieldName2Id &mapName2Id)\n"
 			header += "{\n"
-			header += "    mapName2Id[\"version\"] = GORM_PB_FIELD_" + tableName + "_VERSION;\n"
+			//header += "    mapName2Id[\"version\"] = GORM_PB_FIELD_" + tableName + "_VERSION;\n"
 			f.WriteString(header)
 			for _, col := range table.TableColumns {
 				colName := strings.ToUpper(col.Name)
@@ -725,6 +725,50 @@ func GORM_GetTableSrcPbMsg(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
+func CPPFieldInitTableColumnInfo_ForTable(games []XmlCfg, f *os.File) int {
+	for _, game := range games {
+		for _, table := range game.DB.TableList {
+			f.WriteString("int GORM_InitTableColumnInfo_" + table.Name + "(unordered_map<string, vector<string>> &mapTablesColumnOrder, unordered_map<string, unordered_map<string, GORM_PB_COLUMN_TYPE>> &mapTablesColumnInfo)\n")
+			f.WriteString("{\n")
+			f.WriteString("    vector<string> vColumns = {")
+			for idx, col := range table.TableColumns {
+				if idx != 0 {
+					f.WriteString(",")
+				}
+				f.WriteString("\"" + col.Name + "\"")
+			}
+			f.WriteString("};\n")
+			f.WriteString("    mapTablesColumnOrder[\"" + table.Name + "\"] = vColumns;\n")
+			f.WriteString("    unordered_map<string, GORM_PB_COLUMN_TYPE> mapColumnType = {\n")
+			for _, col := range table.TableColumns {
+				f.WriteString("        {\"" + col.Name + "\", " + CPPFieldInitTableColumnInfo_ForTable_COLTYPE(col.Type) + "},\n")
+			}
+			f.WriteString("    };\n")
+			f.WriteString("    mapTablesColumnInfo[\"" + table.Name + "\"] = mapColumnType;\n")
+			f.WriteString("    return GORM_OK;\n")
+			f.WriteString("}\n")
+		}
+	}
+	return 0
+}
+
+func CPPFieldInitTableColumnInfo(games []XmlCfg, f *os.File) int {
+	if 0 != CPPFieldInitTableColumnInfo_ForTable(games, f) {
+		return -1
+	}
+	f.WriteString("int GORM_InitTableColumnInfo(unordered_map<string, vector<string>> &mapTablesColumnOrder, unordered_map<string, unordered_map<string, GORM_PB_COLUMN_TYPE>> &mapTablesColumnInfo)\n")
+	f.WriteString("{\n")
+	for _, game := range games {
+		for _, table := range game.DB.TableList {
+			f.WriteString("    if (GORM_InitTableColumnInfo_" + table.Name + "(mapTablesColumnOrder, mapTablesColumnInfo))\n")
+			f.WriteString("        return GORM_ERROR;\n")
+		}
+	}
+	f.WriteString("    return GORM_OK;\n")
+	f.WriteString("}\n")
+	return 0
+}
+
 func CppFieldsMapDefine(games []XmlCfg, outpath string) int {
 	outfile := outpath + "gorm_table_field_map_define.cc"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
@@ -816,6 +860,10 @@ namespace gorm{
 	// 5、输出name2id转换函数
 	if 0 != CppFieldsMapDefine4(games, f) {
 		fmt.Println("CppFieldsMapDefine4 failed")
+		return -1
+	}
+	if 0 != CPPFieldInitTableColumnInfo(games, f) {
+		fmt.Println("CPPFieldInitTableColumnInfo faild.")
 		return -1
 	}
 	if 0 != CPPFieldsMapSetTableFieldValue(games, f) {
