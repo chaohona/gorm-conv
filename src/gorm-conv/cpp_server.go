@@ -63,6 +63,10 @@ using namespace gorm;
 		fmt.Println("CPPFieldsMapPackBatchGetSQL failed.")
 		return -1
 	}
+	if 0 != CPPFieldsMapPackGetByNonPrimaryKeySQL(games, f) {
+		fmt.Println("CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables failed.")
+		return -1
+	}
 	if 0 != GORM_MySQLResult2PbMSG(games, f) {
 		fmt.Println("GORM_MySQLResult2PbMSG failed.")
 		return -1
