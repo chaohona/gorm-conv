@@ -64,6 +64,7 @@ func GORM_MySQLResult2PbMSG_Tables_DEBUG(games []XmlCfg, f *os.File) int {
 			f.WriteString("{\n")
 			f.WriteString("    if (GORM_OK != GORM_MySQLResult2PbMSG_" + strings.ToUpper(table.Name) + "(pPbTable, row, lengths))\n")
 			f.WriteString("        return GORM_ERROR;\n")
+			f.WriteString("    return GORM_OK;\n")
 			f.WriteString("    vector<string> &vTablesColumnOrder = pMySQLEvent->m_mapTablesColumnOrder[\"" + table.Name + "\"];\n")
 			f.WriteString("    unordered_map<string, GORM_PB_COLUMN_TYPE> &mapTablesColumnType = pMySQLEvent->m_mapTablesColumnInfo[\"" + table.Name + "\"];\n")
 
