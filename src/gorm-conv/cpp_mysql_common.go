@@ -118,10 +118,12 @@ func CPPTypeLen(colType string) int {
 
 func CPPField_CPPType(colType string) string {
 	switch colType {
-	case "int8", "int16", "int32", "int", "uint8", "uint16", "uint32", "int64", "uint64", "double":
+	case "int8", "int16", "int32", "uint8", "uint16", "uint32", "int64", "uint64", "double":
 		{
 			return colType
 		}
+	case "int":
+		return "int32"
 	default:
 		{
 			return "string"

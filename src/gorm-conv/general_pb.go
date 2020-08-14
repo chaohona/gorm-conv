@@ -82,8 +82,10 @@ func GeneralPBFile(game XmlCfg, outpath string) int {
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println(err.Error())
+		return -1
 	}
 	defer f.Close()
+	fmt.Println("begin to generate pb file:%s", outfile)
 	err = f.Truncate(0)
 	if err != nil {
 		fmt.Println(err.Error())
