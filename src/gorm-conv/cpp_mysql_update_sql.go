@@ -10,7 +10,7 @@ import (
 func CPPFieldsMapPackUpdateSQL_ForTables_DefineSQL(table TableInfo) (string, string, int) {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "UPDATESQL \"update "
 	DefineSQL += table.Name
-	DefineSQL += " set "
+	DefineSQL += "_%d set "
 	var WhereSQL string = "#define " + strings.ToUpper(table.Name) + "UPDATEWHERESQL \" where"
 	var splitInfo SplitInfo = table.SplitInfo
 	if splitInfo.Columns == "" {
@@ -138,6 +138,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table TableInfo, f *os.File) i
 }
 
 func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table TableInfo, f *os.File) int {
+	var upTableName string = strings.ToUpper(table.Name)
 	f.WriteString("    int iLen = iSqlLen + 128 + pMsg->ByteSizeLong() ")
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
@@ -154,9 +155,9 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table TableInfo, f *os.File) int
 
 	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen+iWhereLen+1);\n")
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
-	f.WriteString("    memcpy(szSQLBegin, " + strings.ToUpper(table.Name) + "UPDATESQL, iSqlLen);\n")
-	f.WriteString("    szSQLBegin += iSqlLen;\n")
-	f.WriteString("    pReqData->m_sUsedSize = iSqlLen;\n")
+	f.WriteString("    int iUpdateLen = snprintf(szSQLBegin, iLen, " + upTableName + "UPDATESQL, iTableIndex);\n")
+	f.WriteString("    szSQLBegin += iUpdateLen;\n")
+	f.WriteString("    pReqData->m_sUsedSize = iUpdateLen;\n")
 	f.WriteString("    int iDataLen = 0;\n")
 	f.WriteString("    int iSetField = 1;\n")
 
@@ -170,7 +171,6 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table TableInfo, f *os.File) int
 	f.WriteString("        int iFieldId = vFields[i];\n")
 	f.WriteString("        if (")
 
-	var upTableName string = strings.ToUpper(table.Name)
 	f.WriteString("GORM_PB_FIELD_" + upTableName + "_VERSION == iFieldId")
 	for _, colname := range table.SplitInfo.SplitCols {
 		f.WriteString(" || ")
@@ -240,7 +240,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables(games []XmlCfg, f *os.File) int {
 
 			f.WriteString("int GORM_PackUpdateSQL")
 			f.WriteString(strings.ToUpper(table.Name))
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, const GORM_PB_UPDATE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_UPDATE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    if (!pMsg->has_header())\n")
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")

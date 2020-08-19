@@ -10,7 +10,7 @@ import (
 func CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table TableInfo) (string, string, int) {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "INCREASESQL \"update "
 	DefineSQL += table.Name
-	DefineSQL += " set "
+	DefineSQL += "_%d set "
 	var WhereSQL string = "#define " + strings.ToUpper(table.Name) + "INCREASEWHERESQL \" where"
 	var splitInfo SplitInfo = table.SplitInfo
 	if splitInfo.Columns == "" {
@@ -160,6 +160,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table TableInfo, f *os.File)
 }
 
 func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) int {
+	var upTableName string = strings.ToUpper(table.Name)
 	f.WriteString("    int iLen = iSqlLen + 128 + pMsg->ByteSizeLong() ")
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
@@ -187,12 +188,12 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 
 	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen+iWhereLen+1);\n")
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
-	f.WriteString("    memcpy(szSQLBegin, " + strings.ToUpper(table.Name) + "UPDATESQL, iSqlLen);\n")
-	f.WriteString("    szSQLBegin += iSqlLen;\n")
-	f.WriteString("    pReqData->m_sUsedSize = iSqlLen;\n")
-	f.WriteString("    int iDataLen = 0;\n")
+	f.WriteString("    memcpy(szSQLBegin, " + upTableName + "UPDATESQL, iSqlLen);\n")
+	f.WriteString("    int iDataLen = snprintf(szSQLBegin, iLen, " + upTableName + "INCREASESQL, iTableIndex);\n")
+	f.WriteString("    szSQLBegin += iDataLen;\n")
+	f.WriteString("    pReqData->m_sUsedSize = iDataLen;\n")
 	f.WriteString("    int iSetField = 1;\n")
-	f.WriteString("    iDataLen  = GORM_GETVERSION_SET(szSQLBegin, iLen, GORM_CheckDataVerType(header.verpolice()), " + table.Name + "_version);\n")
+	f.WriteString("    iDataLen  = GORM_GETVERSION_SET(szSQLBegin, iLen-pReqData->m_sUsedSize, GORM_CheckDataVerType(header.verpolice()), " + table.Name + "_version);\n")
 	f.WriteString("    szSQLBegin += iDataLen;\n")
 	f.WriteString("    pReqData->m_sUsedSize += iDataLen;\n")
 	f.WriteString("    iLen -= iDataLen;\n")
@@ -202,7 +203,6 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 	f.WriteString("        int iFieldId = vFields[i];\n")
 	f.WriteString("        if (")
 
-	var upTableName string = strings.ToUpper(table.Name)
 	f.WriteString("GORM_PB_FIELD_" + upTableName + "_VERSION == iFieldId")
 	for _, colname := range table.SplitInfo.SplitCols {
 		f.WriteString(" || ")
@@ -266,6 +266,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
+			var bigTable string = strings.ToUpper(table.Name)
 			var DefineSQL, WhereSQL string
 			var iRet int
 			DefineSQL, WhereSQL, iRet = CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table)
@@ -278,8 +279,8 @@ func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
 			f.WriteString("\n")
 
 			f.WriteString("int GORM_PackIncreaseSQL")
-			f.WriteString(strings.ToUpper(table.Name))
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, const GORM_PB_INCREASE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString(bigTable)
+			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_INCREASE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    if (!pMsg->has_header())\n")
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")
@@ -296,7 +297,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
 			f.WriteString("    const string &strMinusFieldsMode = pMsg->minuscolumns();\n")
 			f.WriteString("    bool bMatch = false;\n")
 			f.WriteString("    char *szSQLBegin = nullptr;\n")
-			f.WriteString("    int iSqlLen = strlen(" + strings.ToUpper(table.Name) + "UPDATESQL);\n")
+			f.WriteString("    int iSqlLen = strlen(" + bigTable + "INCREASESQL);\n")
 			//var DefineLen int = len(DefineSQL)
 			//f.WriteString(strconv.FormatInt(int64(DefineLen), 10))
 			//f.WriteString(";\n")

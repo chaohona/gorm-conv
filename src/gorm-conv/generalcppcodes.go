@@ -12,10 +12,13 @@ func GeneralCppCodes(games []XmlCfg, outpath string, bServerCode bool) int {
 		return -1
 	}
 	if 0 != CppGormTables_H(games, outpath) {
+		fmt.Println("CppGormTables_H failed")
 		return -1
 	}
+	fmt.Println("general server codes switch is:", bServerCode)
 	if bServerCode {
 		if 0 != gorm_server_codes_files(games, outpath) {
+			fmt.Println("gorm_server_codes_files failed.")
 			return -1
 		}
 	}

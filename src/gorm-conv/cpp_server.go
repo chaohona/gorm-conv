@@ -3,7 +3,37 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 )
+
+func CPPGeneralSplitTableName(games []XmlCfg, f *os.File) int {
+	f.WriteString("int GORM_GetSplitTableName(int iTableId, uint32 uiHashCode, char *szOutTableName, int iInBuffLen, int &iUsedBuffLen)\n")
+	f.WriteString("{\n")
+	f.WriteString("    switch (iTableId)\n")
+	f.WriteString("    {\n")
+	for _, game := range games {
+		for _, table := range game.DB.TableList {
+			var bigTable string = strings.ToUpper(table.Name)
+			f.WriteString("    case GORM_PB_TABLE_IDX_" + bigTable + ":\n")
+			f.WriteString("    {\n")
+			if table.SplitInfo.Num <= 1 {
+				f.WriteString("        iUsedBuffLen = snprintf(szOutTableName, iInBuffLen, \" " + table.Name + " \");\n")
+			} else {
+				var strNum string = strconv.FormatInt(int64(table.SplitInfo.Num), 10)
+				f.WriteString("        iUsedBuffLen = snprintf(szOutTableName, iInBuffLen, \" " + table.Name + "_%d \", uiHashCode%" + strNum + ");\n")
+			}
+			f.WriteString("        break;\n")
+			f.WriteString("    }\n")
+		}
+	}
+	f.WriteString("    default:\n")
+	f.WriteString("        return GORM_INVALID_TABLE;\n")
+	f.WriteString("    }\n")
+	f.WriteString("    return GORM_OK;\n")
+	f.WriteString("}\n")
+	return 0
+}
 
 func gorm_general_mysql_define(games []XmlCfg, outpath string) int {
 	outfile := outpath + "server/gorm_server_table_define.cc"
@@ -30,6 +60,11 @@ using namespace gorm;
 `
 
 	f.WriteString(header)
+
+	if 0 != CPPGeneralSplitTableName(games, f) {
+		fmt.Println("CPPGeneralSplitTableName failed.")
+		return -1
+	}
 
 	if 0 != CPPFieldsMapPack_VERSION_SQL(games, f) {
 		fmt.Println("CPPFieldsMapPack_VERSION_SQL failed.")

@@ -9,7 +9,7 @@ import (
 func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table TableInfo) string {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "REPLACESQL \"insert into "
 	DefineSQL += table.Name
-	DefineSQL += "("
+	DefineSQL += "_%d("
 
 	for idx, col := range table.TableColumns {
 		if idx != 0 {
@@ -54,7 +54,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table TableInfo) string {
 
 func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
 	var len_str string = "    int iLen = iSqlLen + 128"
-	var sprintf_str string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "REPLACESQL"
+	var sprintf_str string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "REPLACESQL, iTableIndex"
 	var release_str string = ""
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name
@@ -135,7 +135,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) i
 func CPPFieldsMapPackReplaceSQL_ForTables_One(table TableInfo, sqlLen string, f *os.File) int {
 	f.WriteString("int GORM_PackReplaceSQL")
 	f.WriteString(strings.ToUpper(table.Name))
-	f.WriteString("_One(MYSQL* mysql, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("_One(MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString("    char *szSQLBegin = nullptr;\n")
 	f.WriteString("    int iSqlLen = " + sqlLen + ";\n")
@@ -157,7 +157,6 @@ func CPPFieldsMapPackReplaceSQL_ForTables(games []XmlCfg, f *os.File) int {
 			var DefineSQL string = CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table)
 			f.WriteString(DefineSQL)
 			var DefineLen int = len(DefineSQL)
-			//var funcTable string = "int GORM_PackInsertSQLACCOUNT(MYSQL* mysql, GORM_PB_INSERT_REQ* pMsg, GORM_MemPoolData *&pReqData)"
 			// 函数头
 			var BigTable string = strings.ToUpper(table.Name)
 			if 0 != CPPFieldsMapPackReplaceSQL_ForTables_One(table, strconv.FormatInt(int64(DefineLen), 10), f) {
@@ -165,7 +164,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables(games []XmlCfg, f *os.File) int {
 			}
 			f.WriteString("int GORM_PackReplaceSQL")
 			f.WriteString(BigTable)
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, const GORM_PB_REPLACE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_REPLACE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    int iTableNum = pMsg->tables_size();\n")
 			f.WriteString("    if (iTableNum == 0)\n")
@@ -181,7 +180,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables(games []XmlCfg, f *os.File) int {
 			f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
 			f.WriteString("#endif\n")
-			f.WriteString("        return GORM_PackReplaceSQL" + BigTable + "_One(mysql, table_" + table.Name + ", pReqData);\n")
+			f.WriteString("        return GORM_PackReplaceSQL" + BigTable + "_One(mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")
 			f.WriteString("}\n")

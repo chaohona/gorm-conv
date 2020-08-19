@@ -11,7 +11,7 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL_Where(table TableInfo) (string, 
 	var DefineSQL string
 	DefineSQL += " from "
 	DefineSQL += table.Name
-	DefineSQL += " where "
+	DefineSQL += "_%d where "
 	var splitInfo SplitInfo = table.SplitInfo
 	if splitInfo.Columns == "" {
 		DefineSQL += "\""
@@ -64,10 +64,10 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL(table TableInfo) (string, int) {
 
 func CPPFieldsMapPackGetSQL_ForTables_One(table TableInfo, strsqllen string, f *os.File) int {
 	var bigtable string = strings.ToUpper(table.Name)
-	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE(MYSQL* mysql, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE(MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	var ilenstr string = "    int iLen = iSqlLen + 128"
-	var snprintfstr string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "GETSQL"
+	var snprintfstr string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "GETSQL, iTableIndex"
 	var releasestr string = ""
 
 	f.WriteString("    char *szSQLBegin = nullptr;\n")
@@ -137,7 +137,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table TableInfo, strsqllen strin
 	var bigtable string = strings.ToUpper(table.Name)
 	f.WriteString("#define " + bigtable + "GETSQL_DEBUG_WHERE \"" + where + "\n")
 
-	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE_DEBUG(GORM_MySQLEvent *pMySQLEvent, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE_DEBUG(GORM_MySQLEvent *pMySQLEvent, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString(`
 	MYSQL* mysql = pMySQLEvent->m_pMySQL;
@@ -175,7 +175,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table TableInfo, strsqllen strin
 	f.WriteString("            iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`%s`\", (char*)(c.c_str()));\n")
 	f.WriteString("    }\n")
 
-	var snprintfstr string = "    iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, " + bigtable + "GETSQL_DEBUG_WHERE"
+	var snprintfstr string = "    iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, " + bigtable + "GETSQL_DEBUG_WHERE, iTableIndex"
 	var releasestr string = ""
 	for _, cname := range table.SplitInfo.SplitCols {
 		for _, col := range table.TableColumns {
@@ -267,7 +267,7 @@ func CPPFieldsMapPackGetSQL_ForTables(games []XmlCfg, f *os.File) int {
 
 			f.WriteString("int GORM_PackGetSQL")
 			f.WriteString(strings.ToUpper(table.Name))
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, const GORM_PB_GET_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_GET_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    if (!pMsg->has_header())\n")
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")
@@ -291,9 +291,9 @@ func CPPFieldsMapPackGetSQL_ForTables(games []XmlCfg, f *os.File) int {
 			f.WriteString("    \n")
 			f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("    GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE_DEBUG(pMySQLEvent, table_" + table.Name + ", pReqData);\n")
+			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE_DEBUG(pMySQLEvent, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("#endif\n")
-			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE(mysql, table_" + table.Name + ", pReqData);\n")
+			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE(mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("}\n")
 		}
 	}

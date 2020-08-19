@@ -10,7 +10,7 @@ import (
 func CPPFieldsMapPackDeleteSQL_ForTables_DefineSQL(table TableInfo) (string, int) {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "DELETESQL \"delete  from "
 	DefineSQL += table.Name
-	DefineSQL += " where "
+	DefineSQL += "_%d where "
 	var splitInfo SplitInfo = table.SplitInfo
 	if splitInfo.Columns == "" {
 		DefineSQL += "\""
@@ -100,7 +100,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table TableInfo, f *os.File) in
 	}
 
 	var ilenstr string = "    int iLen = iSqlLen + 128"
-	var snprintfstr string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "DELETESQL"
+	var snprintfstr string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "DELETESQL, iTableIndex"
 	var releasestr string = ""
 	for _, cname := range splitInfo.SplitCols {
 		for _, col := range table.TableColumns {
@@ -169,7 +169,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables(games []XmlCfg, f *os.File) int {
 
 			f.WriteString("int GORM_PackDeleteSQL")
 			f.WriteString(strings.ToUpper(table.Name))
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, const GORM_PB_DELETE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_DELETE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    if (!pMsg->has_header())\n")
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")

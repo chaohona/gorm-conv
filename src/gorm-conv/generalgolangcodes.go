@@ -110,14 +110,17 @@ func GORM_GetTableName(tableId int32) string {
 	f.WriteString("}\n")
 
 	// 3.表中字段与ID的映射关系
-	f.WriteString("var g_table_fieldname_to_id_map []map[string]int32 = []map[string]int32{\n")
+	f.WriteString("var GORM_Table_FieldName_To_Id_Map []map[string]int32 = []map[string]int32{\n")
 	var index int = -1
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			index += 1
+			var bigTable string = strings.ToUpper(table.Name)
 			f.WriteString("    " + strconv.FormatInt(int64(index), 10) + ": map[string]int32{\n")
-			for idx, col := range table.TableColumns {
-				f.WriteString("        \"" + col.Name + "\": " + strconv.FormatInt(int64(idx), 10) + ",\n")
+			for _, col := range table.TableColumns {
+				var bigColName string = strings.ToUpper(col.Name)
+				var colValue string = "GORM_PB_" + bigTable + "_FIELD_INDEX_GORM_PB_FIELD_" + bigTable + "_" + bigColName
+				f.WriteString("        \"" + col.Name + "\": int32(" + colValue + "),\n")
 			}
 			f.WriteString("    },\n")
 		}
@@ -127,7 +130,7 @@ func GORM_GetTableName(tableId int32) string {
 	if tableId <= int32(GORM_PB_TABLE_INDEX_GORM_PB_TABLE_IDX_MIN__) || tableId >= int32(GORM_PB_TABLE_INDEX_GORM_PB_TABLE_IDX_MAX__) {
 		return 0, GORM_CODE_INVALID_FIELD
 	}
-	fieldId, ok := g_table_fieldname_to_id_map[tableId-1][strings.ToLower(fieldName)]
+	fieldId, ok := GORM_Table_FieldName_To_Id_Map[tableId-1][strings.ToLower(fieldName)]
 	if !ok {
 		return 0, GORM_CODE_INVALID_FIELD
 	}
