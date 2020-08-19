@@ -166,24 +166,15 @@ func CreateTableSQL(table TableInfo) ([]byte, int) {
 
 func GeneralSQLBuff(table TableInfo, tableNum int) ([]byte, int) {
 	var totalOut string
-	if table.SplitInfo.Num == 0 {
-		var strOut string = "CREATE TABLE `" + table.Name + "`(\n"
+
+	for index := uint16(0); index <= table.SplitInfo.Num; index++ {
+		var strOut string = "CREATE TABLE `" + table.Name + "_" + strconv.FormatInt(int64(index), 10) + "`(\n"
 		totalOut += strOut
 		tableOut, ret := CreateTableSQL(table)
 		if ret != 0 {
 			return nil, -1
 		}
 		totalOut += string(tableOut)
-	} else {
-		for index := uint16(1); index <= table.SplitInfo.Num; index++ {
-			var strOut string = "CREATE TABLE `" + table.Name + "_" + strconv.FormatInt(int64(index), 10) + "`(\n"
-			totalOut += strOut
-			tableOut, ret := CreateTableSQL(table)
-			if ret != 0 {
-				return nil, -1
-			}
-			totalOut += string(tableOut)
-		}
 	}
 	return []byte(totalOut), 0
 }
@@ -221,6 +212,7 @@ func CreateSQLFile(db GiantGame, file string) int {
 		fmt.Println(err.Error())
 	}
 	defer f.Close()
+	f.Truncate(0)
 	_, err = f.Write(outBuffer)
 	if err != nil {
 		fmt.Println(err.Error())
