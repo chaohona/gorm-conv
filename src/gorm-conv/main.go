@@ -16,11 +16,15 @@ var (
 	cppoutpath = flag.String("cpppath", "", "cpp codes file out")
 	gooutpath  = flag.String("gopath", "", "cpp codes file out")
 	// 输出类型flatbuffers,还是protobuffers配置文件
-	fbtype   = flag.String("fb", "", "general flatbuffers files")
-	pbtype   = flag.String("pb", "", "general protobuffers files")
-	sqltype  = flag.String("sql", "", "general sql files")
-	codetype = flag.String("codetype", "client", "client codes or server codes")
+	fbtype       = flag.String("fb", "", "general flatbuffers files")
+	pbtype       = flag.String("pb", "", "general protobuffers files")
+	sqltype      = flag.String("sql", "", "general sql files")
+	codetype     = flag.String("codetype", "client", "client codes or server codes")
+	gopackage    = flag.String("gopackage", "gorm/gorm", "option go_package")
+	protoversion = flag.String("protoversion", "3", "protobuff files version, 2 or 3")
 )
+
+var proto_optional string = ""
 
 func usage() {
 	fmt.Fprintf(os.Stderr,
@@ -42,31 +46,63 @@ func main() {
 	if inputpath != nil {
 		fmt.Println(*inputpath)
 	}
-	if outputpath != nil {
+	if outputpath != nil && *outputpath != "" {
+		_, err := os.Stat(*outputpath)
+		if os.IsNotExist(err) {
+			if err = os.Mkdir(*outputpath, os.ModePerm); err != nil {
+				fmt.Println("make outputpath failed, path:", *outputpath, ", errinfo:", err)
+				return
+			}
+		}
 		fmt.Println(*outputpath)
 	}
 
-	fmt.Println("ggdb-conv begin to work.")
+	if cppoutpath != nil && *cppoutpath != "" {
+		_, err := os.Stat(*cppoutpath)
+		if os.IsNotExist(err) {
+			if err := os.Mkdir(*cppoutpath, os.ModePerm); err != nil {
+				fmt.Println("make outputpath failed, path:", *cppoutpath, ", errinfo:", err)
+				return
+			}
+		}
+		fmt.Println(*cppoutpath)
+	}
+
+	if gooutpath != nil && *gooutpath != "" {
+		_, err := os.Stat(*gooutpath)
+		if os.IsNotExist(err) {
+			if err := os.Mkdir(*gooutpath, os.ModePerm); err != nil {
+				fmt.Println("make outputpath failed, path:", *gooutpath, ", errinfo:", err)
+				return
+			}
+		}
+		fmt.Println(*gooutpath)
+	}
+
+	fmt.Println("gorm-conv begin to work.")
 	games, ret := ParseXmls(*inputpath)
 	if ret != 0 {
 		fmt.Println("parse xml failed.")
 		return
 	}
-	if sqltype != nil {
+	if sqltype != nil && *sqltype == "true" {
 		ret = GeneralSQLFiles(games, *outputpath)
 		if ret != 0 {
 			fmt.Println("generate sql file got error.")
 			return
 		}
 	}
-	if fbtype != nil {
+	if fbtype != nil && *fbtype == "true" {
 		/*ret = GeneralFBFiles(games, *outputpath)
 		if ret != 0 {
 			fmt.Println("generate fbs file got error.")
 			return
 		}*/
 	}
-	if pbtype != nil && *pbtype != "" {
+	if pbtype != nil && *pbtype == "true" {
+		if *protoversion == "2" {
+			proto_optional = "optional "
+		}
 		ret = GeneralPBFiles(games, *outputpath)
 		if ret != 0 {
 			fmt.Println("generate pb file got error.")

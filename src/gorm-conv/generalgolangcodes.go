@@ -60,7 +60,7 @@ func GeneralGolangCodes(games []XmlCfg, outpath string) int {
 	}()
 	err = f.Truncate(0)
 
-	f.WriteString(`package define
+	f.WriteString(`package gorm
 
 import (
 	"strings"
@@ -127,7 +127,7 @@ func GORM_GetTableName(tableId int32) string {
 	if tableId <= int32(GORM_PB_TABLE_INDEX_GORM_PB_TABLE_IDX_MIN__) || tableId >= int32(GORM_PB_TABLE_INDEX_GORM_PB_TABLE_IDX_MAX__) {
 		return 0, GORM_CODE_INVALID_FIELD
 	}
-	fieldId, ok := g_table_fieldname_to_id_map[tableId][strings.ToLower(fieldName)]
+	fieldId, ok := g_table_fieldname_to_id_map[tableId-1][strings.ToLower(fieldName)]
 	if !ok {
 		return 0, GORM_CODE_INVALID_FIELD
 	}

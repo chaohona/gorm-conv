@@ -170,9 +170,9 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table TableInfo, strsqllen strin
 	f.WriteString("        if (itr == columnMap.end())\n")
 	f.WriteString("            return GORM_ERROR;\n")
 	f.WriteString("        if (idx++ != 0)\n")
-	f.WriteString("            iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \",%s\", (char*)(c.c_str()));\n")
+	f.WriteString("            iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \",`%s`\", (char*)(c.c_str()));\n")
 	f.WriteString("        else\n")
-	f.WriteString("            iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \"%s\", (char*)(c.c_str()));\n")
+	f.WriteString("            iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`%s`\", (char*)(c.c_str()));\n")
 	f.WriteString("    }\n")
 
 	var snprintfstr string = "    iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, " + bigtable + "GETSQL_DEBUG_WHERE"
