@@ -25,7 +25,8 @@ func CPPFieldsMapPackBatchGetSQL(games []XmlCfg, f *os.File) int {
 			f.WriteString("#endif\n")
 			var tableIndex string = "0"
 			if table.SplitInfo.Num > 1 {
-				tableIndex = strconv.FormatInt(int64(table.SplitInfo.Num), 10)
+				tableIndex = "uiHashValue%"
+				tableIndex += strconv.FormatInt(int64(table.SplitInfo.Num), 10)
 			}
 			f.WriteString("        return GORM_PackGetSQL" + bigTable + "_ONE(mysql, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
 			f.WriteString("    }\n")
@@ -56,9 +57,10 @@ func CPPFieldsMapPackInsertTableSQL(games []XmlCfg, f *os.File) int {
 			f.WriteString("#endif\n")
 			var tableIndex string = "0"
 			if table.SplitInfo.Num > 1 {
-				tableIndex = strconv.FormatInt(int64(table.SplitInfo.Num), 10)
+				tableIndex = "uiHashValue%"
+				tableIndex += strconv.FormatInt(int64(table.SplitInfo.Num), 10)
 			}
-			f.WriteString("        return GORM_PackInsertSQL" + bigTable + "_ONE(mysql, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
+			f.WriteString("        return GORM_PackInsertSQL" + bigTable + "_ONE(pMySQLEvent, pMySQLEvent->m_pMySQL, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
 			f.WriteString("    }\n")
 		}
 	}
