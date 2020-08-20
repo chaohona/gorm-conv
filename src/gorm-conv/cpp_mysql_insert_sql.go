@@ -91,7 +91,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table TableInfo, f *os.File) in
 func CPPFieldsMapPackInsertSQL_ForTables_One(table TableInfo, sqlLen string, f *os.File) int {
 	f.WriteString("int GORM_PackInsertSQL")
 	f.WriteString(strings.ToUpper(table.Name))
-	f.WriteString("_One(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("_ONE(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString("    char *szSQLBegin = nullptr;\n")
 	f.WriteString("    int iSqlLen = " + sqlLen + ";\n")
@@ -136,7 +136,7 @@ func CPPFieldsMapPackInsertSQL_ForTables(games []XmlCfg, f *os.File) int {
 			f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
 			f.WriteString("#endif\n")
-			f.WriteString("        return GORM_PackInsertSQL" + BigTable + "_One(pMySQLEvent, mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
+			f.WriteString("        return GORM_PackInsertSQL" + BigTable + "_ONE(pMySQLEvent, mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")
 			f.WriteString("}\n")
@@ -148,5 +148,6 @@ func CPPFieldsMapPackInsertSQL_ForTables(games []XmlCfg, f *os.File) int {
 func CPPFieldsMapPackInsertSQL(games []XmlCfg, f *os.File) int {
 	CPPFieldsMapPackInsertSQL_ForTables(games, f)
 	CPPFields_GORM_PackSQL_TEMPLATE("Insert", games, f)
+	CPPFieldsMapPackInsertTableSQL(games, f)
 	return 0
 }

@@ -37,6 +37,8 @@ func CPPField_GolangType(colType string) string {
 		return "int32"
 	case "double":
 		return "floag64"
+	case "blob":
+		return "[]byte"
 	default:
 		{
 			return "string"
@@ -155,6 +157,10 @@ func GORM_GetTableName(tableId int32) string {
 	f.WriteString("func GORM_SetTableFieldStrValue(msg proto.Message, tableId int32, fieldId int32, value string) GORM_CODE {\n")
 	GORM_SetTableFieldValue(games, f, true)
 	f.WriteString("}\n")
+	// GORM_SetTableFieldBytesValue
+	f.WriteString("func GORM_SetTableFieldBytesValue(msg proto.Message, tableId int32, fieldId int32, value []byte) GORM_CODE {\n")
+	GORM_SetTableFieldValue(games, f, true)
+	f.WriteString("}\n")
 
 	// 8.GORM_GetFieldIntValueByID
 	f.WriteString("func GORM_GetFieldIntValueByID(msg proto.Message, tableId int32, fieldId int32) (int64, GORM_CODE) {\n")
@@ -171,6 +177,10 @@ func GORM_GetTableName(tableId int32) string {
 	// 11.GORM_GetFieldStrValueByID
 	f.WriteString("func GORM_GetFieldStrValueByID(msg proto.Message, tableId int32, fieldId int32) (string, GORM_CODE) {\n")
 	GORM_GetTableFieldValue(games, f, true, "string")
+	f.WriteString("}\n")
+	// GORM_GetFieldBytesValueByID
+	f.WriteString("func GORM_GetFieldBytesValueByID(msg proto.Message, tableId int32, fieldId int32) ([]byte, GORM_CODE) {\n")
+	GORM_GetTableFieldValue(games, f, true, "[]byte")
 	f.WriteString("}\n")
 
 	// 12.GORM_AddRecordToReqPbMsgDefine
@@ -214,11 +224,11 @@ func GORM_SetTableFieldValue(games []XmlCfg, f *os.File, bStr bool) {
 			for _, col := range table.TableColumns {
 				var colType string = CPPField_GolangType(col.Type)
 				if bStr {
-					if colType != "string" {
+					if colType != "string" && colType != "[]byte" {
 						continue
 					}
 				} else {
-					if colType == "string" {
+					if colType == "string" || colType == "[]byte" {
 						continue
 					}
 				}
@@ -246,11 +256,11 @@ func GORM_GetTableFieldValue(games []XmlCfg, f *os.File, bStr bool, inType strin
 			for _, col := range table.TableColumns {
 				var colType string = CPPField_GolangType(col.Type)
 				if bStr {
-					if colType != "string" {
+					if colType != "string" && colType != "[]byte" {
 						continue
 					}
 				} else {
-					if colType == "string" {
+					if colType == "string" || colType == "[]byte" {
 						continue
 					}
 				}
@@ -265,6 +275,6 @@ func GORM_GetTableFieldValue(games []XmlCfg, f *os.File, bStr bool, inType strin
 	if !bStr {
 		f.WriteString("    return  0, GORM_CODE_INVALID_FIELD\n")
 	} else {
-		f.WriteString("    return \"\", GORM_CODE_INVALID_FIELD\n")
+		f.WriteString("    return " + inType + "(\"\"), GORM_CODE_INVALID_FIELD\n")
 	}
 }

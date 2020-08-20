@@ -631,6 +631,8 @@ message GORM_PB_GET_RSP
 {
 	optional GORM_PB_Ret_Code 	RetCode = 1;
 	optional GORM_PB_TABLE 		Table 	= 2;
+	optional int32				NewInsert = 3;	// 结果是否是新插入的
+	optional uint64				LastInsertId = 4;	// 结果是否是新插入的
 }
 
 message GORM_PB_BATCH_GET_REQ 
