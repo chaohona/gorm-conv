@@ -154,7 +154,7 @@ func CPPFieldPackRedis_COL_FORMAT(colType string) string {
 		}
 	case "double":
 		{
-			DefineSQL = "%f"
+			DefineSQL = "%g"
 		}
 	default:
 		{
@@ -185,7 +185,7 @@ func CPPFieldPackSQL_COL_FORMAT(colType string) string {
 		}
 	case "double":
 		{
-			DefineSQL += "%f"
+			DefineSQL += "%g"
 		}
 	default:
 		{
