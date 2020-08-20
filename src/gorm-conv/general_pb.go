@@ -43,7 +43,7 @@ func GetPBString(c TableColumn) string {
 		}
 	case "blob":
 		{
-			return "string " + c.Name
+			return "bytes " + c.Name
 		}
 	}
 	return ""
@@ -420,7 +420,10 @@ option go_package = "`)
 // 此协议文件不需要变更，里面保存了GORM客户端与服务器通信的所需要的协议
 //gorm_tables_inc.proto包含所有表的定义
 import "gorm_pb_tables_inc.proto";
-
+`
+	f.WriteString(proto_string)
+	if gooutpath != nil && *gooutpath != "" {
+		proto_string = `
 
 enum GORM_CODE
 {
@@ -457,7 +460,50 @@ enum GORM_CODE
 	NO_VALUE           = -29; // 没有对应的值
 	INVALID_VALUE_TYPE = -30; // 无效的类型
 }
+`
+	} else {
+		proto_string = `
 
+enum GORM_CODE
+{
+	GORM_CODE_OK = 0;
+	
+	GORM_CODE_ERROR              = -1;
+	GORM_CODE_EAGAIN             = -2;
+	GORM_CODE_INVALID_CLIENT     = -3;
+	GORM_CODE_PART_FAILED        = -4; // 请求部分失败
+	GORM_CODE_INVALID_TABLE      = -5; // 无效的表
+	GORM_CODE_RESET              = -6; // 重复设置
+	GORM_CODE_TOO_MUCH_RECORD    = -7; // 太多record
+	GORM_CODE_INIT_RECORD        = -8;
+	GORM_CODE_INVALID_FIELD      = -9;  // 无效的field
+	GORM_CODE_PACK_REQ_ERROR     = -10; // 打包请求失败
+	GORM_CODE_REQ_NO_RECORDS     = -11; // 没有往请求中放入record
+	GORM_CODE_MULTI_TABLES       = -12; // 有多张表
+	GORM_CODE_RSP_UNPACK_FAILED  = -13; // 响应解包失败
+	GORM_CODE_CONN_CLOSED        = -14; // 连接已经关闭了
+	GORM_CODE_CONN_FAILED        = -15; // 连接RetErr服务器失败
+	GORM_CODE_DB_ERROR           = -16; // 数据库发生错误,此时需要根据db信息获取进一步错误信息
+	GORM_CODE_NO_DB              = -17; // 没有找到db
+	GORM_CODE_REQ_MSG_ERROR      = -18; // 请求信息错误
+	GORM_CODE_NOT_SUPPORT_CMD    = -19; // 不支持的命令
+	GORM_CODE_UNPACK_REQ         = -20; // 解压缩请求信息出错
+	GORM_CODE_PACK_RSP_ERROR     = -21; // 压缩响应消息出错
+	GORM_CODE_REQ_MSG_NO_HEADER  = -22; // 请求没有设置消息头
+	GORM_CODE_REQ_NEED_SPLIT     = -23; // split信息没有带全
+	GORM_CODE_REQ_TOO_LARGE      = -24; // 请求数据太大
+	GORM_CODE_DB_2_STRUCT_ERROR  = -25; // db结果转换到struct出错，一般都是版本对不上导致
+	GORM_CODE_NO_MORE_RECORD     = -26; // 没有更多record
+	GORM_CODE_VERSION_NOT_SET    = -27; // 没有设置版本号
+	GORM_CODE_CACHE_ERROR        = -28; // 操作缓存错误
+	GORM_CODE_NO_VALUE           = -29; // 没有对应的值
+	GORM_CODE_INVALID_VALUE_TYPE = -30; // 无效的类型
+}
+`
+	}
+
+	f.WriteString(proto_string)
+	proto_string = `
 enum GORM_CMD
 {
 	GORM_CMD_INVALID = 0;
@@ -511,9 +557,9 @@ message GORM_PB_REQ_HEADER
 	optional int32   				TableId	 = 1;	// 表的类型
 	optional int32    				BusinessID = 2;	// 串行化ID
 	optional int32 					VerPolice = 3;	// 版本校验规则
-	optional uint32 					ReqFlag  = 4;	// 参见GORM_CMD_FLAG_XXX
-	optional string					FieldMode	= 5;
-	optional GORM_PB_SPLIT_INFO 		SplitTableInfo = 6;	// 分库分表信息
+	optional uint32 				ReqFlag  = 4;	// 参见GORM_CMD_FLAG_XXX
+	optional bytes					FieldMode	= 5;
+	optional GORM_PB_SPLIT_INFO 	SplitTableInfo = 6;	// 分库分表信息
 }
 
 message GORM_PB_HEART_REQ
