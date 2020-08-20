@@ -146,7 +146,7 @@ func CPPFieldPackRedis_COL_FORMAT(colType string) string {
 		}
 	case "int64":
 		{
-			DefineSQL = "%ll"
+			DefineSQL = "%lld"
 		}
 	case "uint64":
 		{
@@ -177,7 +177,7 @@ func CPPFieldPackSQL_COL_FORMAT(colType string) string {
 		}
 	case "int64":
 		{
-			DefineSQL += "%ll"
+			DefineSQL += "%lld"
 		}
 	case "uint64":
 		{

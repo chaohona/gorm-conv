@@ -580,6 +580,7 @@ message GORM_PB_GET_REQ
 {
 	optional GORM_PB_REQ_HEADER 	Header 	= 1;
 	optional GORM_PB_TABLE		Table	= 2;
+	optional int32	GetFlag = 3;
 }
 
 message GORM_PB_GET_RSP
