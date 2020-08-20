@@ -517,9 +517,7 @@ enum GORM_CMD
     GORM_CMD_BATCH_GET          = 8;    // 批量查询请求
     GORM_CMD_GET_BY_PARTKEY     = 9;    // 部分key查询请求
     GORM_CMD_UPDATE             = 10;    // 更新请求
-    GORM_CMD_GET_BY_NON_PRIMARY_KEY = 11;   // 通过非主键批量获取
-    // 协议编号不能超过255
-    GORM_CMD_MAX                = 255;     
+    GORM_CMD_GET_BY_NON_PRIMARY_KEY = 11;   // 通过非主键批量获取 
 }
 
 message GORM_PB_SPLIT_INFO
