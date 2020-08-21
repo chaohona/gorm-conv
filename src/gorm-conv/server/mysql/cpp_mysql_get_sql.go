@@ -1,18 +1,20 @@
-package main
+package mysql
 
 import (
 	"fmt"
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPFieldsMapPackGetSQL_ForTables_DefineSQL_Where(table TableInfo) (string, int) {
+func CPPFieldsMapPackGetSQL_ForTables_DefineSQL_Where(table common.TableInfo) (string, int) {
 	var DefineSQL string
 	DefineSQL += " from "
 	DefineSQL += table.Name
 	DefineSQL += "_%d where "
-	var splitInfo SplitInfo = table.SplitInfo
+	var splitInfo common.SplitInfo = table.SplitInfo
 	if splitInfo.Columns == "" {
 		DefineSQL += "\""
 		return DefineSQL, 0
@@ -31,7 +33,7 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL_Where(table TableInfo) (string, 
 			}
 			DefineSQL += " `"
 			DefineSQL += preCol.Name + "`="
-			DefineSQL += CPPFieldPackSQL_COL_FORMAT(preCol.Type)
+			DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
 		}
 		if !match {
 			fmt.Println("invalid splitinfo, table:", table.Name)
@@ -43,7 +45,7 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL_Where(table TableInfo) (string, 
 	return DefineSQL, 0
 }
 
-func CPPFieldsMapPackGetSQL_ForTables_DefineSQL(table TableInfo) (string, int) {
+func CPPFieldsMapPackGetSQL_ForTables_DefineSQL(table common.TableInfo) (string, int) {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "GETSQL \"select "
 	for idx, c := range table.TableColumns {
 		if idx != 0 {
@@ -62,7 +64,7 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL(table TableInfo) (string, int) {
 	return DefineSQL, 0
 }
 
-func CPPFieldsMapPackGetSQL_ForTables_One(table TableInfo, strsqllen string, f *os.File) int {
+func CPPFieldsMapPackGetSQL_ForTables_One(table common.TableInfo, strsqllen string, f *os.File) int {
 	var bigtable string = strings.ToUpper(table.Name)
 	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE(MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
@@ -81,7 +83,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One(table TableInfo, strsqllen string, f *
 			if col.Name != cname {
 				continue
 			}
-			var colType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+			var colType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 			f.WriteString("    const ")
 			f.WriteString(colType)
 			f.WriteString(" ")
@@ -132,7 +134,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One(table TableInfo, strsqllen string, f *
 	return 0
 }
 
-func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table TableInfo, strsqllen string, f *os.File) int {
+func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table common.TableInfo, strsqllen string, f *os.File) int {
 	where, _ := CPPFieldsMapPackGetSQL_ForTables_DefineSQL_Where(table)
 	var bigtable string = strings.ToUpper(table.Name)
 	f.WriteString("#define " + bigtable + "GETSQL_DEBUG_WHERE \"" + where + "\n")
@@ -182,7 +184,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table TableInfo, strsqllen strin
 			if col.Name != cname {
 				continue
 			}
-			var colType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+			var colType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 			f.WriteString("    const ")
 			f.WriteString(colType)
 			f.WriteString(" ")
@@ -227,8 +229,8 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table TableInfo, strsqllen strin
 	return 0
 }
 
-func CPPFieldsMapPackGetSQL_ForTables_CheckSplitInfo(table TableInfo, f *os.File) int {
-	var splitInfo SplitInfo = table.SplitInfo
+func CPPFieldsMapPackGetSQL_ForTables_CheckSplitInfo(table common.TableInfo, f *os.File) int {
+	var splitInfo common.SplitInfo = table.SplitInfo
 	for _, cname := range splitInfo.SplitCols {
 		f.WriteString("    bMatch = false;\n")
 		f.WriteString("    for(int i=0; i<vFields.size(); i++)\n")
@@ -245,7 +247,7 @@ func CPPFieldsMapPackGetSQL_ForTables_CheckSplitInfo(table TableInfo, f *os.File
 	return 0
 }
 
-func CPPFieldsMapPackGetSQL_ForTables(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackGetSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			var DefineSQL string
@@ -300,7 +302,7 @@ func CPPFieldsMapPackGetSQL_ForTables(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapPackGetSQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackGetSQL(games []common.XmlCfg, f *os.File) int {
 	CPPFieldsMapPackGetSQL_ForTables(games, f)
 	CPPFields_GORM_PackSQL_TEMPLATE("Get", games, f)
 	return 0

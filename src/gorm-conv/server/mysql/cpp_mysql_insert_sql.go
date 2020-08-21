@@ -1,12 +1,14 @@
-package main
+package mysql
 
 import (
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPFieldsMapPackInsertSQL_ForTables_DefineSQL(table TableInfo) string {
+func CPPFieldsMapPackInsertSQL_ForTables_DefineSQL(table common.TableInfo) string {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "INSERTSQL \"insert into "
 	DefineSQL += table.Name
 	DefineSQL += "_%d("
@@ -25,20 +27,20 @@ func CPPFieldsMapPackInsertSQL_ForTables_DefineSQL(table TableInfo) string {
 		if idx != 0 {
 			DefineSQL += ", "
 		}
-		DefineSQL += CPPFieldPackSQL_COL_FORMAT(col.Type)
+		DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
 	}
 	DefineSQL += ");\"\n"
 	return DefineSQL
 }
 
-func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table common.TableInfo, f *os.File) int {
 	var len_str string = "    int iLen = iSqlLen + 128"
 	var sprintf_str string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "INSERTSQL, iTableIndex"
 	var release_str string = ""
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name
 		f.WriteString("\n")
-		var cppType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		f.WriteString("    const " + cppType + " ")
 		if cppType == "string" {
 			f.WriteString("&")
@@ -88,7 +90,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table TableInfo, f *os.File) in
 	return 0
 }
 
-func CPPFieldsMapPackInsertSQL_ForTables_One(table TableInfo, sqlLen string, f *os.File) int {
+func CPPFieldsMapPackInsertSQL_ForTables_One(table common.TableInfo, sqlLen string, f *os.File) int {
 	f.WriteString("int GORM_PackInsertSQL")
 	f.WriteString(strings.ToUpper(table.Name))
 	f.WriteString("_ONE(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
@@ -107,7 +109,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_One(table TableInfo, sqlLen string, f *
 	return 0
 }
 
-func CPPFieldsMapPackInsertSQL_ForTables(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackInsertSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			var DefineSQL string = CPPFieldsMapPackInsertSQL_ForTables_DefineSQL(table)
@@ -145,7 +147,7 @@ func CPPFieldsMapPackInsertSQL_ForTables(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapPackInsertSQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackInsertSQL(games []common.XmlCfg, f *os.File) int {
 	CPPFieldsMapPackInsertSQL_ForTables(games, f)
 	CPPFields_GORM_PackSQL_TEMPLATE("Insert", games, f)
 	CPPFieldsMapPackInsertTableSQL(games, f)

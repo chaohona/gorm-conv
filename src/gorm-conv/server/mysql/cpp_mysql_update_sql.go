@@ -1,18 +1,20 @@
-package main
+package mysql
 
 import (
 	"fmt"
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPFieldsMapPackUpdateSQL_ForTables_DefineSQL(table TableInfo) (string, string, int) {
+func CPPFieldsMapPackUpdateSQL_ForTables_DefineSQL(table common.TableInfo) (string, string, int) {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "UPDATESQL \"update "
 	DefineSQL += table.Name
 	DefineSQL += "_%d set "
 	var WhereSQL string = "#define " + strings.ToUpper(table.Name) + "UPDATEWHERESQL \" where"
-	var splitInfo SplitInfo = table.SplitInfo
+	var splitInfo common.SplitInfo = table.SplitInfo
 	if splitInfo.Columns == "" {
 		return "", "", -1
 	}
@@ -31,7 +33,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_DefineSQL(table TableInfo) (string, str
 
 			WhereSQL += " `"
 			WhereSQL += preCol.Name + "`="
-			WhereSQL += CPPFieldPackSQL_COL_FORMAT(preCol.Type)
+			WhereSQL += cpp.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
 		}
 		if !match {
 			fmt.Println("invalid splitinfo, table:", table.Name)
@@ -45,8 +47,8 @@ func CPPFieldsMapPackUpdateSQL_ForTables_DefineSQL(table TableInfo) (string, str
 	return DefineSQL, WhereSQL, 0
 }
 
-func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL_FORVARIABLE(table TableInfo, col TableColumn, f *os.File) int {
-	var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL_FORVARIABLE(table common.TableInfo, col common.TableColumn, f *os.File) int {
+	var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 
 	if vtype != "string" {
 		f.WriteString("    const " + vtype + " " + table.Name + "_" + col.Name + " = table_" + table.Name + "." + col.Name + "();\n")
@@ -70,8 +72,8 @@ func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL_FORVARIABLE(table TableInfo, co
 	return 0
 }
 
-func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
-	var splitInfo SplitInfo = table.SplitInfo
+func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL(table common.TableInfo, f *os.File) int {
+	var splitInfo common.SplitInfo = table.SplitInfo
 	for _, cname := range splitInfo.SplitCols {
 		f.WriteString("    bMatch = false;\n")
 		f.WriteString("    for(int i=0; i<vFields.size(); i++)\n")
@@ -97,13 +99,13 @@ func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL(table TableInfo, f *os.File) in
 	return 0
 }
 
-func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table common.TableInfo, f *os.File) int {
 	f.WriteString("\n")
 	f.WriteString("    int iWhereLen = iSqlLen + 128 ")
 	var vtype string
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		vtype = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		vtype = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			f.WriteString(" + len_" + table.Name + "_" + col.Name)
 		} else {
@@ -122,7 +124,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table TableInfo, f *os.File) i
 			if colname != preCol.Name {
 				continue
 			}
-			vtype = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
+			vtype = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
 			if vtype == "string" {
 				f.WriteString(", sz_" + table.Name + "_" + preCol.Name)
 			} else {
@@ -137,12 +139,12 @@ func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table TableInfo, f *os.File) i
 	return 0
 }
 
-func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table common.TableInfo, f *os.File) int {
 	var upTableName string = strings.ToUpper(table.Name)
 	f.WriteString("    int iLen = iSqlLen + 128 + pMsg->ByteSizeLong() ")
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			f.WriteString("+ len_" + table.Name + "_" + col.Name)
 		} else {
@@ -186,9 +188,9 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table TableInfo, f *os.File) int
 		f.WriteString("        {\n")
 		f.WriteString("            if (iSetField != 1)\n")
 		f.WriteString("                iDataLen = snprintf(szSQLBegin, iLen, \", `" + col.Name + "`=")
-		f.WriteString(CPPFieldPackSQL_COL_FORMAT(col.Type))
+		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", ")
-		var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			f.WriteString("sz_")
 		}
@@ -196,7 +198,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table TableInfo, f *os.File) int
 		f.WriteString(");\n")
 		f.WriteString("            else\n")
 		f.WriteString("                iDataLen = snprintf(szSQLBegin, iLen, \"`" + col.Name + "`=")
-		f.WriteString(CPPFieldPackSQL_COL_FORMAT(col.Type))
+		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", ")
 		if vtype == "string" {
 			f.WriteString("sz_")
@@ -224,7 +226,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table TableInfo, f *os.File) int
 	return 0
 }
 
-func CPPFieldsMapPackUpdateSQL_ForTables(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackUpdateSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			var DefineSQL, WhereSQL string
@@ -280,7 +282,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables(games []XmlCfg, f *os.File) int {
 
 			// 释放buffer
 			for _, col := range table.TableColumns {
-				var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+				var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 				if vtype != "string" {
 					continue
 				}
@@ -300,7 +302,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapPackUpdateSQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackUpdateSQL(games []common.XmlCfg, f *os.File) int {
 	CPPFieldsMapPackUpdateSQL_ForTables(games, f)
 	CPPFields_GORM_PackSQL_TEMPLATE("Update", games, f)
 	return 0

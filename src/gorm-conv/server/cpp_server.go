@@ -1,13 +1,15 @@
-package main
+package server
 
 import (
 	"fmt"
+	"gorm-conv/common"
+	"gorm-conv/server/mysql"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPGeneralSplitTableName(games []XmlCfg, f *os.File) int {
+func CPPGeneralSplitTableName(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("int GORM_GetSplitTableName(int iTableId, uint32 uiHashCode, char *szOutTableName, int iInBuffLen, int &iUsedBuffLen)\n")
 	f.WriteString("{\n")
 	f.WriteString("    switch (iTableId)\n")
@@ -35,7 +37,7 @@ func CPPGeneralSplitTableName(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func gorm_general_mysql_define(games []XmlCfg, outpath string) int {
+func gorm_general_mysql_define(games []common.XmlCfg, outpath string) int {
 	outfile := outpath + "server/gorm_server_table_define.cc"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
@@ -66,43 +68,43 @@ using namespace gorm;
 		return -1
 	}
 
-	if 0 != CPPFieldsMapPack_VERSION_SQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPack_VERSION_SQL(games, f) {
 		fmt.Println("CPPFieldsMapPack_VERSION_SQL failed.")
 		return -1
 	}
-	if 0 != CPPFieldsMapPackInsertSQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPackInsertSQL(games, f) {
 		fmt.Println("CPPFieldsMapPackInsertSQL failed.")
 		return -1
 	}
-	if 0 != CPPFieldsMapPackGetSQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPackGetSQL(games, f) {
 		fmt.Println("CPPFieldsMapPackGetSQL failed.")
 		return -1
 	}
-	if 0 != CPPFieldsMapPackDeleteSQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPackDeleteSQL(games, f) {
 		fmt.Println("CPPFieldsMapPackGetSQL failed.")
 		return -1
 	}
-	if 0 != CPPFieldsMapPackUpdateSQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPackUpdateSQL(games, f) {
 		fmt.Println("CPPFieldsMapPackUpdateSQL failed.")
 		return -1
 	}
-	if 0 != CPPFieldsMapPackIncreaseSQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPackIncreaseSQL(games, f) {
 		fmt.Println("CPPFieldsMapPackIncreaseSQL failed.")
 		return -1
 	}
-	if 0 != CPPFieldsMapPackReplaceSQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPackReplaceSQL(games, f) {
 		fmt.Println("CPPFieldsMapPackReplaceSQL failed.")
 		return -1
 	}
-	if 0 != CPPFieldsMapPackBatchGetSQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPackBatchGetSQL(games, f) {
 		fmt.Println("CPPFieldsMapPackBatchGetSQL failed.")
 		return -1
 	}
-	if 0 != CPPFieldsMapPackGetByNonPrimaryKeySQL(games, f) {
+	if 0 != mysql.CPPFieldsMapPackGetByNonPrimaryKeySQL(games, f) {
 		fmt.Println("CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables failed.")
 		return -1
 	}
-	if 0 != GORM_MySQLResult2PbMSG(games, f) {
+	if 0 != mysql.GORM_MySQLResult2PbMSG(games, f) {
 		fmt.Println("GORM_MySQLResult2PbMSG failed.")
 		return -1
 	}
@@ -111,7 +113,7 @@ using namespace gorm;
 }
 
 // 生成gorm_server专用的代码文件
-func gorm_server_codes_files(games []XmlCfg, outpath string) int {
+func GORM_ServerCodesFilesGeneral(games []common.XmlCfg, outpath string) int {
 	/*if 0 != CppRedisDefine(games, outpath) {
 		fmt.Println("general cpp codes file gorm_redis_define.cc failed:", outpath)
 		return -1

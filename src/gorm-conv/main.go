@@ -5,105 +5,86 @@ import (
 	"fmt"
 	"os"
 
+	"gorm-conv/common"
+	"gorm-conv/cpp"
+	"gorm-conv/golang"
+	"gorm-conv/protobuf"
+	"gorm-conv/server"
+	"gorm-conv/sql"
+
 	"github.com/golang/glog"
 )
 
-var (
-	h = flag.Bool("h", false, "get helper")
-	// 输入xml文件
-	inputpath  = flag.String("I", "./", "input xml files path")
-	outputpath = flag.String("O", "./", "output files path")
-	cppoutpath = flag.String("cpppath", "", "cpp codes file out")
-	gooutpath  = flag.String("gopath", "", "cpp codes file out")
-	// 输出类型flatbuffers,还是protobuffers配置文件
-	fbtype       = flag.String("fb", "", "general flatbuffers files")
-	pbtype       = flag.String("pb", "", "general protobuffers files")
-	sqltype      = flag.String("sql", "", "general sql files")
-	codetype     = flag.String("codetype", "client", "client codes or server codes")
-	gopackage    = flag.String("gopackage", "gorm/gorm", "option go_package")
-	protoversion = flag.String("protoversion", "3", "protobuff files version, 2 or 3")
-)
-
-var proto_optional string = ""
-
-func usage() {
-	fmt.Fprintf(os.Stderr,
-		`Usage: ggdb-conv [-h] [-input xmlconfigfile] 
-	
-	Options:
-	`)
-	flag.PrintDefaults()
-}
-
 func main() {
-	flag.Parse()
-	if h != nil && *h {
+	common.InitFlag()
+
+	if common.H != nil && *common.H {
 		flag.Usage()
 		return
 	}
 	defer glog.Flush()
 
-	if inputpath != nil {
-		fmt.Println(*inputpath)
+	if common.Inputpath != nil {
+		fmt.Println("config path >> ", *common.Inputpath)
 	}
-	if outputpath != nil && *outputpath != "" {
-		_, err := os.Stat(*outputpath)
+	if common.Outputpath != nil && *common.Outputpath != "" {
+		_, err := os.Stat(*common.Outputpath)
 		if os.IsNotExist(err) {
-			if err = os.Mkdir(*outputpath, os.ModePerm); err != nil {
-				fmt.Println("make outputpath failed, path:", *outputpath, ", errinfo:", err)
+			if err = os.Mkdir(*common.Outputpath, os.ModePerm); err != nil {
+				fmt.Println("make outputpath failed, path:", *common.Outputpath, ", errinfo:", err)
 				return
 			}
 		}
-		fmt.Println(*outputpath)
-	}
-
-	if cppoutpath != nil && *cppoutpath != "" {
-		_, err := os.Stat(*cppoutpath)
-		if os.IsNotExist(err) {
-			if err := os.Mkdir(*cppoutpath, os.ModePerm); err != nil {
-				fmt.Println("make outputpath failed, path:", *cppoutpath, ", errinfo:", err)
-				return
-			}
-		}
-		fmt.Println(*cppoutpath)
+		fmt.Println(*common.Outputpath)
 	}
 
-	if gooutpath != nil && *gooutpath != "" {
-		_, err := os.Stat(*gooutpath)
+	if common.Cppoutpath != nil && *common.Cppoutpath != "" {
+		_, err := os.Stat(*common.Cppoutpath)
 		if os.IsNotExist(err) {
-			if err := os.Mkdir(*gooutpath, os.ModePerm); err != nil {
-				fmt.Println("make outputpath failed, path:", *gooutpath, ", errinfo:", err)
+			if err := os.Mkdir(*common.Cppoutpath, os.ModePerm); err != nil {
+				fmt.Println("make outputpath failed, path:", *common.Cppoutpath, ", errinfo:", err)
 				return
 			}
 		}
-		fmt.Println(*gooutpath)
+		fmt.Println(*common.Cppoutpath)
+	}
+
+	if common.Gooutpath != nil && *common.Gooutpath != "" {
+		_, err := os.Stat(*common.Gooutpath)
+		if os.IsNotExist(err) {
+			if err := os.Mkdir(*common.Gooutpath, os.ModePerm); err != nil {
+				fmt.Println("make outputpath failed, path:", *common.Gooutpath, ", errinfo:", err)
+				return
+			}
+		}
+		fmt.Println(*common.Gooutpath)
 	}
 
 	fmt.Println("gorm-conv begin to work.")
-	games, ret := ParseXmls(*inputpath)
+	games, ret := common.ParseXmls(*common.Inputpath)
 	if ret != 0 {
 		fmt.Println("parse xml failed.")
 		return
 	}
-	if sqltype != nil && *sqltype == "true" {
-		ret = GeneralSQLFiles(games, *outputpath)
+	if common.Sqltype != nil && *common.Sqltype == "true" {
+		ret = sql.GeneralSQLFiles(games, *common.Outputpath)
 		if ret != 0 {
 			fmt.Println("generate sql file got error.")
 			return
 		}
 	}
-	if fbtype != nil && *fbtype == "true" {
-		/*ret = GeneralFBFiles(games, *outputpath)
+	if common.Fbtype != nil && *common.Fbtype == "true" {
+		/*ret = flatbuffers.GeneralFBFiles(games, *outputpath)
 		if ret != 0 {
 			fmt.Println("generate fbs file got error.")
 			return
 		}*/
 	}
-	if pbtype != nil && *pbtype == "true" {
-		if *protoversion == "2" {
-			proto_optional = "optional "
+	if common.Pbtype != nil && *common.Pbtype == "true" {
+		if *common.Protoversion == "2" {
+			common.Proto_optional = "optional "
 		}
-		ret = GeneralPBFiles(games, *outputpath)
+		ret = protobuf.GeneralPBFiles(games, *common.Outputpath)
 		if ret != 0 {
 			fmt.Println("generate pb file got error.")
 			return
@@ -111,19 +92,25 @@ func main() {
 		fmt.Println("generate pb files success")
 	}
 	var bServerCodes bool = false
-	if codetype != nil && *codetype == "server" {
+	if common.Codetype != nil && *common.Codetype == "server" {
 		bServerCodes = true
 	}
 	// 自动生成代码
-	if cppoutpath != nil && *cppoutpath != "" {
-		ret = GeneralCppCodes(games, *cppoutpath, bServerCodes)
+	if common.Cppoutpath != nil && *common.Cppoutpath != "" {
+		ret = cpp.GeneralCppCodes(games, *common.Cppoutpath)
 		if ret != 0 {
 			fmt.Println("generate cpp codes got error.")
 			return
 		}
 	}
-	if gooutpath != nil && *gooutpath != "" {
-		ret = GeneralGolangCodes(games, *gooutpath)
+	if bServerCodes && common.Cppoutpath != nil && *common.Cppoutpath != "" {
+		if 0 != server.GORM_ServerCodesFilesGeneral(games, *common.Cppoutpath) {
+			fmt.Println("gorm_server_codes_files failed.")
+			return
+		}
+	}
+	if common.Gooutpath != nil && *common.Gooutpath != "" {
+		ret = golang.GeneralGolangCodes(games, *common.Gooutpath)
 		if ret != 0 {
 			fmt.Println("general golang codes got error.")
 			return

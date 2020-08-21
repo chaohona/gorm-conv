@@ -1,13 +1,14 @@
-package main
+package cpp
 
 // 生成gorm_tables.h
 
 import (
 	"fmt"
+	"gorm-conv/common"
 	"os"
 )
 
-func CppGormTables_H(games []XmlCfg, outpath string) int {
+func CppGormTables_H(games []common.XmlCfg, outpath string) int {
 	outfile := outpath + "gorm_tables.h"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {

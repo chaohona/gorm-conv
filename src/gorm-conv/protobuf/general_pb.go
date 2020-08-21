@@ -1,13 +1,14 @@
-package main
+package protobuf
 
 import (
 	"fmt"
+	"gorm-conv/common"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func GetPBString(c TableColumn) string {
+func GetPBString(c common.TableColumn) string {
 	switch c.Type {
 	case "double":
 		{
@@ -49,7 +50,7 @@ func GetPBString(c TableColumn) string {
 	return ""
 }
 
-func OutPutPBTable(table TableInfo, f *os.File) int {
+func OutPutPBTable(table common.TableInfo, f *os.File) int {
 	/*version := "    fixed64	version = 1;\n"
 	_, err := f.WriteString(version)
 	if err != nil {
@@ -64,7 +65,7 @@ func OutPutPBTable(table TableInfo, f *os.File) int {
 			fmt.Println("general pb file failed, table:", table.Name, ", column:", c.Name)
 			return -1
 		}
-		str := "    " + proto_optional + pbStr + " = "
+		str := "    " + common.Proto_optional + pbStr + " = "
 		str += strconv.FormatInt(index, 10)
 		str += ";\n"
 		_, err := f.WriteString(str)
@@ -76,7 +77,7 @@ func OutPutPBTable(table TableInfo, f *os.File) int {
 	return 0
 }
 
-func GeneralPBFile(game XmlCfg, outpath string) int {
+func GeneralPBFile(game common.XmlCfg, outpath string) int {
 	fileLen := len(game.File)
 	outfile := outpath + "/" + game.File[:fileLen-4] + ".proto"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
@@ -91,9 +92,9 @@ func GeneralPBFile(game XmlCfg, outpath string) int {
 		fmt.Println(err.Error())
 	}
 	// 1、输出开头
-	f.WriteString("syntax = \"proto" + *protoversion + "\";\n")
+	f.WriteString("syntax = \"proto" + *common.Protoversion + "\";\n")
 	f.WriteString("package gorm;\n")
-	f.WriteString("option go_package = \"" + *gopackage + "\";\n")
+	f.WriteString("option go_package = \"" + *common.Gopackage + "\";\n")
 	if err != nil {
 		fmt.Println(err.Error())
 		return -1
@@ -131,7 +132,7 @@ func GeneralPBFile(game XmlCfg, outpath string) int {
 	return 0
 }
 
-func GeneralPBColumnIndex(games []XmlCfg, f *os.File) int {
+func GeneralPBColumnIndex(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			var colIndex int64 = 0
@@ -176,7 +177,7 @@ func GeneralPBColumnIndex(games []XmlCfg, f *os.File) int {
 }
 
 //
-func GeneralTablesInc(games []XmlCfg, outpath string) int {
+func GeneralTablesInc(games []common.XmlCfg, outpath string) int {
 	outfile := outpath + "gorm_pb_tables_inc.proto"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
@@ -190,9 +191,9 @@ func GeneralTablesInc(games []XmlCfg, outpath string) int {
 		fmt.Println(err.Error())
 		return -1
 	}
-	f.WriteString("syntax = \"proto" + *protoversion + "\";\n")
+	f.WriteString("syntax = \"proto" + *common.Protoversion + "\";\n")
 	f.WriteString("package gorm;\n")
-	f.WriteString("option go_package = \"" + *gopackage + "\";\n")
+	f.WriteString("option go_package = \"" + *common.Gopackage + "\";\n")
 	if err != nil {
 		fmt.Println(err.Error())
 		return -1
@@ -292,7 +293,7 @@ message GORM_PB_COLUMN
 }
 
 `
-	if *protoversion == "3" {
+	if *common.Protoversion == "3" {
 		columns = strings.Replace(columns, "optional ", "", -1)
 	}
 	f.WriteString(columns)
@@ -317,7 +318,7 @@ message GORM_PB_CUSTEM_COLUMNS
 	optional int32 TableId = 1;
 	optional GORM_PB_CUSTEM_COLUMNS	custom_columns = 2;
 `
-	if *protoversion == "3" {
+	if *common.Protoversion == "3" {
 		table = strings.Replace(table, "optional ", "", -1)
 	}
 	_, err = f.WriteString(table)
@@ -331,7 +332,7 @@ message GORM_PB_CUSTEM_COLUMNS
 		for _, table := range game.DB.TableList {
 			//GORM_PB_Table_account account = 1;
 			tableIndx += 1
-			out := "	" + proto_optional + " GORM_PB_Table_" + table.Name + " " + table.Name + " = "
+			out := "	" + common.Proto_optional + " GORM_PB_Table_" + table.Name + " " + table.Name + " = "
 			out += strconv.FormatInt(int64(tableIndx), 10)
 			_, err = f.WriteString(out + ";\n")
 			if err != nil {
@@ -385,7 +386,7 @@ message GORM_PB_CUSTEM_COLUMNS
 	return 0
 }
 
-func GeneralPBFiles(games []XmlCfg, outpath string) int {
+func GeneralPBFiles(games []common.XmlCfg, outpath string) int {
 	if 0 != GeneralTablesInc(games, outpath) {
 		fmt.Println("general tables inc proto file failed.")
 		return -1
@@ -409,11 +410,11 @@ func GeneragePbProtoFile(outpath string) int {
 	defer f.Close()
 
 	f.Truncate(0)
-	f.WriteString("syntax = \"proto" + *protoversion + "\";\n")
+	f.WriteString("syntax = \"proto" + *common.Protoversion + "\";\n")
 	f.WriteString(`package gorm;
 
 option go_package = "`)
-	f.WriteString(*gopackage)
+	f.WriteString(*common.Gopackage)
 	f.WriteString("\";\n")
 	var proto_string string = `
 
@@ -422,7 +423,7 @@ option go_package = "`)
 import "gorm_pb_tables_inc.proto";
 `
 	f.WriteString(proto_string)
-	if gooutpath != nil && *gooutpath != "" {
+	if common.Gooutpath != nil && *common.Gooutpath != "" {
 		proto_string = `
 
 enum GORM_CODE
@@ -698,7 +699,7 @@ message GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP
 	repeated GORM_PB_TABLE 	Tables 	= 2;
 }
 `
-	if *protoversion == "3" {
+	if *common.Protoversion == "3" {
 		proto_string = strings.Replace(proto_string, "optional ", "", -1)
 	}
 	f.WriteString(proto_string)

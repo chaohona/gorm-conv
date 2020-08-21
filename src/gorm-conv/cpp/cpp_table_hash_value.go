@@ -1,12 +1,13 @@
-package main
+package cpp
 
 import (
+	"gorm-conv/common"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func GORM_TableHash(games []XmlCfg, f *os.File) int {
+func GORM_TableHash(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("uint32 GORM_TableHash(int iTableId, const GORM_PB_TABLE &pbTable)\n")
 	f.WriteString("{\n")
 	f.WriteString("    switch (iTableId)\n")

@@ -1,11 +1,12 @@
-package main
+package flatbuffers
 
 import (
 	"fmt"
+	"gorm-conv/common"
 	"os"
 )
 
-func GetFBString(c TableColumn) string {
+func GetFBString(c common.TableColumn) string {
 	switch c.Type {
 	case "int":
 		return c.Name + ":int;"
@@ -19,7 +20,7 @@ func GetFBString(c TableColumn) string {
 	return ""
 }
 
-func OutPutFB(table TableInfo, f *os.File) int {
+func OutPutFB(table common.TableInfo, f *os.File) int {
 	// 1、输出头
 	/*
 		table GORM_Table_account{
@@ -243,7 +244,7 @@ root_type GORM_FB_MSG;
 	return 0
 }
 
-func GeneralFBFile(game XmlCfg, outpath string) int {
+func GeneralFBFile(game common.XmlCfg, outpath string) int {
 	fileLen := len(game.File)
 	outfile := outpath + "/" + game.File[:fileLen-4] + ".fbs"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
@@ -314,7 +315,7 @@ func GeneralFBFile(game XmlCfg, outpath string) int {
 	return 0
 }
 
-func GeneralFBFiles(games []XmlCfg, outpath string) int {
+func GeneralFBFiles(games []common.XmlCfg, outpath string) int {
 	for _, game := range games {
 		if 0 != GeneralFBFile(game, outpath) {
 			return -1

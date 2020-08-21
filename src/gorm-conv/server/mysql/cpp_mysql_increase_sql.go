@@ -1,18 +1,20 @@
-package main
+package mysql
 
 import (
 	"fmt"
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table TableInfo) (string, string, int) {
+func CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table common.TableInfo) (string, string, int) {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "INCREASESQL \"update "
 	DefineSQL += table.Name
 	DefineSQL += "_%d set "
 	var WhereSQL string = "#define " + strings.ToUpper(table.Name) + "INCREASEWHERESQL \" where"
-	var splitInfo SplitInfo = table.SplitInfo
+	var splitInfo common.SplitInfo = table.SplitInfo
 	if splitInfo.Columns == "" {
 		return "", "", -1
 	}
@@ -31,7 +33,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table TableInfo) (string, s
 
 			WhereSQL += " `"
 			WhereSQL += preCol.Name + "`="
-			WhereSQL += CPPFieldPackSQL_COL_FORMAT(preCol.Type)
+			WhereSQL += cpp.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
 		}
 		if !match {
 			fmt.Println("invalid splitinfo, table:", table.Name)
@@ -45,9 +47,9 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table TableInfo) (string, s
 	return DefineSQL, WhereSQL, 0
 }
 
-func CPPFieldsMapPackIncreaseSQL_ForTables_COL2SQL_FORVARIABLE(table TableInfo, col TableColumn, f *os.File) int {
+func CPPFieldsMapPackIncreaseSQL_ForTables_COL2SQL_FORVARIABLE(table common.TableInfo, col common.TableColumn, f *os.File) int {
 	// 如果不在splitfields，并且是字符串类型则直接跳过
-	var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+	var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 	if vtype == "string" {
 		var bmatch bool = false
 		for _, c := range table.SplitInfo.SplitCols {
@@ -83,8 +85,8 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_COL2SQL_FORVARIABLE(table TableInfo, 
 	return 0
 }
 
-func CPPFieldsMapPackIncreaseSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
-	var splitInfo SplitInfo = table.SplitInfo
+func CPPFieldsMapPackIncreaseSQL_ForTables_COL2SQL(table common.TableInfo, f *os.File) int {
+	var splitInfo common.SplitInfo = table.SplitInfo
 	for _, cname := range splitInfo.SplitCols {
 		f.WriteString("    bMatch = false;\n")
 		f.WriteString("    for(int i=0; i<vFields.size(); i++)\n")
@@ -110,13 +112,13 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_COL2SQL(table TableInfo, f *os.File) 
 	return 0
 }
 
-func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table common.TableInfo, f *os.File) int {
 	f.WriteString("\n")
 	f.WriteString("    int iWhereLen = iSqlLen + 128 ")
 	var vtype string
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		vtype = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		vtype = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			var bmatch bool = false
 			for _, c := range table.SplitInfo.SplitCols {
@@ -144,7 +146,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table TableInfo, f *os.File)
 			if colname != preCol.Name {
 				continue
 			}
-			vtype = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
+			vtype = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
 			if vtype == "string" {
 				f.WriteString(", sz_" + table.Name + "_" + preCol.Name)
 			} else {
@@ -159,12 +161,12 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table TableInfo, f *os.File)
 	return 0
 }
 
-func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table common.TableInfo, f *os.File) int {
 	var upTableName string = strings.ToUpper(table.Name)
 	f.WriteString("    int iLen = iSqlLen + 128 + pMsg->ByteSizeLong() ")
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			var bmatch bool = false
 			for _, c := range table.SplitInfo.SplitCols {
@@ -214,7 +216,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 	f.WriteString("        switch (iFieldId)\n")
 	f.WriteString("        {\n")
 	for _, col := range table.TableColumns {
-		var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			continue
 		}
@@ -226,7 +228,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 		f.WriteString("                cOpt = '-';\n")
 		f.WriteString("            if (iSetField != 1)\n")
 		f.WriteString("                iDataLen = snprintf(szSQLBegin, iLen, \", `" + col.Name + "`=`" + col.Name + "`%c")
-		f.WriteString(CPPFieldPackSQL_COL_FORMAT(col.Type))
+		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", cOpt, ")
 		if vtype == "string" {
 			f.WriteString("sz_")
@@ -235,7 +237,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 		f.WriteString(");\n")
 		f.WriteString("            else\n")
 		f.WriteString("                iDataLen = snprintf(szSQLBegin, iLen, \" `" + col.Name + "`=`" + col.Name + "`%c")
-		f.WriteString(CPPFieldPackSQL_COL_FORMAT(col.Type))
+		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", cOpt, ")
 		if vtype == "string" {
 			f.WriteString("sz_")
@@ -263,7 +265,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table TableInfo, f *os.File) i
 	return 0
 }
 
-func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackIncreaseSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			var bigTable string = strings.ToUpper(table.Name)
@@ -321,7 +323,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
 
 			// 释放buffer
 			for _, col := range table.TableColumns {
-				var vtype string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+				var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 				if vtype != "string" {
 					continue
 				}
@@ -351,7 +353,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapPackIncreaseSQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackIncreaseSQL(games []common.XmlCfg, f *os.File) int {
 	CPPFieldsMapPackIncreaseSQL_ForTables(games, f)
 	CPPFields_GORM_PackSQL_TEMPLATE("Increase", games, f)
 	return 0

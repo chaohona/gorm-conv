@@ -1,4 +1,4 @@
-package main
+package mysql
 
 import (
 	"fmt"
@@ -8,9 +8,10 @@ import (
 	//"fmt"
 	"os"
 	//"strconv"
+	"gorm-conv/common"
 )
 
-func GORM_MySQLResult2PbMSG_SwitchTable(games []XmlCfg, f *os.File) int {
+func GORM_MySQLResult2PbMSG_SwitchTable(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("int GORM_MySQLResult2PbMSG(GORM_MySQLEvent *pMySQLEvent, int iTableId, GORM_PB_TABLE *pPbTable, MYSQL_ROW row, unsigned long *lengths)\n")
 	f.WriteString("{\n")
 	f.WriteString("    switch (iTableId)\n")
@@ -39,7 +40,7 @@ func GORM_MySQLResult2PbMSG_SwitchTable(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func GORM_MySQLResult2PbMSG_Tables(games []XmlCfg, f *os.File) int {
+func GORM_MySQLResult2PbMSG_Tables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			f.WriteString("int GORM_MySQLResult2PbMSG_" + strings.ToUpper(table.Name) + "(GORM_PB_Table_" + table.Name + " *pPbTable, MYSQL_ROW row, unsigned long *lengths)\n")
@@ -56,7 +57,7 @@ func GORM_MySQLResult2PbMSG_Tables(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func GORM_MySQLResult2PbMSG_Tables_DEBUG(games []XmlCfg, f *os.File) int {
+func GORM_MySQLResult2PbMSG_Tables_DEBUG(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			f.WriteString("#ifdef GORM_DEBUG\n")
@@ -124,7 +125,7 @@ func GORM_MySQLResult2PbMSG_Tables_DEBUG(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func GORM_MySQLResult2PbMSG_Table(table TableInfo, f *os.File) int {
+func GORM_MySQLResult2PbMSG_Table(table common.TableInfo, f *os.File) int {
 	for idx, col := range table.TableColumns {
 		var idxStr string = strconv.FormatInt(int64(idx), 10)
 		valStr, emptyStr := GORM_MySQLResult2PbMSG_Table_Col(idxStr, col)
@@ -137,7 +138,7 @@ func GORM_MySQLResult2PbMSG_Table(table TableInfo, f *os.File) int {
 	return 0
 }
 
-func GORM_MySQLResult2PbMSG_Table_Col(idxStr string, col TableColumn) (string, string) {
+func GORM_MySQLResult2PbMSG_Table_Col(idxStr string, col common.TableColumn) (string, string) {
 	var valStr, emptyStr string
 	switch col.Type {
 	case "int8", "int16", "int32", "int":
@@ -174,7 +175,7 @@ func GORM_MySQLResult2PbMSG_Table_Col(idxStr string, col TableColumn) (string, s
 	return valStr, emptyStr
 }
 
-func GORM_MySQLResult2PbMSG(games []XmlCfg, f *os.File) int {
+func GORM_MySQLResult2PbMSG(games []common.XmlCfg, f *os.File) int {
 	GORM_MySQLResult2PbMSG_Tables(games, f)
 	GORM_MySQLResult2PbMSG_Tables_DEBUG(games, f)
 	GORM_MySQLResult2PbMSG_SwitchTable(games, f)

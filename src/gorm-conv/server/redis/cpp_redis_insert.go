@@ -1,13 +1,15 @@
-package main
+package redis
 
 import (
 	"fmt"
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CppRedisDefine_Insert_Table(table TableInfo, f *os.File) int {
+func CppRedisDefine_Insert_Table(table common.TableInfo, f *os.File) int {
 	var bigtable string = strings.ToUpper(table.Name)
 	var definekey string = "GORM_REDIS_INSERT_" + bigtable + "_LUA"
 	var define string = "#define " + definekey + " \" \\\n"
@@ -33,13 +35,13 @@ func CppRedisDefine_Insert_Table(table TableInfo, f *os.File) int {
 	for _, c := range table.SplitInfo.SplitCols {
 		f.WriteString("_")
 		tc := table.GetColumn(c)
-		f.WriteString(CPPFieldPackRedis_COL_FORMAT(tc.Type))
+		f.WriteString(cpp.CPPFieldPackRedis_COL_FORMAT(tc.Type))
 	}
 	f.WriteString("\"")
 	for _, c := range table.SplitInfo.SplitCols {
 		f.WriteString(", inTable." + c + "()")
 		tc := table.GetColumn(c)
-		if CPPField_CPPType(tc.Type) == "string" {
+		if cpp.CPPField_CPPType(tc.Type) == "string" {
 			f.WriteString(".c_str()")
 		}
 	}
@@ -47,7 +49,7 @@ func CppRedisDefine_Insert_Table(table TableInfo, f *os.File) int {
 	f.WriteString("    redisReply* r = (redisReply*)redisCommand(pRedisConn, \"EVAL %s 1 %s")
 	for _, tc := range table.TableColumns {
 		f.WriteString(" ")
-		f.WriteString(CPPFieldPackRedis_COL_FORMAT(tc.Type))
+		f.WriteString(cpp.CPPFieldPackRedis_COL_FORMAT(tc.Type))
 	}
 	f.WriteString("\", " + definekey + ", szKey, \n")
 
@@ -57,7 +59,7 @@ func CppRedisDefine_Insert_Table(table TableInfo, f *os.File) int {
 			f.WriteString(", ")
 		}
 		f.WriteString("inTable." + tc.Name + "()")
-		if CPPField_CPPType(tc.Type) == "string" {
+		if cpp.CPPField_CPPType(tc.Type) == "string" {
 			f.WriteString(".c_str()")
 		}
 	}
@@ -74,7 +76,7 @@ func CppRedisDefine_Insert_Table(table TableInfo, f *os.File) int {
 	return 0
 }
 
-func CppRedisDefine_Insert(games []XmlCfg, f *os.File) int {
+func CppRedisDefine_Insert(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			if 0 != CppRedisDefine_Insert_Table(table, f) {

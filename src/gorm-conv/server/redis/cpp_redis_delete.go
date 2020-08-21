@@ -1,12 +1,14 @@
-package main
+package redis
 
 import (
 	"fmt"
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strings"
 )
 
-func CppRedisDefine_Delete_Table(table TableInfo, f *os.File) int {
+func CppRedisDefine_Delete_Table(table common.TableInfo, f *os.File) int {
 	var bigtable string = strings.ToUpper(table.Name)
 	f.WriteString("int GORM_REDIS_DELETE_" + bigtable + "(const GORM_PB_Table_" + table.Name + " &inTable, redisContext *pRedisConn)\n")
 	f.WriteString("{\n")
@@ -15,14 +17,14 @@ func CppRedisDefine_Delete_Table(table TableInfo, f *os.File) int {
 	for _, c := range table.SplitInfo.SplitCols {
 		tc := table.GetColumn(c)
 		f.WriteString("_")
-		f.WriteString(CPPFieldPackRedis_COL_FORMAT(tc.Type))
+		f.WriteString(cpp.CPPFieldPackRedis_COL_FORMAT(tc.Type))
 	}
 	f.WriteString("\"")
 
 	for _, c := range table.SplitInfo.SplitCols {
 		f.WriteString(", inTable." + c + "()")
 		tc := table.GetColumn(c)
-		if CPPField_CPPType(tc.Type) == "string" {
+		if cpp.CPPField_CPPType(tc.Type) == "string" {
 			f.WriteString(".c_str()")
 		}
 	}
@@ -40,7 +42,7 @@ func CppRedisDefine_Delete_Table(table TableInfo, f *os.File) int {
 	return 0
 }
 
-func CppRedisDefine_Delete(games []XmlCfg, f *os.File) int {
+func CppRedisDefine_Delete(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			if 0 != CppRedisDefine_Delete_Table(table, f) {

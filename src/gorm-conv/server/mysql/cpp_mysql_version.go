@@ -1,10 +1,11 @@
-package main
+package mysql
 
 import (
+	"gorm-conv/common"
 	"os"
 )
 
-func CPPFieldsMapPack_VERSION_SQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPack_VERSION_SQL(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("int GORM_GETVERSION_SET(char *szSQLBegin, int iLen, GORM_CheckDataVerType vType, uint64 ulVersion)\n")
 	f.WriteString("{\n")
 	f.WriteString("    int iDataLen = 0;\n")

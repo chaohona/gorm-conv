@@ -1,12 +1,13 @@
-package main
+package redis
 
 import (
 	"fmt"
+	"gorm-conv/common"
 	"os"
 	"strings"
 )
 
-func CppRedisDefine_Opt(opt string, games []XmlCfg, f *os.File) int {
+func CppRedisDefine_Opt(opt string, games []common.XmlCfg, f *os.File) int {
 	opt = strings.ToUpper(opt)
 	f.WriteString("\n")
 	f.WriteString("int GORM_REDIS_" + opt + "(int iTableId, redisContext *pRedisConn, GORM_PB_TABLE *pPbTable)\n")
@@ -30,7 +31,7 @@ func CppRedisDefine_Opt(opt string, games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppRedisDefine(games []XmlCfg, outpath string) int {
+func CppRedisDefine(games []common.XmlCfg, outpath string) int {
 	outfile := outpath + "/server/gorm_redis_define.cc"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {

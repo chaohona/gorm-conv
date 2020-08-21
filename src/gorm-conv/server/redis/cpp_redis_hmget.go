@@ -1,13 +1,15 @@
-package main
+package redis
 
 import (
 	"fmt"
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CppRedisDefine_Hmget_Table(table TableInfo, f *os.File) int {
+func CppRedisDefine_Hmget_Table(table common.TableInfo, f *os.File) int {
 	var bigtable string = strings.ToUpper(table.Name)
 	var define string = "#define GORM_" + bigtable + "_REDIS_HMGET \"hmget %s "
 	for _, tc := range table.TableColumns {
@@ -23,13 +25,13 @@ func CppRedisDefine_Hmget_Table(table TableInfo, f *os.File) int {
 	for _, c := range table.SplitInfo.SplitCols {
 		f.WriteString("_")
 		tc := table.GetColumn(c)
-		f.WriteString(CPPFieldPackRedis_COL_FORMAT(tc.Type))
+		f.WriteString(cpp.CPPFieldPackRedis_COL_FORMAT(tc.Type))
 	}
 	f.WriteString("\"")
 	for _, c := range table.SplitInfo.SplitCols {
 		f.WriteString(", inTable." + c + "()")
 		tc := table.GetColumn(c)
-		if CPPField_CPPType(tc.Type) == "string" {
+		if cpp.CPPField_CPPType(tc.Type) == "string" {
 			f.WriteString(".c_str()")
 		}
 	}
@@ -79,14 +81,14 @@ func CppRedisDefine_Hmget_Table(table TableInfo, f *os.File) int {
 
 	for idx, c := range table.TableColumns {
 		f.WriteString("    pElement = *(r->element+" + strconv.FormatInt(int64(idx), 10) + ");\n")
-		if CPPField_CPPType(c.Type) == "string" {
+		if cpp.CPPField_CPPType(c.Type) == "string" {
 			f.WriteString("    if (pElement->len > 0)\n")
 			f.WriteString("        " + table_ptr + "->set_" + c.Name + "(pElement->str, pElement->len);\n")
 		} else {
-			f.WriteString("    " + CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(c.Type) + " " + table.Name + "_" + c.Name + " = 0;\n")
+			f.WriteString("    " + cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(c.Type) + " " + table.Name + "_" + c.Name + " = 0;\n")
 			if c.Type == "double" {
 				f.WriteString("    GORM_REDIS_REPLY_DOUBLE(pElement, " + table.Name + "_" + c.Name + ");\n")
-			} else if CPPFieldsMapPackSQL_ForTables_COL2SQL_GET_LONG_ULONG(c.Type) == "long" {
+			} else if cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GET_LONG_ULONG(c.Type) == "long" {
 				f.WriteString("    GORM_REDIS_REPLY_LONG(pElement, " + table.Name + "_" + c.Name + ");\n")
 			} else {
 				f.WriteString("    GORM_REDIS_REPLY_ULONG(pElement, " + table.Name + "_" + c.Name + ");\n")
@@ -102,7 +104,7 @@ func CppRedisDefine_Hmget_Table(table TableInfo, f *os.File) int {
 	return 0
 }
 
-func CppRedisDefine_Hmget(games []XmlCfg, f *os.File) int {
+func CppRedisDefine_Hmget(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			if 0 != CppRedisDefine_Hmget_Table(table, f) {

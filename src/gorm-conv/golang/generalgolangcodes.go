@@ -1,7 +1,8 @@
-package main
+package golang
 
 import (
 	"fmt"
+	"gorm-conv/common"
 	"os"
 	"strconv"
 	"strings"
@@ -47,7 +48,7 @@ func CPPField_GolangType(colType string) string {
 	return "string"
 }
 
-func GeneralGolangCodes(games []XmlCfg, outpath string) int {
+func GeneralGolangCodes(games []common.XmlCfg, outpath string) int {
 	outfile := outpath + "/gorm_table_field_map.go"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
@@ -212,7 +213,7 @@ func GORM_GetTableName(tableId int32) string {
 	return 0
 }
 
-func GORM_SetTableFieldValue(games []XmlCfg, f *os.File, bStr bool) {
+func GORM_SetTableFieldValue(games []common.XmlCfg, f *os.File, bStr bool) {
 	f.WriteString("    switch GORM_PB_TABLE_INDEX(tableId) {\n")
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
@@ -244,7 +245,7 @@ func GORM_SetTableFieldValue(games []XmlCfg, f *os.File, bStr bool) {
 	f.WriteString("    return GORM_CODE_INVALID_FIELD\n")
 }
 
-func GORM_GetTableFieldValue(games []XmlCfg, f *os.File, bStr bool, inType string) {
+func GORM_GetTableFieldValue(games []common.XmlCfg, f *os.File, bStr bool, inType string) {
 	f.WriteString("    switch GORM_PB_TABLE_INDEX(tableId) {\n")
 	for _, game := range games {
 		for _, table := range game.DB.TableList {

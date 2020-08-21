@@ -1,10 +1,11 @@
-package main
+package cpp
 
 import (
 	"fmt"
+	"gorm-conv/common"
 )
 
-func GeneralCppCodes(games []XmlCfg, outpath string, bServerCode bool) int {
+func GeneralCppCodes(games []common.XmlCfg, outpath string) int {
 	// 1、生成表的列名和宏映射关系
 	// 文件gorm_fields_map_define.cc
 	if 0 != CppFieldsMapDefine(games, outpath) {
@@ -14,13 +15,6 @@ func GeneralCppCodes(games []XmlCfg, outpath string, bServerCode bool) int {
 	if 0 != CppGormTables_H(games, outpath) {
 		fmt.Println("CppGormTables_H failed")
 		return -1
-	}
-	fmt.Println("general server codes switch is:", bServerCode)
-	if bServerCode {
-		if 0 != gorm_server_codes_files(games, outpath) {
-			fmt.Println("gorm_server_codes_files failed.")
-			return -1
-		}
 	}
 
 	return 0

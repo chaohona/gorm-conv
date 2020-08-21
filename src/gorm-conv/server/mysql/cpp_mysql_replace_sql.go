@@ -1,12 +1,14 @@
-package main
+package mysql
 
 import (
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table TableInfo) string {
+func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table common.TableInfo) string {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "REPLACESQL \"insert into "
 	DefineSQL += table.Name
 	DefineSQL += "_%d("
@@ -25,7 +27,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table TableInfo) string {
 		if idx != 0 {
 			DefineSQL += ", "
 		}
-		DefineSQL += CPPFieldPackSQL_COL_FORMAT(col.Type)
+		DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
 	}
 	DefineSQL += ") ON DUPLICATE KEY UPDATE `version`=`version`+1"
 	for _, col := range table.TableColumns {
@@ -46,20 +48,20 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table TableInfo) string {
 		DefineSQL += " `"
 		DefineSQL += col.Name
 		DefineSQL += "`="
-		DefineSQL += CPPFieldPackSQL_COL_FORMAT(col.Type)
+		DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
 	}
 	DefineSQL += ";\"\n"
 	return DefineSQL
 }
 
-func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table common.TableInfo, f *os.File) int {
 	var len_str string = "    int iLen = iSqlLen + 128"
 	var sprintf_str string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "REPLACESQL, iTableIndex"
 	var release_str string = ""
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name
 		f.WriteString("\n")
-		var cppType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		f.WriteString("    const " + cppType + " ")
 		if cppType == "string" {
 			f.WriteString("&")
@@ -110,7 +112,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) i
 			continue
 		}
 		sprintf_str += ","
-		var cppType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		var col_type_name string = table.Name + "_" + col.Name
 		if cppType == "string" {
 			sprintf_str += " sz_" + col_type_name
@@ -132,7 +134,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table TableInfo, f *os.File) i
 	return 0
 }
 
-func CPPFieldsMapPackReplaceSQL_ForTables_One(table TableInfo, sqlLen string, f *os.File) int {
+func CPPFieldsMapPackReplaceSQL_ForTables_One(table common.TableInfo, sqlLen string, f *os.File) int {
 	f.WriteString("int GORM_PackReplaceSQL")
 	f.WriteString(strings.ToUpper(table.Name))
 	f.WriteString("_One(MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
@@ -151,7 +153,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_One(table TableInfo, sqlLen string, f 
 	return 0
 }
 
-func CPPFieldsMapPackReplaceSQL_ForTables(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackReplaceSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			var DefineSQL string = CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table)
@@ -189,7 +191,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapPackReplaceSQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackReplaceSQL(games []common.XmlCfg, f *os.File) int {
 	CPPFieldsMapPackReplaceSQL_ForTables(games, f)
 	CPPFields_GORM_PackSQL_TEMPLATE("Replace", games, f)
 	return 0

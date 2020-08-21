@@ -1,17 +1,18 @@
-package main
+package sql
 
 import (
 	"fmt"
+	"gorm-conv/common"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CheckTable(TableInfo TableInfo) int {
+func CheckTable(TableInfo common.TableInfo) int {
 	return 0
 }
 
-func GeneralSQLColumn(c TableColumn) (string, int) {
+func GeneralSQLColumn(c common.TableColumn) (string, int) {
 	var strOut string = "`"
 	strOut += strings.ToLower(c.Name)
 	strOut += "` "
@@ -114,7 +115,7 @@ func GeneralSQLColumn(c TableColumn) (string, int) {
 	return strOut, 0
 }
 
-func CreateTableSQL(table TableInfo) ([]byte, int) {
+func CreateTableSQL(table common.TableInfo) ([]byte, int) {
 	var strOut string // = "    `version` bigint DEFAULT 0,\n"
 	for idx, c := range table.TableColumns {
 		column, ret := GeneralSQLColumn(c)
@@ -164,7 +165,7 @@ func CreateTableSQL(table TableInfo) ([]byte, int) {
 	return []byte(strOut), 0
 }
 
-func GeneralSQLBuff(table TableInfo, tableNum int) ([]byte, int) {
+func GeneralSQLBuff(table common.TableInfo, tableNum int) ([]byte, int) {
 	var totalOut string
 
 	for index := uint16(0); index <= table.SplitInfo.Num; index++ {
@@ -179,7 +180,7 @@ func GeneralSQLBuff(table TableInfo, tableNum int) ([]byte, int) {
 	return []byte(totalOut), 0
 }
 
-func CreateSQLFile(db GiantGame, file string) int {
+func CreateSQLFile(db common.GiantGame, file string) int {
 	// 1.校验所有的表
 	var tableNames map[string]int = make(map[string]int)
 	for idx, table := range db.TableList {
@@ -220,7 +221,7 @@ func CreateSQLFile(db GiantGame, file string) int {
 	return 0
 }
 
-func GeneralSQLFiles(games []XmlCfg, outpath string) int {
+func GeneralSQLFiles(games []common.XmlCfg, outpath string) int {
 	for _, game := range games {
 		fileLen := len(game.File)
 		outfile := outpath + "/" + game.File[:fileLen-4] + ".sql"

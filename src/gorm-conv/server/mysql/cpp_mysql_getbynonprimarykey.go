@@ -1,12 +1,14 @@
-package main
+package mysql
 
 import (
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table TableInfo, bDebug bool) string {
+func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table common.TableInfo, bDebug bool) string {
 	var defineSQL string = "#define GetByNonPrimaySQL_" + strings.ToUpper(table.Name)
 	if bDebug {
 		defineSQL += "_DEBUG"
@@ -29,13 +31,13 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table Tabl
 	return defineSQL
 }
 
-func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table common.TableInfo, f *os.File) int {
 	var BigTable string = strings.ToUpper(table.Name)
 	for _, col := range table.TableColumns {
 		var bigCol string = strings.ToUpper(col.Name)
 		f.WriteString("        case GORM_PB_FIELD_" + BigTable + "_" + bigCol + ":\n")
 		f.WriteString("        {\n")
-		var colType string = CPPField_CPPType(col.Type)
+		var colType string = cpp.CPPField_CPPType(col.Type)
 		if colType == "string" {
 			f.WriteString("            char *szData = \"\";\n")
 			f.WriteString("            const string &strData = table_" + table.Name + "." + col.Name + "();\n")
@@ -60,10 +62,10 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table TableInfo, f 
 			f.WriteString("                pDataBuffer->Release();\n")
 		} else {
 			f.WriteString("            if (i==0)\n")
-			f.WriteString("                iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`" + col.Name + "`=" + CPPFieldPackRedis_COL_FORMAT(col.Type))
+			f.WriteString("                iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`" + col.Name + "`=" + cpp.CPPFieldPackRedis_COL_FORMAT(col.Type))
 			f.WriteString("\", table_" + table.Name + "." + col.Name + "());\n")
 			f.WriteString("            else\n")
-			f.WriteString("                iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \"and `" + col.Name + "`=" + CPPFieldPackRedis_COL_FORMAT(col.Type))
+			f.WriteString("                iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \"and `" + col.Name + "`=" + cpp.CPPFieldPackRedis_COL_FORMAT(col.Type))
 			f.WriteString("\", table_" + table.Name + "." + col.Name + "());\n")
 		}
 		f.WriteString("            break;\n")
@@ -73,7 +75,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table TableInfo, f 
 	return 0
 }
 
-func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo, f *os.File) int {
 	var BigTable string = strings.ToUpper(table.Name)
 	var defineSQL string = CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table, false)
 	f.WriteString((defineSQL))
@@ -107,7 +109,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table TableInfo, f *os.
 	return 0
 }
 
-func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_OneDEBUG(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_OneDEBUG(table common.TableInfo, f *os.File) int {
 	var BigTable string = strings.ToUpper(table.Name)
 	var defineSQL string = CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table, true)
 	f.WriteString("#ifdef GORM_DEBUG\n")
@@ -151,7 +153,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_OneDEBUG(table TableInfo, f
 	return 0
 }
 
-func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			if 0 != CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table, f) {
@@ -191,7 +193,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []XmlCfg, f *os.File)
 	return 0
 }
 
-func CPPFieldsMapPackGetByNonPrimaryKeySQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackGetByNonPrimaryKeySQL(games []common.XmlCfg, f *os.File) int {
 	CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games, f)
 	CPPFields_GORM_PackSQL_TEMPLATE("Get_By_Non_Primary_Key", games, f)
 	return 0

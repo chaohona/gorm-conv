@@ -1,7 +1,7 @@
 @echo off
 
 set pwd=%~dp0
-set GOPATH=%pwd%/src/lib;%~dp0
+set GOPATH=%~dp0
 
 if [%1] == [] goto:all
 

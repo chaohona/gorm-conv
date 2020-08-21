@@ -1,15 +1,16 @@
-package main
+package cpp
 
 // 生成文件gorm_fields_map_define.cc
 
 import (
 	"fmt"
+	"gorm-conv/common"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CppFieldsMapDefine1(games []XmlCfg, f *os.File) int {
+func CppFieldsMapDefine1(games []common.XmlCfg, f *os.File) int {
 	var id2name string = `int GORM_SetTableFieldId2Name(int iTableType, OUT FieldId2Name &mapId2Name)
 {
     switch (iTableType)
@@ -52,7 +53,7 @@ func CppFieldsMapDefine1(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppFieldsMapDefine2(games []XmlCfg, f *os.File) int {
+func CppFieldsMapDefine2(games []common.XmlCfg, f *os.File) int {
 	var name2id string = `int GORM_SetTableFieldName2Id(int iTableType, OUT FieldName2Id &mapName2Id)
 {
     switch (iTableType)
@@ -95,7 +96,7 @@ func CppFieldsMapDefine2(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppFieldsMapDefine3(games []XmlCfg, f *os.File) int {
+func CppFieldsMapDefine3(games []common.XmlCfg, f *os.File) int {
 	/*
 		int GORM_SetTableACCOUNTId2Name(OUT FieldId2Name &mapId2Name)
 		{
@@ -121,7 +122,7 @@ func CppFieldsMapDefine3(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppFieldsMapDefine4(games []XmlCfg, f *os.File) int {
+func CppFieldsMapDefine4(games []common.XmlCfg, f *os.File) int {
 	/*
 		int GORM_SetTableACCOUNTName2Id(OUT FieldName2Id &mapName2Id)
 		{
@@ -147,7 +148,7 @@ func CppFieldsMapDefine4(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppFieldsMapDefine5(games []XmlCfg, f *os.File) int {
+func CppFieldsMapDefine5(games []common.XmlCfg, f *os.File) int {
 	/*
 		int GORM_SetTableACCOUNTId2Name(OUT FieldId2Name &mapId2Name);
 		int GORM_SetTableBAGId2Name(OUT FieldId2Name &mapId2Name);
@@ -166,7 +167,7 @@ func CppFieldsMapDefine5(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppFieldsMapDefine6(games []XmlCfg, f *os.File) int {
+func CppFieldsMapDefine6(games []common.XmlCfg, f *os.File) int {
 	/*
 		int GORM_SetTableName2Id(OUT TableName2Id &mapName2Id)
 		{
@@ -186,7 +187,7 @@ func CppFieldsMapDefine6(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppFieldsMapDefine7(games []XmlCfg, f *os.File) int {
+func CppFieldsMapDefine7(games []common.XmlCfg, f *os.File) int {
 	/*
 		int GORM_SetTableId2Name(OUT TableId2Name &mapId2Name)
 		{
@@ -206,7 +207,7 @@ func CppFieldsMapDefine7(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppFieldsMapDefine8(games []XmlCfg, f *os.File) int {
+func CppFieldsMapDefine8(games []common.XmlCfg, f *os.File) int {
 	/*
 		int GORM_SetTableVersion(OUT TableVersionMap& mapTableVersion)
 		{
@@ -226,7 +227,7 @@ func CppFieldsMapDefine8(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapSetTableFieldValueSub(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapSetTableFieldValueSub(games []common.XmlCfg, f *os.File) int {
 	totalIdx := 0
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
@@ -280,7 +281,7 @@ func CPPFieldsMapSetTableFieldValueSub(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapSetTableFieldValue(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapSetTableFieldValue(games []common.XmlCfg, f *os.File) int {
 	// 1.void GORM_SetTableFieldValue(PB_MSG_PTR pMsg, int iTableId, int iFieldId, const char * value, const size_t size)
 	f.WriteString("void GORM_SetTableFieldValue(PB_MSG_PTR pMsg, int iTableId, int iFieldId, const char * value, const size_t size)\n{\n")
 	totalIdx := 0
@@ -407,7 +408,7 @@ func CPPFieldsMapSetTableFieldValue(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapGetTableFieldValueSub(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapGetTableFieldValueSub(games []common.XmlCfg, f *os.File) int {
 	totalIdx := 0
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
@@ -465,7 +466,7 @@ func CPPFieldsMapGetTableFieldValueSub(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapGetTableFieldValue(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapGetTableFieldValue(games []common.XmlCfg, f *os.File) int {
 	// 1.int GORM_GetTableFieldValue(PB_MSG_PTR pMsg, int iTableId, int iFieldId, string &strValue);
 	f.WriteString("int GORM_GetTableFieldValue(PB_MSG_PTR pMsg, int iTableId, int iFieldId, string &value)\n{\n")
 	totalIdx := 0
@@ -604,7 +605,7 @@ func CPPFieldsMapGetTableFieldValue(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func GetCustomPbMsg(games []XmlCfg, f *os.File) int {
+func GetCustomPbMsg(games []common.XmlCfg, f *os.File) int {
 	var customFunc string = `
 int GORM_GetCustomPbMsg(PB_MSG_PTR &pMsgPtr)
 {
@@ -617,7 +618,7 @@ int GORM_GetCustomPbMsg(PB_MSG_PTR &pMsgPtr)
 	return 0
 }
 
-func GetTablePbMsgDefine(games []XmlCfg, f *os.File) int {
+func GetTablePbMsgDefine(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("int GetTablePbMsgDefine(int iTableId, PB_MSG_PTR &pMsgPtr)\n")
 	f.WriteString("{\n")
 
@@ -649,7 +650,7 @@ func GetTablePbMsgDefine(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func GORM_AddRecordToReqPbMsgDefine(games []XmlCfg, f *os.File) int {
+func GORM_AddRecordToReqPbMsgDefine(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("int GORM_AddRecordToReqPbMsgDefine(int iTableId, GORM_PB_TABLE *pPbTable, PB_MSG_PTR pPbMsg)\n")
 	f.WriteString("{\n")
 
@@ -686,7 +687,7 @@ func GORM_AddRecordToReqPbMsgDefine(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func GORM_TableHasData(games []XmlCfg, f *os.File) int {
+func GORM_TableHasData(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("bool GORM_TableHasData(GORM_PB_TABLE *pTable, int iTableId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    switch (iTableId)\n")
@@ -704,7 +705,7 @@ func GORM_TableHasData(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func GORM_GetTableSrcPbMsg(games []XmlCfg, f *os.File) int {
+func GORM_GetTableSrcPbMsg(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("int GORM_GetTableSrcPbMsg(int iTableId, GORM_PB_TABLE *pTable, PB_MSG_PTR &pMsgPtr)\n")
 	f.WriteString("{\n")
 	f.WriteString("    switch (iTableId)\n")
@@ -725,7 +726,7 @@ func GORM_GetTableSrcPbMsg(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldInitTableColumnInfo_ForTable(games []XmlCfg, f *os.File) int {
+func CPPFieldInitTableColumnInfo_ForTable(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			f.WriteString("int GORM_InitTableColumnInfo_" + table.Name + "(unordered_map<string, vector<string>> &mapTablesColumnOrder, unordered_map<string, unordered_map<string, GORM_PB_COLUMN_TYPE>> &mapTablesColumnInfo)\n")
@@ -752,7 +753,7 @@ func CPPFieldInitTableColumnInfo_ForTable(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldInitTableColumnInfo(games []XmlCfg, f *os.File) int {
+func CPPFieldInitTableColumnInfo(games []common.XmlCfg, f *os.File) int {
 	if 0 != CPPFieldInitTableColumnInfo_ForTable(games, f) {
 		return -1
 	}
@@ -769,7 +770,7 @@ func CPPFieldInitTableColumnInfo(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CppFieldsMapDefine(games []XmlCfg, outpath string) int {
+func CppFieldsMapDefine(games []common.XmlCfg, outpath string) int {
 	outfile := outpath + "gorm_table_field_map_define.cc"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {

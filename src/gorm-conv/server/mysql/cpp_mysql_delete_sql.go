@@ -1,17 +1,19 @@
-package main
+package mysql
 
 import (
 	"fmt"
+	"gorm-conv/common"
+	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPFieldsMapPackDeleteSQL_ForTables_DefineSQL(table TableInfo) (string, int) {
+func CPPFieldsMapPackDeleteSQL_ForTables_DefineSQL(table common.TableInfo) (string, int) {
 	var DefineSQL string = "#define " + strings.ToUpper(table.Name) + "DELETESQL \"delete  from "
 	DefineSQL += table.Name
 	DefineSQL += "_%d where "
-	var splitInfo SplitInfo = table.SplitInfo
+	var splitInfo common.SplitInfo = table.SplitInfo
 	if splitInfo.Columns == "" {
 		DefineSQL += "\""
 		return DefineSQL, 0
@@ -30,7 +32,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_DefineSQL(table TableInfo) (string, int
 			}
 			DefineSQL += " `"
 			DefineSQL += preCol.Name + "`="
-			DefineSQL += CPPFieldPackSQL_COL_FORMAT(preCol.Type)
+			DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
 		}
 		if !match {
 			fmt.Println("invalid splitinfo, table:", table.Name)
@@ -43,7 +45,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_DefineSQL(table TableInfo) (string, int
 }
 
 // 没有配置split信息，不分表语句的查询
-func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL_NoSplit(table TableInfo, f *os.File) int {
+func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL_NoSplit(table common.TableInfo, f *os.File) int {
 	var ilenstr string = "    int iLen = iSqlLen + 256 + 13*" + strconv.FormatInt(int64(len(table.TableColumns)), 10) + " + pMsg->ByteSizeLong();\n"
 	f.WriteString(ilenstr)
 	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen);\n")
@@ -59,9 +61,9 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL_NoSplit(table TableInfo, f *os.
 		f.WriteString("        case GORM_PB_FIELD_" + strings.ToUpper(table.Name) + "_" + strings.ToUpper(col.Name) + ":\n")
 		f.WriteString("        {\n")
 		f.WriteString("            if(i==0)\n")
-		var format string = CPPFieldPackSQL_COL_FORMAT(col.Type)
+		var format string = cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
 		var snprintfstr string = col.Name + "=" + format + "\", table_" + table.Name + "." + col.Name + "()"
-		if CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type) == "string" {
+		if cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type) == "string" {
 			snprintfstr += ".c_str()"
 		}
 		snprintfstr += ");\n"
@@ -83,8 +85,8 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL_NoSplit(table TableInfo, f *os.
 	return 0
 }
 
-func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table TableInfo, f *os.File) int {
-	var splitInfo SplitInfo = table.SplitInfo
+func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table common.TableInfo, f *os.File) int {
+	var splitInfo common.SplitInfo = table.SplitInfo
 	for _, cname := range splitInfo.SplitCols {
 		f.WriteString("    bMatch = false;\n")
 		f.WriteString("    for(int i=0; i<vFields.size(); i++)\n")
@@ -107,7 +109,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table TableInfo, f *os.File) in
 			if col.Name != cname {
 				continue
 			}
-			var colType string = CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+			var colType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 			f.WriteString("    const ")
 			f.WriteString(colType)
 			f.WriteString(" ")
@@ -155,7 +157,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table TableInfo, f *os.File) in
 	return 0
 }
 
-func CPPFieldsMapPackDeleteSQL_ForTables(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackDeleteSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			var DefineSQL string
@@ -215,7 +217,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapPackDeleteSQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackDeleteSQL(games []common.XmlCfg, f *os.File) int {
 	CPPFieldsMapPackDeleteSQL_ForTables(games, f)
 	CPPFields_GORM_PackSQL_TEMPLATE("Delete", games, f)
 	return 0

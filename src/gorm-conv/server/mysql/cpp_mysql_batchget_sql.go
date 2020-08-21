@@ -1,12 +1,13 @@
-package main
+package mysql
 
 import (
+	"gorm-conv/common"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func CPPFieldsMapPackBatchGetSQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackBatchGetSQL(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("int GORM_PackGetSQLTable(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableId, uint32 uiHashValue, const GORM_PB_TABLE& table, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 
@@ -38,7 +39,7 @@ func CPPFieldsMapPackBatchGetSQL(games []XmlCfg, f *os.File) int {
 	return 0
 }
 
-func CPPFieldsMapPackInsertTableSQL(games []XmlCfg, f *os.File) int {
+func CPPFieldsMapPackInsertTableSQL(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("int GORM_PackInsertSQLTable(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableId, uint32 uiHashValue, const GORM_PB_TABLE& table, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 
