@@ -112,10 +112,10 @@ using namespace gorm;
 
 // 生成gorm_server专用的代码文件
 func gorm_server_codes_files(games []XmlCfg, outpath string) int {
-	if 0 != CppRedisDefine(games, outpath) {
+	/*if 0 != CppRedisDefine(games, outpath) {
 		fmt.Println("general cpp codes file gorm_redis_define.cc failed:", outpath)
 		return -1
-	}
+	}*/
 
 	if 0 != gorm_general_mysql_define(games, outpath) {
 		fmt.Println("gorm_general_mysql_define failed.")
