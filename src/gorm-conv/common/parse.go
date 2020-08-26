@@ -56,26 +56,38 @@ func (this *TableInfo) GetColumn(name string) TableColumn {
 	return TableColumn{}
 }
 
-type DbTables struct {
+type DataBaseInfo struct {
 	Name     string `xml:"name,attr"`
-	SplitKey string `xml:"splittablekey,attr"`
-	SplitNum int    `xml:"splittablenum,attr"`
+	Host     string `xml:"host,attr"`
+	Port     string `xml:"port,attr"`
+	User     string `xml:"user,attr"`
+	PassWD   string `xml:"password,attr"`
+	Type     string `xml:"type,attr"`
+	Database string `xml:"database,attr"`
 }
 
-type DB struct {
-	Tables   []DbTables `xml:"table"`
-	Name     string     `xml:"name,attr"`
-	Host     string     `xml:"host,attr"`
-	Port     uint16     `xml:"port,attr"`
-	User     string     `xml:"user,attr"`
-	PassWD   string     `xml:"password,attr"`
-	Type     string     `xml:"type,attr"`
-	Database string     `xml:"database,attr"`
+type DataBase struct {
+	DBList []DataBaseInfo `xml:"db"`
+}
+
+type RoutesTableDB struct {
+	Name     string `xml:"name,attr"`
+	SplitNum string `xml:"splittablenum,attr"`
+}
+
+type RoutesTable struct {
+	Name              string          `xml:"name,attr"`
+	RoutesTableDBList []RoutesTableDB `xml:"db"`
+}
+
+type Routes struct {
+	TableList []RoutesTable `xml:"table"`
 }
 
 type GiantGame struct {
-	DBList    []DB        `xml:"db"`
+	DBList    DataBase    `xml:"databases"`
 	TableList []TableInfo `xml:"table"`
+	Routes    Routes      `xml:"routes"`
 }
 
 type XmlCfg struct {
@@ -162,9 +174,9 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 		})
 	}
 	for _, result := range results {
-		for idx, db := range result.DB.DBList {
-			result.DB.DBList[idx].Database = strings.ToLower(db.Database)
-			result.DB.DBList[idx].Name = strings.ToLower(db.Name)
+		for idx, db := range result.DB.DBList.DBList {
+			result.DB.DBList.DBList[idx].Database = strings.ToLower(db.Database)
+			result.DB.DBList.DBList[idx].Name = strings.ToLower(db.Name)
 		}
 		for idx, _ := range result.DB.TableList {
 			table := &result.DB.TableList[idx]

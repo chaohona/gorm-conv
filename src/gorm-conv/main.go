@@ -10,6 +10,7 @@ import (
 	"gorm-conv/golang"
 	"gorm-conv/protobuf"
 	"gorm-conv/server"
+	"gorm-conv/server/config"
 	"gorm-conv/sql"
 
 	"github.com/golang/glog"
@@ -113,6 +114,13 @@ func main() {
 		ret = golang.GeneralGolangCodes(games, *common.Gooutpath)
 		if ret != 0 {
 			fmt.Println("general golang codes got error.")
+			return
+		}
+	}
+	if common.GeneralDBCfg != nil && *common.GeneralDBCfg == "true" {
+		ret = config.GeneralDBCfg(games, *common.Outputpath)
+		if ret != 0 {
+			fmt.Println("general db route config failed.")
 			return
 		}
 	}

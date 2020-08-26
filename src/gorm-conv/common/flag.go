@@ -20,6 +20,7 @@ var (
 	Codetype     = flag.String("codetype", "client", "client codes or server codes")
 	Gopackage    = flag.String("gopackage", "gorm/gorm", "option go_package")
 	Protoversion = flag.String("protoversion", "3", "protobuff files version, 2 or 3")
+	GeneralDBCfg = flag.String("generalcfg", "false", "general db route config true/false")
 )
 
 var Proto_optional string = ""
