@@ -3,7 +3,6 @@ package mysql
 import (
 	"gorm-conv/common"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -24,11 +23,7 @@ func CPPFieldsMapPackBatchGetSQL(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
 			f.WriteString("#endif\n")
-			var tableIndex string = "0"
-			if table.SplitInfo.Num > 1 {
-				tableIndex = "uiHashValue%"
-				tableIndex += strconv.FormatInt(int64(table.SplitInfo.Num), 10)
-			}
+			var tableIndex string = "uiHashValue"
 			f.WriteString("        return GORM_PackGetSQL" + bigTable + "_ONE(mysql, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
 			f.WriteString("    }\n")
 		}
@@ -56,11 +51,7 @@ func CPPFieldsMapPackInsertTableSQL(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
 			f.WriteString("#endif\n")
-			var tableIndex string = "0"
-			if table.SplitInfo.Num > 1 {
-				tableIndex = "uiHashValue%"
-				tableIndex += strconv.FormatInt(int64(table.SplitInfo.Num), 10)
-			}
+			var tableIndex string = "uiHashValue"
 			f.WriteString("        return GORM_PackInsertSQL" + bigTable + "_ONE(pMySQLEvent, pMySQLEvent->m_pMySQL, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
 			f.WriteString("    }\n")
 		}

@@ -3,7 +3,6 @@ package mysql
 import (
 	"gorm-conv/common"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -24,10 +23,7 @@ func CPPFields_GORM_PackSQL_TEMPLATE(opt string, games []common.XmlCfg, f *os.Fi
 			f.WriteString(":\n")
 			f.WriteString("        return GORM_Pack" + opt + "SQL")
 			f.WriteString(BigTable)
-			var hashValue string = "0"
-			if table.SplitInfo.Num > 1 {
-				hashValue = "uiHashValue%" + strconv.FormatInt(int64(table.SplitInfo.Num), 10)
-			}
+			var hashValue string = "uiHashValue"
 			f.WriteString("(pMySQLEvent, mysql, " + hashValue + ", pMsg, pReqData);\n")
 			f.WriteString("    \n")
 		}
