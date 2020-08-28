@@ -31,7 +31,7 @@ func GeneralGolang_Table_Records_Table(table common.TableInfo, outpath string) i
 	f.WriteString("}\n")
 
 	// Init函数
-	f.WriteString("func (this *" + tablePbName + ") Init() GORM_CODE {\n")
+	f.WriteString("func (this *" + tablePbName + ") Init(tableId int) GORM_CODE {\n")
 	f.WriteString("    this.msg = &" + pbStructName + "{}\n")
 	f.WriteString("    this.fieldMode.Init()\n")
 	f.WriteString("    this.modifyFiled = true\n")
@@ -39,7 +39,7 @@ func GeneralGolang_Table_Records_Table(table common.TableInfo, outpath string) i
 	f.WriteString("}\n")
 
 	// InitEx函数
-	f.WriteString("func (this *" + tablePbName + ") InitEx() GORM_CODE {\n")
+	f.WriteString("func (this *" + tablePbName + ") InitEx(tableId int) GORM_CODE {\n")
 	f.WriteString("    this.msg = &" + pbStructName + "{}\n")
 	f.WriteString("    this.modifyFiled = false\n")
 	f.WriteString("    this.fieldMode.Init()\n")
@@ -48,17 +48,18 @@ func GeneralGolang_Table_Records_Table(table common.TableInfo, outpath string) i
 		var shift string = strconv.FormatInt(shiftNum, 10)
 		var modeNum int = 1 << (i & 0x07)
 		var mode string = strconv.FormatInt(int64(modeNum), 10)
-		f.WriteString("    this.fieldCollections[" + shift + "] |= " + mode + "\n")
+		f.WriteString("    this.fieldMode.fieldCollections[" + shift + "] |= " + mode + "\n")
 	}
 	var shiftNum int64 = (int64(len(table.TableColumns)) >> 3)
 	var shift string = strconv.FormatInt(shiftNum, 10)
-	f.WriteString("    this.usedIdx = " + shift + "\n")
+	f.WriteString("    this.fieldMode.usedIdx = " + shift + "\n")
 	f.WriteString("    return GORM_CODE_OK\n")
 	f.WriteString("}\n")
 
 	// GetReadTble函数
-	f.WriteString("func (this *" + pbStructName + ") GetOnlyReadTbl() *" + pbStructName + " {\n")
-	f.WriteString("    return this.msg.(*" + pbStructName + ")")
+	f.WriteString("func (this *" + tablePbName + ") GetOnlyReadTbl() (msg *" + pbStructName + ") {\n")
+	f.WriteString("    msg =this.msg.(*" + pbStructName + ")\n")
+	f.WriteString("    return\n")
 	f.WriteString("}\n")
 
 	// 对各个字段的设置函数
@@ -72,9 +73,9 @@ func GeneralGolang_Table_Records_Table(table common.TableInfo, outpath string) i
 		var shift string = strconv.FormatInt(shiftNum, 10)
 		var modeNum int = 1 << (idx & 0x07)
 		var mode string = strconv.FormatInt(int64(modeNum), 10)
-		f.WriteString("    this.fieldCollections[" + shift + "] |= " + mode + "\n")
-		f.WriteString("    if this.usedIdx < " + shift + " {\n")
-		f.WriteString("        this.usedIdx = " + shift + "\n")
+		f.WriteString("    this.fieldMode.fieldCollections[" + shift + "] |= " + mode + "\n")
+		f.WriteString("    if this.fieldMode.usedIdx < " + shift + " {\n")
+		f.WriteString("        this.fieldMode.usedIdx = " + shift + "\n")
 		f.WriteString("    }\n")
 		f.WriteString("    this.modifyFiled = true")
 		f.WriteString("}\n")
