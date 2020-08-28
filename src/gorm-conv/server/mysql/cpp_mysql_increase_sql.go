@@ -140,7 +140,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table common.TableInfo, f *o
 	f.WriteString("    GORM_MemPoolData *buffer_" + table.Name + "_where = nullptr;\n")
 	f.WriteString("    buffer_" + table.Name + "_where = GORM_MemPool::Instance()->GetData(iWhereLen);\n")
 	f.WriteString("    char *szWhereBegin = buffer_" + table.Name + "_where->m_uszData;\n")
-	f.WriteString("    iWhereLen += snprintf(szWhereBegin+iWhereLen, buffer_" + table.Name + "_where->m_sCapacity, " + strings.ToUpper(table.Name) + "INCREASEWHERESQL ")
+	f.WriteString("    iWhereLen += GORM_SafeSnprintf(szWhereBegin+iWhereLen, buffer_" + table.Name + "_where->m_sCapacity, " + strings.ToUpper(table.Name) + "INCREASEWHERESQL ")
 	for _, colname := range table.SplitInfo.SplitCols {
 		for _, preCol := range table.TableColumns {
 			if colname != preCol.Name {
@@ -191,7 +191,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table common.TableInfo, f *os.
 	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen+iWhereLen+1);\n")
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString("    memcpy(szSQLBegin, " + upTableName + "UPDATESQL, iSqlLen);\n")
-	f.WriteString("    int iDataLen = snprintf(szSQLBegin, iLen, " + upTableName + "INCREASESQL, iTableIndex);\n")
+	f.WriteString("    int iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, " + upTableName + "INCREASESQL, iTableIndex);\n")
 	f.WriteString("    szSQLBegin += iDataLen;\n")
 	f.WriteString("    pReqData->m_sUsedSize = iDataLen;\n")
 	f.WriteString("    int iSetField = 1;\n")
@@ -227,7 +227,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table common.TableInfo, f *os.
 		f.WriteString(strings.ToUpper(table.Name) + "_" + strings.ToUpper(col.Name) + "))\n")
 		f.WriteString("                cOpt = '-';\n")
 		f.WriteString("            if (iSetField != 1)\n")
-		f.WriteString("                iDataLen = snprintf(szSQLBegin, iLen, \", `" + col.Name + "`=`" + col.Name + "`%c")
+		f.WriteString("                iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, \", `" + col.Name + "`=`" + col.Name + "`%c")
 		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", cOpt, ")
 		if vtype == "string" {
@@ -236,7 +236,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table common.TableInfo, f *os.
 		f.WriteString(table.Name + "_" + col.Name)
 		f.WriteString(");\n")
 		f.WriteString("            else\n")
-		f.WriteString("                iDataLen = snprintf(szSQLBegin, iLen, \" `" + col.Name + "`=`" + col.Name + "`%c")
+		f.WriteString("                iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, \" `" + col.Name + "`=`" + col.Name + "`%c")
 		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", cOpt, ")
 		if vtype == "string" {

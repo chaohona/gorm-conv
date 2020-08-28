@@ -48,7 +48,7 @@ func CPPField_GolangType(colType string) string {
 	return "string"
 }
 
-func GeneralGolangCodes(games []common.XmlCfg, outpath string) int {
+func GeneralGolangCodes_Common(games []common.XmlCfg, outpath string) int {
 	outfile := outpath + "/gorm_table_field_map.go"
 	f, err := os.OpenFile(outfile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {

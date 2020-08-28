@@ -56,7 +56,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table common.TableInfo) stri
 
 func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table common.TableInfo, f *os.File) int {
 	var len_str string = "    int iLen = iSqlLen + 128"
-	var sprintf_str string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "REPLACESQL, iTableIndex"
+	var sprintf_str string = "    iLen = GORM_SafeSnprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "REPLACESQL, iTableIndex"
 	var release_str string = ""
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name

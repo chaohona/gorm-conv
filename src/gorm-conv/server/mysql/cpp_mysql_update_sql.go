@@ -118,7 +118,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table common.TableInfo, f *os.
 	f.WriteString("    buffer_" + table.Name + "_where = GORM_MemPool::Instance()->GetData(iWhereLen);\n")
 	f.WriteString("    iWhereLen = 0;\n")
 	f.WriteString("    char *szWhereBegin = buffer_" + table.Name + "_where->m_uszData;\n")
-	f.WriteString("    iWhereLen += snprintf(szWhereBegin+iWhereLen,  buffer_" + table.Name + "_where->m_sCapacity, " + strings.ToUpper(table.Name) + "UPDATEWHERESQL ")
+	f.WriteString("    iWhereLen += GORM_SafeSnprintf(szWhereBegin+iWhereLen,  buffer_" + table.Name + "_where->m_sCapacity, " + strings.ToUpper(table.Name) + "UPDATEWHERESQL ")
 	for _, colname := range table.SplitInfo.SplitCols {
 		for _, preCol := range table.TableColumns {
 			if colname != preCol.Name {
@@ -157,7 +157,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table common.TableInfo, f *os.Fi
 
 	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen+iWhereLen+1);\n")
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
-	f.WriteString("    int iUpdateLen = snprintf(szSQLBegin, iLen, " + upTableName + "UPDATESQL, iTableIndex);\n")
+	f.WriteString("    int iUpdateLen = GORM_SafeSnprintf(szSQLBegin, iLen, " + upTableName + "UPDATESQL, iTableIndex);\n")
 	f.WriteString("    szSQLBegin += iUpdateLen;\n")
 	f.WriteString("    pReqData->m_sUsedSize = iUpdateLen;\n")
 	f.WriteString("    int iDataLen = 0;\n")
@@ -187,7 +187,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table common.TableInfo, f *os.Fi
 		f.WriteString("        case GORM_PB_FIELD_" + upTableName + "_" + strings.ToUpper(col.Name) + ":\n")
 		f.WriteString("        {\n")
 		f.WriteString("            if (iSetField != 1)\n")
-		f.WriteString("                iDataLen = snprintf(szSQLBegin, iLen, \", `" + col.Name + "`=")
+		f.WriteString("                iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, \", `" + col.Name + "`=")
 		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", ")
 		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
@@ -197,7 +197,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table common.TableInfo, f *os.Fi
 		f.WriteString(table.Name + "_" + col.Name)
 		f.WriteString(");\n")
 		f.WriteString("            else\n")
-		f.WriteString("                iDataLen = snprintf(szSQLBegin, iLen, \"`" + col.Name + "`=")
+		f.WriteString("                iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, \"`" + col.Name + "`=")
 		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", ")
 		if vtype == "string" {

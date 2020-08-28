@@ -62,14 +62,14 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL_NoSplit(table common.TableInfo,
 		f.WriteString("        {\n")
 		f.WriteString("            if(i==0)\n")
 		var format string = cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
-		var snprintfstr string = col.Name + "=" + format + "\", table_" + table.Name + "." + col.Name + "()"
+		var GORM_SafeSnprintfstr string = col.Name + "=" + format + "\", table_" + table.Name + "." + col.Name + "()"
 		if cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type) == "string" {
-			snprintfstr += ".c_str()"
+			GORM_SafeSnprintfstr += ".c_str()"
 		}
-		snprintfstr += ");\n"
-		f.WriteString("                 iNowLen = snprintf(szSQLBegin+iSqlLen, iLen-iSqlLen, \" " + snprintfstr)
+		GORM_SafeSnprintfstr += ");\n"
+		f.WriteString("                 iNowLen = GORM_SafeSnprintf(szSQLBegin+iSqlLen, iLen-iSqlLen, \" " + GORM_SafeSnprintfstr)
 		f.WriteString("            else\n")
-		f.WriteString("                iNowLen = snprintf(szSQLBegin+iSqlLen, iLen-iSqlLen, \" and " + snprintfstr)
+		f.WriteString("                iNowLen = GORM_SafeSnprintf(szSQLBegin+iSqlLen, iLen-iSqlLen, \" and " + GORM_SafeSnprintfstr)
 		f.WriteString("            break;\n")
 		f.WriteString("        }\n")
 	}
@@ -102,7 +102,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 	}
 
 	var ilenstr string = "    int iLen = iSqlLen + 128"
-	var snprintfstr string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "DELETESQL, iTableIndex"
+	var GORM_SafeSnprintfstr string = "    iLen = GORM_SafeSnprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "DELETESQL, iTableIndex"
 	var releasestr string = ""
 	for _, cname := range splitInfo.SplitCols {
 		for _, col := range table.TableColumns {
@@ -137,21 +137,21 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 
 			if colType == "string" {
 				ilenstr += " + len_" + table_col
-				snprintfstr += ", sz_" + table_col
+				GORM_SafeSnprintfstr += ", sz_" + table_col
 				releasestr += "    if(buffer_" + table_col + " != nullptr)\n"
 				releasestr += "        buffer_" + table_col + "->Release();\n"
 			} else {
 				ilenstr += " + 8"
-				snprintfstr += ", " + table_col
+				GORM_SafeSnprintfstr += ", " + table_col
 			}
 		}
 	}
 	ilenstr += " + pMsg->ByteSizeLong();\n"
-	snprintfstr += ");\n"
+	GORM_SafeSnprintfstr += ");\n"
 	f.WriteString(ilenstr)
 	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen);\n")
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
-	f.WriteString(snprintfstr)
+	f.WriteString(GORM_SafeSnprintfstr)
 	f.WriteString("    pReqData->m_sUsedSize = iLen;\n\n")
 	f.WriteString(releasestr)
 	return 0

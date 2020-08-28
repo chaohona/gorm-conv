@@ -69,7 +69,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One(table common.TableInfo, strsqllen stri
 	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE(MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	var ilenstr string = "    int iLen = iSqlLen + 128"
-	var snprintfstr string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "GETSQL, iTableIndex"
+	var GORM_SafeSnprintfstr string = "    iLen = GORM_SafeSnprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "GETSQL, iTableIndex"
 	var releasestr string = ""
 
 	f.WriteString("    char *szSQLBegin = nullptr;\n")
@@ -111,21 +111,21 @@ func CPPFieldsMapPackGetSQL_ForTables_One(table common.TableInfo, strsqllen stri
 
 			if colType == "string" {
 				ilenstr += " + len_" + table_col
-				snprintfstr += ", sz_" + table_col
+				GORM_SafeSnprintfstr += ", sz_" + table_col
 				releasestr += "    if(buffer_" + table_col + " != nullptr)\n"
 				releasestr += "        buffer_" + table_col + "->Release();\n"
 			} else {
 				ilenstr += " + 8"
-				snprintfstr += ", " + table_col
+				GORM_SafeSnprintfstr += ", " + table_col
 			}
 		}
 	}
 	ilenstr += " + table_" + table.Name + ".ByteSizeLong();\n"
-	snprintfstr += ");\n"
+	GORM_SafeSnprintfstr += ");\n"
 	f.WriteString(ilenstr)
 	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen);\n")
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
-	f.WriteString(snprintfstr)
+	f.WriteString(GORM_SafeSnprintfstr)
 	f.WriteString("    pReqData->m_sUsedSize = iLen;\n\n")
 	f.WriteString(releasestr)
 
@@ -172,12 +172,12 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table common.TableInfo, strsqlle
 	f.WriteString("        if (itr == columnMap.end())\n")
 	f.WriteString("            return GORM_ERROR;\n")
 	f.WriteString("        if (idx++ != 0)\n")
-	f.WriteString("            iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \",`%s`\", (char*)(c.c_str()));\n")
+	f.WriteString("            iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \",`%s`\", (char*)(c.c_str()));\n")
 	f.WriteString("        else\n")
-	f.WriteString("            iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`%s`\", (char*)(c.c_str()));\n")
+	f.WriteString("            iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`%s`\", (char*)(c.c_str()));\n")
 	f.WriteString("    }\n")
 
-	var snprintfstr string = "    iLen += snprintf(szSQLBegin+iLen, iTotalLen-iLen, " + bigtable + "GETSQL_DEBUG_WHERE, iTableIndex"
+	var GORM_SafeSnprintfstr string = "    iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, " + bigtable + "GETSQL_DEBUG_WHERE, iTableIndex"
 	var releasestr string = ""
 	for _, cname := range table.SplitInfo.SplitCols {
 		for _, col := range table.TableColumns {
@@ -211,16 +211,16 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table common.TableInfo, strsqlle
 			}
 
 			if colType == "string" {
-				snprintfstr += ", sz_" + table_col
+				GORM_SafeSnprintfstr += ", sz_" + table_col
 				releasestr += "    if(buffer_" + table_col + " != nullptr)\n"
 				releasestr += "        buffer_" + table_col + "->Release();\n"
 			} else {
-				snprintfstr += ", " + table_col
+				GORM_SafeSnprintfstr += ", " + table_col
 			}
 		}
 	}
-	snprintfstr += ");\n"
-	f.WriteString(snprintfstr)
+	GORM_SafeSnprintfstr += ");\n"
+	f.WriteString(GORM_SafeSnprintfstr)
 	f.WriteString("    pReqData->m_sUsedSize = iLen;\n\n")
 	f.WriteString(releasestr)
 

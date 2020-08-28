@@ -13,7 +13,7 @@ func CppRedisDefine_Delete_Table(table common.TableInfo, f *os.File) int {
 	f.WriteString("int GORM_REDIS_DELETE_" + bigtable + "(const GORM_PB_Table_" + table.Name + " &inTable, redisContext *pRedisConn)\n")
 	f.WriteString("{\n")
 	f.WriteString("    char szKey[2048];\n")
-	f.WriteString("    snprintf(szKey, 2048, \"" + table.Name)
+	f.WriteString("    GORM_SafeSnprintf(szKey, 2048, \"" + table.Name)
 	for _, c := range table.SplitInfo.SplitCols {
 		tc := table.GetColumn(c)
 		f.WriteString("_")

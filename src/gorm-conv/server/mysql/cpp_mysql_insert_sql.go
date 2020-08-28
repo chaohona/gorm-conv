@@ -35,7 +35,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_DefineSQL(table common.TableInfo) strin
 
 func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table common.TableInfo, f *os.File) int {
 	var len_str string = "    int iLen = iSqlLen + 128"
-	var sprintf_str string = "    iLen = snprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "INSERTSQL, iTableIndex"
+	var sprintf_str string = "    iLen = GORM_SafeSnprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "INSERTSQL, iTableIndex"
 	var release_str string = ""
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name

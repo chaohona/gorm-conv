@@ -20,10 +20,10 @@ func CPPGeneralSplitTableName(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("    case GORM_PB_TABLE_IDX_" + bigTable + ":\n")
 			f.WriteString("    {\n")
 			if table.SplitInfo.Num <= 1 {
-				f.WriteString("        iUsedBuffLen = snprintf(szOutTableName, iInBuffLen, \" " + table.Name + " \");\n")
+				f.WriteString("        iUsedBuffLen = GORM_SafeSnprintf(szOutTableName, iInBuffLen, \" " + table.Name + " \");\n")
 			} else {
 				var strNum string = strconv.FormatInt(int64(table.SplitInfo.Num), 10)
-				f.WriteString("        iUsedBuffLen = snprintf(szOutTableName, iInBuffLen, \" " + table.Name + "_%d \", uiHashCode%" + strNum + ");\n")
+				f.WriteString("        iUsedBuffLen = GORM_SafeSnprintf(szOutTableName, iInBuffLen, \" " + table.Name + "_%d \", uiHashCode%" + strNum + ");\n")
 			}
 			f.WriteString("        break;\n")
 			f.WriteString("    }\n")
