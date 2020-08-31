@@ -35,11 +35,12 @@ type TableColumn struct {
 	NotNull      bool   `xml:"notnull,attr"`
 	DefaultValue string `xml:"defaultvalue,attr"`
 	Size         string `xml:"size,attr"`
+	Version      uint64 `xml:"version,attr"`
 }
 
 type TableInfo struct {
 	Name         string        `xml:"name,attr"`
-	Version      int           `xml:"version,attr"`
+	Version      uint64        `xml:"version,attr"`
 	TableColumns []TableColumn `xml:"column"`
 	TableIndex   []TableIndex  `xml:"index"`
 	SplitInfo    SplitInfo     `xml:"splitinfo"`
@@ -88,6 +89,7 @@ type GiantGame struct {
 	DBList    DataBase    `xml:"databases"`
 	TableList []TableInfo `xml:"table"`
 	Routes    Routes      `xml:"routes"`
+	Version   uint64      `xml:"version,attr"`
 }
 
 type XmlCfg struct {

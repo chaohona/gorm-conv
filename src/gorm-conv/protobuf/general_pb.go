@@ -275,6 +275,16 @@ enum GORM_PB_COLUMN_TYPE
 	GORM_PB_COLUMN_TYPE_UINT 	= 2;
 	GORM_PB_COLUMN_TYPE_DOUBLE	= 3;
 	GORM_PB_COLUMN_TYPE_STRING	= 4;
+	GORM_PB_COLUMN_TYPE_INT8	= 5;
+	GORM_PB_COLUMN_TYPE_INT16	= 6;
+	GORM_PB_COLUMN_TYPE_INT32	= 7;
+	GORM_PB_COLUMN_TYPE_INT64	= 8;
+	GORM_PB_COLUMN_TYPE_UINT8	= 9;
+	GORM_PB_COLUMN_TYPE_UINT16	= 10;
+	GORM_PB_COLUMN_TYPE_UINT32	= 11;
+	GORM_PB_COLUMN_TYPE_UINT64	= 12;
+	GORM_PB_COLUMN_TYPE_BLOB	= 13;
+	GORM_PB_COLUMN_TYPE_CHAR	= 14;
 }
 
 message GORM_PB_COLUMN_VALUE
@@ -507,9 +517,9 @@ enum GORM_CODE
 	proto_string = `
 enum GORM_CMD
 {
-	GORM_CMD_INVALID = 0;
+	GORM_CMD_INVALID 			= 0;
 	GORM_CMD_HEART              = 1;    // 心跳，内部使用的协议
-    GORM_CMD_GET_CLIENT_ID      = 2;    // 握手，获取客户端id过程
+    GORM_CMD_HAND_SHAKE         = 2;    // 握手，获取客户端id过程
     GORM_CMD_INSERT             = 3;    // 增加记录
     GORM_CMD_REPLACE            = 4;    // 有则替换，没有则插入
     GORM_CMD_INCREASE           = 5;    // 增量更新请求
@@ -571,14 +581,28 @@ message GORM_PB_HEART_RSP
 	optional GORM_PB_Ret_Code 		RetCode = 1;
 } 
 
-message GORM_PB_GET_CLIENT_ID_REQ
+message GORM_PB_TABLE_SCHEMA_INFO_COLUMN
 {
-	optional GORM_PB_REQ_HEADER 		Header = 1;
+	uint64	Version = 1;
+	string 	Name = 2;
+	string	TypeDesc = 3;
+	GORM_PB_COLUMN_TYPE Type = 4;
 }
 
-message GORM_PB_GET_CLIENT_ID_RSP
+message GORM_PB_TABLE_SCHEMA_INFO
 {
-	optional GORM_PB_Ret_Code 		RetCode = 1;
+	uint64	Version = 1;
+	string 	TableName = 2;
+	int32  	TableIdx = 3;
+	repeated GORM_PB_TABLE_SCHEMA_INFO_COLUMN Columns = 4;
+}
+
+message GORM_PB_HAND_SHAKE_REQ
+{
+	GORM_PB_REQ_HEADER 		Header = 1;
+	uint64		Version = 2;
+	uint32		Md5     = 3;
+	repeated 	GORM_PB_TABLE_SCHEMA_INFO Schemas = 4;
 }
 
 // 插入暂时只能支持单挑记录插入

@@ -12,5 +12,10 @@ func GeneralGolangCodes(games []common.XmlCfg, outpath string) int {
 	if 0 != GeneralGolang_Table_Records(games, outpath) {
 		return -1
 	}
+
+	if 0 != GeneralGolang_HandShake(games, outpath) {
+		return -1
+	}
+
 	return 0
 }
