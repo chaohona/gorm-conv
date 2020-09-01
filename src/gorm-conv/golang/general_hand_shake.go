@@ -53,6 +53,14 @@ func GeneralGolang_HandShake(games []common.XmlCfg, outpath string) int {
 		}
 	}
 	f.WriteString("    },\n")
-	f.WriteString("}\n")
+	f.WriteString("}\n\n")
+
+	f.WriteString(`
+
+func GORM_HandShakeReq() *GORM_PB_HAND_SHAKE_REQ {
+	return &g_table_schema_info
+}
+
+`)
 	return 0
 }

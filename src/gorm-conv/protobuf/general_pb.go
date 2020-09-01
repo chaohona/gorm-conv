@@ -470,6 +470,7 @@ enum GORM_CODE
 	CACHE_ERROR        = -28; // 操作缓存错误
 	NO_VALUE           = -29; // 没有对应的值
 	INVALID_VALUE_TYPE = -30; // 无效的类型
+	NEED_HAND_SHAKE    = -31; // 客户端没有握手直接发送消息
 }
 `
 	} else {
@@ -509,6 +510,7 @@ enum GORM_CODE
 	GORM_CODE_CACHE_ERROR        = -28; // 操作缓存错误
 	GORM_CODE_NO_VALUE           = -29; // 没有对应的值
 	GORM_CODE_INVALID_VALUE_TYPE = -30; // 无效的类型
+	GORM_CODE_NEED_HAND_SHAKE    = -31; // 客户端没有握手直接发送消息
 }
 `
 	}
@@ -603,6 +605,12 @@ message GORM_PB_HAND_SHAKE_REQ
 	uint64		Version = 2;
 	uint32		Md5     = 3;
 	repeated 	GORM_PB_TABLE_SCHEMA_INFO Schemas = 4;
+}
+
+message GORM_PB_HAND_SHAKE_RSP
+{
+	optional GORM_PB_Ret_Code 		RetCode = 1;
+	uint64	ClientId	= 2;	// 客户端ID
 }
 
 // 插入暂时只能支持单挑记录插入

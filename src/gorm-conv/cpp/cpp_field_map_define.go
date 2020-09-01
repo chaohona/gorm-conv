@@ -753,6 +753,48 @@ func CPPFieldInitTableColumnInfo_ForTable(games []common.XmlCfg, f *os.File) int
 	return 0
 }
 
+func GORM_InitTableSchemaInfo(games []common.XmlCfg, f *os.File) int {
+	f.WriteString("int GORM_InitTableSchemaInfo(PB_MSG_PTR pMsgPtr)\n")
+	f.WriteString("{\n")
+	f.WriteString("    GORM_PB_HAND_SHAKE_REQ *pHandShake = dynamic_cast<GORM_PB_HAND_SHAKE_REQ*>(pMsgPtr);\n")
+	f.WriteString("    if (pHandShake == nullptr)\n")
+	f.WriteString("        return GORM_ERROR;\n")
+	f.WriteString("    GORM_PB_TABLE_SCHEMA_INFO *pInfo;\n")
+	f.WriteString("    GORM_PB_TABLE_SCHEMA_INFO_COLUMN *pColumn;\n")
+	f.WriteString("    pHandShake->mutable_header();\n")
+	f.WriteString("    pHandShake->Version = 1;\n")
+	f.WriteString("    pHandShake->Md5 = 1;\n")
+	var tableIdx int64 = 0
+	for _, game := range games {
+		for _, table := range game.DB.TableList {
+			f.WriteString("    // for table " + table.Name + "\n")
+			f.WriteString("    pInfo = pHandShake->add_schemas();\n")
+			f.WriteString("    if (pInfo == nullptr)\n")
+			f.WriteString("        return GORM_ERROR;\n")
+			var tableVer string = strconv.FormatUint(table.Version, 10)
+			f.WriteString("    pInfo->set_version(" + tableVer + ");\n")
+			f.WriteString("    pInfo->set_tablename(\"" + table.Name + "\");\n")
+			tableIdx += 1
+			var tableIdxStr string = strconv.FormatInt(tableIdx, 10)
+			f.WriteString("    pInfo->set_tableidx(" + tableIdxStr + ");\n")
+			for _, col := range table.TableColumns {
+				f.WriteString("    pColumn = pInfo->add_columns();\n")
+				f.WriteString("    if (pColumn == nullptr)\n")
+				f.WriteString("        return GORM_ERROR;\n")
+				var colVer string = strconv.FormatUint(col.Version, 10)
+				f.WriteString("    pColumn->set_version(" + colVer + ");\n")
+				f.WriteString("    pColumn->set_name(\"" + col.Name + "\");\n")
+				f.WriteString("    pColumn->set_typedesc(\"" + col.Type + "\");\n")
+				f.WriteString("    pColumn->set_type(GORM_PB_COLUMN_TYPE_" + strings.ToUpper(col.Type) + ");\n")
+			}
+		}
+	}
+
+	f.WriteString("    return GORM_OK;\n")
+	f.WriteString("}\n")
+	return 0
+}
+
 func CPPFieldInitTableColumnInfo(games []common.XmlCfg, f *os.File) int {
 	if 0 != CPPFieldInitTableColumnInfo_ForTable(games, f) {
 		return -1
@@ -801,6 +843,10 @@ namespace gorm{
 	// >> 输出函数声明
 	if 0 != CppFieldsMapDefine5(games, f) {
 		fmt.Println("CppFieldsMapDefine5 failed")
+		return -1
+	}
+	if 0 != GORM_InitTableSchemaInfo(games, f) {
+		fmt.Println("GORM_InitTableSchemaInfo failed.")
 		return -1
 	}
 	if 0 != GORM_TableHash(games, f) {
