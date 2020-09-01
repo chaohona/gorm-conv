@@ -762,8 +762,8 @@ func GORM_InitTableSchemaInfo(games []common.XmlCfg, f *os.File) int {
 	f.WriteString("    GORM_PB_TABLE_SCHEMA_INFO *pInfo;\n")
 	f.WriteString("    GORM_PB_TABLE_SCHEMA_INFO_COLUMN *pColumn;\n")
 	f.WriteString("    pHandShake->mutable_header();\n")
-	f.WriteString("    pHandShake->Version = 1;\n")
-	f.WriteString("    pHandShake->Md5 = 1;\n")
+	f.WriteString("    pHandShake->set_version(1);\n")
+	f.WriteString("    pHandShake->set_md5(1);\n")
 	var tableIdx int64 = 0
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
