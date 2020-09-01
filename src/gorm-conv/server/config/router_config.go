@@ -12,7 +12,7 @@ func GeneralRoute(game common.XmlCfg, f *os.File) int {
 		f.WriteString("  - table_name: " + table.Name + "\n")
 		f.WriteString("    router:\n")
 		for _, db := range table.RoutesTableDBList {
-			f.WriteString("      - " + db.Name + ": " + db.SplitNum + "\n")
+			f.WriteString("      - " + db.Name + ":" + db.SplitNum + "\n")
 		}
 	}
 
