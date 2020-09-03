@@ -53,8 +53,10 @@ func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 			f.WriteString("    GORM_MemPoolData *" + mempoolstr + " = nullptr;\n")
 			f.WriteString("    if(" + col_type_name + ".size()>0)\n")
 			f.WriteString("    {\n")
-			f.WriteString("        " + mempoolstr + " = GORM_MemPool::Instance()->GetData(")
-			f.WriteString(col_type_name + ".size()<<1);\n")
+
+			var bufferName string = mempoolstr
+			var bufferSize string = col_type_name + ".size()<<1"
+			PrintGetBuffFromMemPool(f, bufferName, bufferSize)
 
 			f.WriteString("        iTmpLen = mysql_real_escape_string(mysql, buffer_" + col_type_name)
 			f.WriteString("->m_uszData, " + col_type_name + ".c_str(), " + col_type_name + ".size());\n")
@@ -80,7 +82,11 @@ func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 	sprintf_str += ");\n"
 	f.WriteString("\n")
 	f.WriteString(len_str)
-	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen);\n")
+
+	var bufferName string = "pReqData"
+	var bufferSize string = "iLen"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
 
 	f.WriteString(sprintf_str)
@@ -93,7 +99,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 func CPPFieldsMapPackInsertSQL_ForTables_One(table common.TableInfo, sqlLen string, f *os.File) int {
 	f.WriteString("int GORM_PackInsertSQL")
 	f.WriteString(strings.ToUpper(table.Name))
-	f.WriteString("_ONE(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("_ONE(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString("    char *szSQLBegin = nullptr;\n")
 	f.WriteString("    int iSqlLen = " + sqlLen + ";\n")
@@ -123,7 +129,7 @@ func CPPFieldsMapPackInsertSQL_ForTables(games []common.XmlCfg, f *os.File) int 
 			}
 			f.WriteString("int GORM_PackInsertSQL")
 			f.WriteString(BigTable)
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_INSERT_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_INSERT_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    int iTableNum = pMsg->tables_size();\n")
 			f.WriteString("    if (iTableNum == 0)\n")
@@ -138,7 +144,7 @@ func CPPFieldsMapPackInsertSQL_ForTables(games []common.XmlCfg, f *os.File) int 
 			f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
 			f.WriteString("#endif\n")
-			f.WriteString("        return GORM_PackInsertSQL" + BigTable + "_ONE(pMySQLEvent, mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
+			f.WriteString("        return GORM_PackInsertSQL" + BigTable + "_ONE(pMemPool, pMySQLEvent, mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")
 			f.WriteString("}\n")

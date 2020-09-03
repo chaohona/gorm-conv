@@ -45,9 +45,12 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table common.TableI
 			f.WriteString("            int iTmpLen = 0;\n")
 			f.WriteString("            if (strData.size() > 0)\n")
 			f.WriteString("            {\n")
-			f.WriteString(`
-				pDataBuffer = GORM_MemPool::Instance()->GetData(strData.size()<<1);
-                iTmpLen=mysql_real_escape_string(mysql, pDataBuffer->m_uszData, strData.c_str(), strData.size());
+
+			var bufferName string = "pDataBuffer"
+			var bufferSize string = "strData.size()<<1"
+			PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
+			f.WriteString(`                    iTmpLen=mysql_real_escape_string(mysql, pDataBuffer->m_uszData, strData.c_str(), strData.size());
                 pDataBuffer->m_uszData[iTmpLen] = 0;
                 pDataBuffer->m_sUsedSize = iTmpLen;
                 szData = pDataBuffer->m_uszData;`)
@@ -79,7 +82,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 	var BigTable string = strings.ToUpper(table.Name)
 	var defineSQL string = CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table, false)
 	f.WriteString((defineSQL))
-	f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", const GORM_PB_REQ_HEADER &header, GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(shared_ptr<GORM_MemPool> &pMemPool, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", const GORM_PB_REQ_HEADER &header, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString(`
 	string fieldMode = header.fieldmode();
@@ -90,7 +93,11 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 
 	f.WriteString("    int iLen = strlen(GetByNonPrimaySQL_" + BigTable + ");\n")
 	f.WriteString("    int iTotalLen = 64*vFields.size() + iLen + table_" + table.Name + ".ByteSizeLong();\n")
-	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iTotalLen);\n")
+
+	var bufferName string = "pReqData"
+	var bufferSize string = "iTotalLen"
+	f.WriteString("    GORM_MallocFromSharedPool(pMemPool, " + bufferName + ", " + bufferSize + ");\n")
+
 	f.WriteString("    char *szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString("    iLen = GORM_SafeSnprintf(szSQLBegin, iLen, GetByNonPrimaySQL_" + BigTable + ", iTableIndex);\n")
 	f.WriteString("    for(int i=0; i<vFields.size(); i++)\n")
@@ -114,7 +121,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_OneDEBUG(table common.Table
 	var defineSQL string = CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table, true)
 	f.WriteString("#ifdef GORM_DEBUG\n")
 	f.WriteString((defineSQL))
-	f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One_DEBUG(GORM_MySQLEvent *pMySQLEvent, int iTableIndex, const GORM_PB_CUSTEM_COLUMNS &pbColumns, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", const GORM_PB_REQ_HEADER &header, GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One_DEBUG(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, int iTableIndex, const GORM_PB_CUSTEM_COLUMNS &pbColumns, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", const GORM_PB_REQ_HEADER &header, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString(`
 	MYSQL* mysql = pMySQLEvent->m_pMySQL;
@@ -126,7 +133,11 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_OneDEBUG(table common.Table
 
 	f.WriteString("    int iLen = strlen(GetByNonPrimaySQL_" + BigTable + "_DEBUG);\n")
 	f.WriteString("    int iTotalLen = 64*vFields.size() + pbColumns.ByteSizeLong() + iLen + table_" + table.Name + ".ByteSizeLong();\n")
-	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iTotalLen);\n")
+
+	var bufferName string = "pReqData"
+	var bufferSize string = "iTotalLen"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("    char *szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString("    strncpy(szSQLBegin, " + "GetByNonPrimaySQL_" + BigTable + "_DEBUG, iLen);\n")
 	var columnLen string = strconv.FormatInt(int64(len(table.TableColumns)), 10)
@@ -165,7 +176,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []common.XmlCfg, f *o
 			var BigTable string = strings.ToUpper(table.Name)
 			f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL")
 			f.WriteString(BigTable)
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString(`
 	if (!pMsg->has_header())
@@ -182,9 +193,9 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []common.XmlCfg, f *o
 			f.WriteString("        const GORM_PB_Table_" + table.Name + " &table_" + table.Name + " = table." + table.Name + "();\n")
 			f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One_DEBUG(pMySQLEvent, iTableIndex, table.custom_columns(), table_" + table.Name + ", pMsg->header(), pReqData);\n")
+			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One_DEBUG(pMemPool, pMySQLEvent, iTableIndex, table.custom_columns(), table_" + table.Name + ", pMsg->header(), pReqData);\n")
 			f.WriteString("#endif\n")
-			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(mysql, iTableIndex, table_" + table.Name + ", pMsg->header(), pReqData);\n")
+			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(pMemPool, mysql, iTableIndex, table_" + table.Name + ", pMsg->header(), pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")
 			f.WriteString("}\n")

@@ -48,7 +48,12 @@ func CPPFieldsMapPackDeleteSQL_ForTables_DefineSQL(table common.TableInfo) (stri
 func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL_NoSplit(table common.TableInfo, f *os.File) int {
 	var ilenstr string = "    int iLen = iSqlLen + 256 + 13*" + strconv.FormatInt(int64(len(table.TableColumns)), 10) + " + pMsg->ByteSizeLong();\n"
 	f.WriteString(ilenstr)
-	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen);\n")
+	//f.WriteString("    pReqData = pMemPool->GetData(iLen);\n")
+
+	var bufferName string = "pReqData"
+	var bufferSize string = "iLen"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString("    memcpy(szSQLBegin, " + strings.ToUpper(table.Name) + "DELETESQL, iSqlLen);\n\n")
 
@@ -126,7 +131,11 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 				f.WriteString("    GORM_MemPoolData *buffer_" + table_col + " = nullptr;\n")
 				f.WriteString("    if(" + table_col + ".size() > 0)\n")
 				f.WriteString("    {\n")
-				f.WriteString("        buffer_" + table_col + " = GORM_MemPool::Instance()->GetData(" + table_col + ".size()<<1);\n")
+
+				var bufferName string = "buffer_" + table_col
+				var bufferSize string = table_col + ".size()<<1"
+				PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 				f.WriteString("        iTmpLen=mysql_real_escape_string(mysql, buffer_" + table_col + "->m_uszData, " + table_col + ".c_str(), " + table_col + ".size());\n")
 				f.WriteString("        buffer_" + table_col + "->m_uszData[iTmpLen] = 0;\n")
 				f.WriteString("        buffer_" + table_col + "->m_sUsedSize = iTmpLen;\n")
@@ -149,7 +158,11 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 	ilenstr += " + pMsg->ByteSizeLong();\n"
 	GORM_SafeSnprintfstr += ");\n"
 	f.WriteString(ilenstr)
-	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen);\n")
+
+	var bufferName string = "pReqData"
+	var bufferSize string = "iLen"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString(GORM_SafeSnprintfstr)
 	f.WriteString("    pReqData->m_sUsedSize = iLen;\n\n")
@@ -171,7 +184,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables(games []common.XmlCfg, f *os.File) int 
 
 			f.WriteString("int GORM_PackDeleteSQL")
 			f.WriteString(strings.ToUpper(table.Name))
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_DELETE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_DELETE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    if (!pMsg->has_header())\n")
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")

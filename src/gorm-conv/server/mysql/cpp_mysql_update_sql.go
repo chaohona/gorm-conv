@@ -62,7 +62,11 @@ func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL_FORVARIABLE(table common.TableI
 	f.WriteString("    GORM_MemPoolData *buffer_" + table_col + " = nullptr;\n")
 	f.WriteString("    if(" + table_col + ".size() > 0)\n")
 	f.WriteString("    {\n")
-	f.WriteString("        buffer_" + table_col + " = GORM_MemPool::Instance()->GetData(" + table_col + ".size()<<1);\n")
+
+	var bufferName string = "buffer_" + table_col
+	var bufferSize string = table_col + ".size()<<1"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("        iTmpLen=mysql_real_escape_string(mysql, buffer_" + table_col + "->m_uszData, " + table_col + ".c_str(), " + table_col + ".size());\n")
 	f.WriteString("        buffer_" + table_col + "->m_uszData[iTmpLen] = 0;\n")
 	f.WriteString("        buffer_" + table_col + "->m_sUsedSize = iTmpLen;\n")
@@ -114,8 +118,12 @@ func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table common.TableInfo, f *os.
 	}
 	f.WriteString(" + " + strconv.FormatInt(intLen, 10))
 	f.WriteString(";\n")
-	f.WriteString("    GORM_MemPoolData *buffer_" + table.Name + "_where = nullptr;\n")
-	f.WriteString("    buffer_" + table.Name + "_where = GORM_MemPool::Instance()->GetData(iWhereLen);\n")
+	var bufferName string = "buffer_" + table.Name + "_where"
+	f.WriteString("    GORM_MemPoolData *" + bufferName + " = nullptr;\n")
+
+	var bufferSize string = "iWhereLen"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("    iWhereLen = 0;\n")
 	f.WriteString("    char *szWhereBegin = buffer_" + table.Name + "_where->m_uszData;\n")
 	f.WriteString("    iWhereLen += GORM_SafeSnprintf(szWhereBegin+iWhereLen,  buffer_" + table.Name + "_where->m_sCapacity, " + strings.ToUpper(table.Name) + "UPDATEWHERESQL ")
@@ -155,7 +163,10 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table common.TableInfo, f *os.Fi
 	f.WriteString(strconv.FormatInt(intLen, 10))
 	f.WriteString(";\n")
 
-	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen+iWhereLen+1);\n")
+	var bufferName string = "pReqData"
+	var bufferSize string = "iLen+iWhereLen+1"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString("    int iUpdateLen = GORM_SafeSnprintf(szSQLBegin, iLen, " + upTableName + "UPDATESQL, iTableIndex);\n")
 	f.WriteString("    szSQLBegin += iUpdateLen;\n")
@@ -242,7 +253,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables(games []common.XmlCfg, f *os.File) int 
 
 			f.WriteString("int GORM_PackUpdateSQL")
 			f.WriteString(strings.ToUpper(table.Name))
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_UPDATE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_UPDATE_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    if (!pMsg->has_header())\n")
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")

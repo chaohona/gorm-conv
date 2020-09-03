@@ -66,7 +66,7 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL(table common.TableInfo) (string,
 
 func CPPFieldsMapPackGetSQL_ForTables_One(table common.TableInfo, strsqllen string, f *os.File) int {
 	var bigtable string = strings.ToUpper(table.Name)
-	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE(MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE(shared_ptr<GORM_MemPool> &pMemPool, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	var ilenstr string = "    int iLen = iSqlLen + 128"
 	var GORM_SafeSnprintfstr string = "    iLen = GORM_SafeSnprintf(szSQLBegin, iLen, " + strings.ToUpper(table.Name) + "GETSQL, iTableIndex"
@@ -100,7 +100,11 @@ func CPPFieldsMapPackGetSQL_ForTables_One(table common.TableInfo, strsqllen stri
 				f.WriteString("    GORM_MemPoolData *buffer_" + table_col + " = nullptr;\n")
 				f.WriteString("    if(" + table_col + ".size() > 0)\n")
 				f.WriteString("    {\n")
-				f.WriteString("        buffer_" + table_col + " = GORM_MemPool::Instance()->GetData(" + table_col + ".size()<<1);\n")
+
+				var bufferName string = "buffer_" + table_col
+				var bufferSize string = table_col + ".size()<<1"
+				PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 				f.WriteString("        iTmpLen=mysql_real_escape_string(mysql, buffer_" + table_col + "->m_uszData, " + table_col + ".c_str(), " + table_col + ".size());\n")
 				f.WriteString("        buffer_" + table_col + "->m_uszData[iTmpLen] = 0;\n")
 				f.WriteString("        buffer_" + table_col + "->m_sUsedSize = iTmpLen;\n")
@@ -123,7 +127,11 @@ func CPPFieldsMapPackGetSQL_ForTables_One(table common.TableInfo, strsqllen stri
 	ilenstr += " + table_" + table.Name + ".ByteSizeLong();\n"
 	GORM_SafeSnprintfstr += ");\n"
 	f.WriteString(ilenstr)
-	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iLen);\n")
+
+	var bufferName string = "pReqData"
+	var bufferSize string = "iLen"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString(GORM_SafeSnprintfstr)
 	f.WriteString("    pReqData->m_sUsedSize = iLen;\n\n")
@@ -139,7 +147,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table common.TableInfo, strsqlle
 	var bigtable string = strings.ToUpper(table.Name)
 	f.WriteString("#define " + bigtable + "GETSQL_DEBUG_WHERE \"" + where + "\n")
 
-	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE_DEBUG(GORM_MySQLEvent *pMySQLEvent, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackGetSQL" + bigtable + "_ONE_DEBUG(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString(`
 	MYSQL* mysql = pMySQLEvent->m_pMySQL;
@@ -159,7 +167,11 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table common.TableInfo, strsqlle
 	f.WriteString("        return GORM_ERROR;\n")
 	f.WriteString("    int iTotalLen = iSqlLen + 128 + 64*columnMap.size() + table_" + table.Name + ".ByteSizeLong();\n")
 	f.WriteString("    int iLen = 7;\n")
-	f.WriteString("    pReqData = GORM_MemPool::Instance()->GetData(iTotalLen);\n")
+
+	var bufferName string = "pReqData"
+	var bufferSize string = "iTotalLen"
+	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 	f.WriteString("    szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString("    memcpy(szSQLBegin, \"select \", 7);\n")
 	f.WriteString("    int idx = 0;\n")
@@ -201,7 +213,11 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table common.TableInfo, strsqlle
 				f.WriteString("    GORM_MemPoolData *buffer_" + table_col + " = nullptr;\n")
 				f.WriteString("    if(" + table_col + ".size() > 0)\n")
 				f.WriteString("    {\n")
-				f.WriteString("        buffer_" + table_col + " = GORM_MemPool::Instance()->GetData(" + table_col + ".size()<<1);\n")
+
+				var bufferName string = "buffer_" + table_col
+				var bufferSize string = table_col + ".size()<<1"
+				PrintGetBuffFromMemPool(f, bufferName, bufferSize)
+
 				f.WriteString("        iTmpLen=mysql_real_escape_string(mysql, buffer_" + table_col + "->m_uszData, " + table_col + ".c_str(), " + table_col + ".size());\n")
 				f.WriteString("        buffer_" + table_col + "->m_uszData[iTmpLen] = 0;\n")
 				f.WriteString("        buffer_" + table_col + "->m_sUsedSize = iTmpLen;\n")
@@ -269,7 +285,7 @@ func CPPFieldsMapPackGetSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 
 			f.WriteString("int GORM_PackGetSQL")
 			f.WriteString(strings.ToUpper(table.Name))
-			f.WriteString("(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_GET_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
+			f.WriteString("(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableIndex, const GORM_PB_GET_REQ* pMsg, GORM_MemPoolData *&pReqData)\n")
 			f.WriteString("{\n")
 			f.WriteString("    if (!pMsg->has_header())\n")
 			f.WriteString("        return GORM_REQ_MSG_NO_HEADER;\n")
@@ -293,9 +309,9 @@ func CPPFieldsMapPackGetSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("    \n")
 			f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("    GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE_DEBUG(pMySQLEvent, iTableIndex, table_" + table.Name + ", pReqData);\n")
+			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE_DEBUG(pMemPool, pMySQLEvent, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("#endif\n")
-			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE(mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
+			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE(pMemPool, mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("}\n")
 		}
 	}

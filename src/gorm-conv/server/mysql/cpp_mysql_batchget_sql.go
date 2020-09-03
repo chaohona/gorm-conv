@@ -7,7 +7,7 @@ import (
 )
 
 func CPPFieldsMapPackBatchGetSQL(games []common.XmlCfg, f *os.File) int {
-	f.WriteString("int GORM_PackGetSQLTable(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableId, uint32 uiHashValue, const GORM_PB_TABLE& table, GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackGetSQLTable(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableId, uint32 uiHashValue, const GORM_PB_TABLE& table, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 
 	f.WriteString("    switch (iTableId)\n")
@@ -24,7 +24,7 @@ func CPPFieldsMapPackBatchGetSQL(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
 			f.WriteString("#endif\n")
 			var tableIndex string = "uiHashValue"
-			f.WriteString("        return GORM_PackGetSQL" + bigTable + "_ONE(mysql, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
+			f.WriteString("        return GORM_PackGetSQL" + bigTable + "_ONE(pMemPool, mysql, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
 			f.WriteString("    }\n")
 		}
 	}
@@ -35,7 +35,7 @@ func CPPFieldsMapPackBatchGetSQL(games []common.XmlCfg, f *os.File) int {
 }
 
 func CPPFieldsMapPackInsertTableSQL(games []common.XmlCfg, f *os.File) int {
-	f.WriteString("int GORM_PackInsertSQLTable(GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableId, uint32 uiHashValue, const GORM_PB_TABLE& table, GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackInsertSQLTable(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, MYSQL* mysql, int iTableId, uint32 uiHashValue, const GORM_PB_TABLE& table, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 
 	f.WriteString("    switch (iTableId)\n")
@@ -52,7 +52,7 @@ func CPPFieldsMapPackInsertTableSQL(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
 			f.WriteString("#endif\n")
 			var tableIndex string = "uiHashValue"
-			f.WriteString("        return GORM_PackInsertSQL" + bigTable + "_ONE(pMySQLEvent, pMySQLEvent->m_pMySQL, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
+			f.WriteString("        return GORM_PackInsertSQL" + bigTable + "_ONE(pMemPool, pMySQLEvent, pMySQLEvent->m_pMySQL, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
 			f.WriteString("    }\n")
 		}
 	}
