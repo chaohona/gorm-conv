@@ -9,6 +9,11 @@ import (
 func GeneralRoute(game common.XmlCfg, f *os.File) int {
 	f.WriteString("table_route:\n")
 	for _, table := range game.DB.Routes.TableList {
+		tableInfo, ret := game.DB.GetTableInfo(table.Name)
+		if !ret || tableInfo == nil {
+			fmt.Println("table route was configed, but there is not table, tablename:" + table.Name)
+			continue
+		}
 		f.WriteString("  - table_name: " + table.Name + "\n")
 		f.WriteString("    router:\n")
 		for _, db := range table.RoutesTableDBList {

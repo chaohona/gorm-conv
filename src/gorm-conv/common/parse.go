@@ -92,6 +92,16 @@ type GiantGame struct {
 	Version   uint64      `xml:"version,attr"`
 }
 
+func (this *GiantGame) GetTableInfo(tableName string) (*TableInfo, bool) {
+	for idx, table := range this.TableList {
+		if table.Name == tableName {
+			return &this.TableList[idx], true
+		}
+	}
+
+	return nil, false
+}
+
 type XmlCfg struct {
 	DB   GiantGame
 	File string
