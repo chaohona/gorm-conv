@@ -14,29 +14,21 @@ func GetPBString(c common.TableColumn) string {
 		{
 			return "double " + c.Name
 		}
-	case "int8", "uint8":
+	case "int8", "int", "int32":
 		{
-			return "int32 " + c.Name
+			return "sfixed32 " + c.Name
 		}
-	case "int", "int32":
+	case "uint8", "uint32":
 		{
-			//return "sfixed32 " + c.Name
-			return "int32 " + c.Name
-		}
-	case "uint32":
-		{
-			//return "fixed32" + c.Name
-			return "uint32" + c.Name
+			return "fixed32" + c.Name
 		}
 	case "long", "int64":
 		{
-			//return "sfixed64 " + c.Name
-			return "int64 " + c.Name
+			return "sfixed64 " + c.Name
 		}
 	case "uint64":
 		{
-			//return "fixed64 " + c.Name
-			return "uint64 " + c.Name
+			return "fixed64 " + c.Name
 		}
 	case "string", "char":
 		{
@@ -104,7 +96,7 @@ func GeneralPBFile(game common.XmlCfg, outpath string) int {
 	/*
 		   message GORM_PB_Table_account
 		   {
-				uint64	version = 1;
+				fixed64	version = 1;
 				int id = 2;
 				string account = 3;
 				string allbinary = 4;
@@ -290,10 +282,10 @@ enum GORM_PB_COLUMN_TYPE
 message GORM_PB_COLUMN_VALUE
 {
 	optional GORM_PB_COLUMN_TYPE	type 		= 1;
-	optional uint64				uintvalue 	= 2;
-	optional int64				intvalue 	= 3;
-	optional double				doublevalue = 4;
-	optional string				stringvalue	= 5;
+	optional fixed64				uintvalue 	= 2;
+	optional sfixed64				intvalue 	= 3;
+	optional double					doublevalue = 4;
+	optional string					stringvalue	= 5;
 }
 
 message GORM_PB_COLUMN
@@ -325,7 +317,7 @@ message GORM_PB_CUSTEM_COLUMNS
 	f.WriteString(custom_columns)
 	var table string = `message GORM_PB_TABLE
 {
-	optional int32 TableId = 1;
+	optional sfixed32 TableId = 1;
 	optional GORM_PB_CUSTEM_COLUMNS	custom_columns = 2;
 `
 	if *common.Protoversion == "3" {
@@ -340,7 +332,6 @@ message GORM_PB_CUSTEM_COLUMNS
 	tableIndx = 2
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
-			//GORM_PB_Table_account account = 1;
 			tableIndx += 1
 			out := "	" + common.Proto_optional + " GORM_PB_Table_" + table.Name + " " + table.Name + " = "
 			out += strconv.FormatInt(int64(tableIndx), 10)
@@ -376,7 +367,6 @@ message GORM_PB_CUSTEM_COLUMNS
 	}
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
-			//GORM_PB_Table_account account = 1;
 			tableIndx += 1
 			out := "	repeated GORM_PB_Table_" + table.Name + " " + table.Name + " = "
 			out += strconv.FormatInt(int64(tableIndx), 10)
@@ -537,7 +527,7 @@ message GORM_PB_SPLIT_INFO
 {
 	message GORM_COLUMN_VALUE
 	{
-		optional int32 	Column = 1;
+		optional sfixed32 	Column = 1;
 		optional bytes 	Value = 2;
 	}
 	repeated GORM_COLUMN_VALUE SplitInfo = 1;
@@ -545,17 +535,17 @@ message GORM_PB_SPLIT_INFO
 
 message GORM_PB_Ret_Code 
 {
-	optional int32 	Code = 1;			// 0 为成功，-1为失败，-4为部分失败
-	optional int32 	DBCode = 2;			// 后端db的错误码
+	optional sfixed32 	Code = 1;			// 0 为成功，-1为失败，-4为部分失败
+	optional sfixed32 	DBCode = 2;			// 后端db的错误码
 	optional string 	DBErrInfo = 3;		// 后端db错误的详细信息
-	optional int32	SucessNum	 = 4;	// 成功的请求个数
-	optional int32 	TotalNum	 = 5;	// 所有的请求
+	optional sfixed32	SucessNum	 = 4;	// 成功的请求个数
+	optional sfixed32 	TotalNum	 = 5;	// 所有的请求
 }
 
 message GORM_PB_RELOAD_TABLE_REQ
 {
 	optional GORM_PB_REQ_HEADER 		Header = 1; 
-	optional uint64 					TableVersion = 2;
+	optional fixed64 					TableVersion = 2;
 }
 
 message GORM_PB_RELOAD_TABLE_RSP
@@ -565,10 +555,10 @@ message GORM_PB_RELOAD_TABLE_RSP
 
 message GORM_PB_REQ_HEADER 
 {
-	optional int32   				TableId	 = 1;	// 表的类型
-	optional int32    				BusinessID = 2;	// 串行化ID
-	optional int32 					VerPolice = 3;	// 版本校验规则
-	optional uint32 				ReqFlag  = 4;	// 参见GORM_CMD_FLAG_XXX
+	optional sfixed32   			TableId	 = 1;	// 表的类型
+	optional sfixed32    			BusinessID = 2;	// 串行化ID
+	optional sfixed32 				VerPolice = 3;	// 版本校验规则
+	optional fixed32 				ReqFlag  = 4;	// 参见GORM_CMD_FLAG_XXX
 	optional bytes					FieldMode	= 5;
 	optional GORM_PB_SPLIT_INFO 	SplitTableInfo = 6;	// 分库分表信息
 }
@@ -585,7 +575,7 @@ message GORM_PB_HEART_RSP
 
 message GORM_PB_TABLE_SCHEMA_INFO_COLUMN
 {
-	uint64	Version = 1;
+	fixed64	Version = 1;
 	string 	Name = 2;
 	string	TypeDesc = 3;
 	GORM_PB_COLUMN_TYPE Type = 4;
@@ -593,97 +583,97 @@ message GORM_PB_TABLE_SCHEMA_INFO_COLUMN
 
 message GORM_PB_TABLE_SCHEMA_INFO
 {
-	uint64	Version = 1;
-	string 	TableName = 2;
-	int32  	TableIdx = 3;
-	repeated GORM_PB_TABLE_SCHEMA_INFO_COLUMN Columns = 4;
+	fixed64		Version = 1;
+	string 		TableName = 2;
+	sfixed32  	TableIdx = 3;
+	repeated 	GORM_PB_TABLE_SCHEMA_INFO_COLUMN Columns = 4;
 }
 
 message GORM_PB_HAND_SHAKE_REQ
 {
 	GORM_PB_REQ_HEADER 		Header = 1;
-	uint64		Version = 2;
-	uint32		Md5     = 3;
+	fixed64		Version = 2;
+	fixed32		Md5     = 3;
 	repeated 	GORM_PB_TABLE_SCHEMA_INFO Schemas = 4;
 }
 
 message GORM_PB_HAND_SHAKE_RSP
 {
 	optional GORM_PB_Ret_Code 		RetCode = 1;
-	uint64	ClientId	= 2;	// 客户端ID
+	fixed64	 ClientId	= 2;	// 客户端ID
 }
 
 // 插入暂时只能支持单挑记录插入
 message GORM_PB_INSERT_REQ
 {
-	optional GORM_PB_REQ_HEADER 		Header = 1;
-	repeated GORM_PB_TABLE 	Tables = 2;
+	optional GORM_PB_REQ_HEADER 	Header = 1;
+	repeated GORM_PB_TABLE 			Tables = 2;
 }
 
 message GORM_PB_INSERT_RSP
 {
 	optional GORM_PB_Ret_Code 		RetCode = 1;
-	repeated GORM_PB_TABLE 	Tables = 2;	// 如果需要回带数据，则将数据带回
-	optional uint64					LastInsertId = 3;
+	repeated GORM_PB_TABLE 			Tables = 2;	// 如果需要回带数据，则将数据带回
+	optional fixed64				LastInsertId = 3;
 }
 
 message GORM_PB_UPDATE_REQ
 {
-	optional GORM_PB_REQ_HEADER 		Header 	= 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;
+	optional GORM_PB_REQ_HEADER 	Header 	= 1;
+	repeated GORM_PB_TABLE 			Tables 	= 2;
 }
 
 message GORM_PB_UPDATE_RSP
 {
 	optional GORM_PB_Ret_Code 		RetCode = 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;	// 如果需要回带数据，则将数据带回
-	optional int32					AffectedNum = 3;
+	repeated GORM_PB_TABLE 			Tables 	= 2;	// 如果需要回带数据，则将数据带回
+	optional sfixed32				AffectedNum = 3;
 }
 
 message GORM_PB_REPLACE_REQ
 {
-	optional GORM_PB_REQ_HEADER 		Header 	= 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;
+	optional GORM_PB_REQ_HEADER 	Header 	= 1;
+	repeated GORM_PB_TABLE 			Tables 	= 2;
 }
 
 message GORM_PB_REPLACE_RSP
 {
 	optional GORM_PB_Ret_Code 		RetCode = 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;	// 如果需要回带数据，则将数据带回
-	optional int32					AffectedNum = 3;
+	repeated GORM_PB_TABLE 			Tables 	= 2;	// 如果需要回带数据，则将数据带回
+	optional sfixed32				AffectedNum = 3;
 }
 
 message GORM_PB_GET_REQ 
 {
 	optional GORM_PB_REQ_HEADER 	Header 	= 1;
-	optional GORM_PB_TABLE		Table	= 2;
-	optional int32	GetFlag = 3;
+	optional GORM_PB_TABLE			Table	= 2;
+	optional sfixed32				GetFlag = 3;
 }
 
 message GORM_PB_GET_RSP
 {
-	optional GORM_PB_Ret_Code 	RetCode = 1;
-	optional GORM_PB_TABLE 		Table 	= 2;
-	optional int32				NewInsert = 3;	// 结果是否是新插入的
-	optional uint64				LastInsertId = 4;	// 结果是否是新插入的
+	optional GORM_PB_Ret_Code 		RetCode = 1;
+	optional GORM_PB_TABLE 			Table 	= 2;
+	optional sfixed32				NewInsert = 3;	// 结果是否是新插入的
+	optional fixed64				LastInsertId = 4;	// 结果是否是新插入的
 }
 
 message GORM_PB_BATCH_GET_REQ 
 {
 	optional GORM_PB_REQ_HEADER 		Header 	= 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;	// 如果需要回带数据，则将数据带回
+	repeated GORM_PB_TABLE 				Tables 	= 2;	// 如果需要回带数据，则将数据带回
 }
 
 message GORM_PB_BATCH_GET_RSP
 {
 	optional GORM_PB_Ret_Code 		RetCode = 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;
+	repeated GORM_PB_TABLE 			Tables 	= 2;
 }
 
 message GORM_PB_INCREASE_REQ
 {
 	optional GORM_PB_REQ_HEADER 			Header 	 = 1;
-	repeated GORM_PB_TABLE 		Tables 	= 2;
+	repeated GORM_PB_TABLE 					Tables 	= 2;
 	optional string 						PlusColumns = 3;	// 增加的字段
 	optional string 						MinusColumns = 4;	// 减少的字段
 }
@@ -691,44 +681,44 @@ message GORM_PB_INCREASE_REQ
 message GORM_PB_INCREASE_RSP
 {
 	optional GORM_PB_Ret_Code 			RetCode = 1;
-	repeated GORM_PB_TABLE 		Tables 	= 2;
-	optional int32						AffectedNum = 3;
+	repeated GORM_PB_TABLE 				Tables 	= 2;
+	optional sfixed32					AffectedNum = 3;
 }
 
 message GORM_PB_DELETE_REQ
 {
 	optional GORM_PB_REQ_HEADER 		Header = 1;
-	optional GORM_PB_TABLE			Table	= 2;
+	optional GORM_PB_TABLE				Table	= 2;
 }
 
 message GORM_PB_DELETE_RSP
 {
-	optional GORM_PB_Ret_Code 		RetCode = 1;
-	optional int32					AffectedNum = 2;
+	optional GORM_PB_Ret_Code 			RetCode = 1;
+	optional sfixed32					AffectedNum = 2;
 }
 
 message GORM_PB_GET_BY_PARTKEY_REQ
 {
 	optional GORM_PB_REQ_HEADER 		Header = 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;	// 如果需要回带数据，则将数据带回
+	repeated GORM_PB_TABLE 				Tables 	= 2;	// 如果需要回带数据，则将数据带回
 }
 
 message GORM_PB_GET_BY_PARTKEY_RSP
 {
 	optional GORM_PB_Ret_Code 		RetCode = 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;
+	repeated GORM_PB_TABLE 			Tables 	= 2;
 }
 
 message GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ
 {
 	optional GORM_PB_REQ_HEADER 		Header = 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;	// 如果需要回带数据，则将数据带回
+	repeated GORM_PB_TABLE 				Tables 	= 2;	// 如果需要回带数据，则将数据带回
 }
 
 message GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP
 {
 	optional GORM_PB_Ret_Code 		RetCode = 1;
-	repeated GORM_PB_TABLE 	Tables 	= 2;
+	repeated GORM_PB_TABLE 			Tables 	= 2;
 }
 `
 	if *common.Protoversion == "3" {
