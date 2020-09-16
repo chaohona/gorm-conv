@@ -150,6 +150,7 @@ func GetXmlCfg(infile string) (GiantGame, int) {
 }
 
 func ParseSplitInfo(table *TableInfo) int {
+	table.SplitInfo.SplitCols = []string{}
 	if table.SplitInfo.Columns == "" {
 		return 0
 	}

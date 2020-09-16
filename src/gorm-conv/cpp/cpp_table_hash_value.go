@@ -43,33 +43,6 @@ func GORM_TableHash(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("        if (iTotalLen > 1024)\n")
 			f.WriteString("            iTotalLen = 1024;\n")
 			f.WriteString("        return GORM_Hash::Crc32_1((const char*)szSrcHash, iTotalLen);\n")
-			/*var iSplitNum int = len(table.SplitInfo.SplitCols)
-			if iSplitNum > 4 {
-				iSplitNum = 4
-			}
-			f.WriteString("        return GORM_Hash::Crc32_" + strconv.FormatInt(int64(iSplitNum), 10) + "(")
-			for idx, s := range table.SplitInfo.SplitCols {
-				for _, c := range table.TableColumns {
-					var cBIG string = strings.ToUpper(c.Name)
-					if s == c.Name {
-						if idx != 0 {
-							f.WriteString(", ")
-						}
-						var cType string = CPPField_CPPType(c.Type)
-						if cType == "string" {
-							f.WriteString("str" + cBIG + ".c_str(), str" + cBIG + ".size()")
-						} else {
-							var iLen int = CPPTypeLen(c.Type)
-							f.WriteString("(const char*)&num" + cBIG + ", " + strconv.FormatInt(int64(iLen), 10))
-						}
-						break
-					}
-				}
-				if idx == 3 {
-					break
-				}
-			}
-			f.WriteString(");\n")*/
 			f.WriteString("    }\n")
 		}
 	}
