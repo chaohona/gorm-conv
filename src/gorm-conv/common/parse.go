@@ -30,6 +30,8 @@ type PrimaryKey struct {
 }
 
 type TableColumn struct {
+	GoName       string
+	CPPName      string
 	Name         string `xml:"name,attr"`
 	Type         string `xml:"type,attr"`
 	NotNull      bool   `xml:"notnull,attr"`
@@ -216,6 +218,12 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 			for i, c := range table.TableColumns {
 				table.TableColumns[i].Name = strings.ToLower(c.Name)
 				table.TableColumns[i].Type = strings.ToLower(c.Type)
+				c.GoName = c.Name
+				c.CPPName = c.Name
+				if c.Name == "int" {
+					c.CPPName = "int_"
+					c.Name = "int_"
+				}
 			}
 			if 0 != ParseSplitInfo(table) {
 				return nil, -1

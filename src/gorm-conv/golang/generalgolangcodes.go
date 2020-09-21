@@ -33,6 +33,9 @@ func getGolangPbFieldName(srcField string) string {
 	var strList []string = strings.Split(srcField, "_")
 	var result string
 	for idx, s := range strList {
+		if len(s) == 0 {
+			continue
+		}
 		if byte(s[0]) >= 'A' && byte(s[0]) <= 'Z' {
 			if idx != 0 {
 				result += "_"
@@ -144,7 +147,7 @@ func GORM_GetTableName(tableId int32) string {
 			var bigTable string = strings.ToUpper(table.Name)
 			f.WriteString("    " + strconv.FormatInt(int64(index), 10) + ": map[string]int32{\n")
 			for _, col := range table.TableColumns {
-				var bigColName string = strings.ToUpper(col.Name)
+				var bigColName string = strings.ToUpper(col.GoName)
 				var colValue string = "GORM_PB_" + bigTable + "_FIELD_INDEX_GORM_PB_FIELD_" + bigTable + "_" + bigColName
 				f.WriteString("        \"" + col.Name + "\": int32(" + colValue + "),\n")
 			}
@@ -257,8 +260,8 @@ func GORM_SetTableFieldValue(games []common.XmlCfg, f *os.File, bStr bool) {
 					}
 				}
 
-				f.WriteString("        case GORM_PB_" + bigTable + "_FIELD_INDEX_GORM_PB_FIELD_" + bigTable + "_" + strings.ToUpper(col.Name) + ":\n")
-				f.WriteString("            " + table.Name + "." + getGolangPbFieldName(col.Name) + " = " + colType + "(value)\n")
+				f.WriteString("        case GORM_PB_" + bigTable + "_FIELD_INDEX_GORM_PB_FIELD_" + bigTable + "_" + strings.ToUpper(col.GoName) + ":\n")
+				f.WriteString("            " + table.Name + "." + getGolangPbFieldName(col.GoName) + " = " + colType + "(value)\n")
 				f.WriteString("            return GORM_CODE_OK\n")
 			}
 			f.WriteString("        }\n")
@@ -289,8 +292,8 @@ func GORM_GetTableFieldValue(games []common.XmlCfg, f *os.File, bStr bool, inTyp
 					}
 				}
 
-				f.WriteString("        case GORM_PB_" + bigTable + "_FIELD_INDEX_GORM_PB_FIELD_" + bigTable + "_" + strings.ToUpper(col.Name) + ":\n")
-				f.WriteString("            return " + inType + "(" + table.Name + "." + getGolangPbFieldName(col.Name) + "), GORM_CODE_OK\n")
+				f.WriteString("        case GORM_PB_" + bigTable + "_FIELD_INDEX_GORM_PB_FIELD_" + bigTable + "_" + strings.ToUpper(col.GoName) + ":\n")
+				f.WriteString("            return " + inType + "(" + table.Name + "." + getGolangPbFieldName(col.GoName) + "), GORM_CODE_OK\n")
 			}
 			f.WriteString("        }\n")
 		}
