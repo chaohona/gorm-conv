@@ -215,14 +215,16 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 				tIndex.Columns = strings.ToLower(tIndex.Columns)
 				tIndex.Name = strings.ToLower(tIndex.Name)
 			}
+			var colName string
 			for i, c := range table.TableColumns {
-				table.TableColumns[i].Name = strings.ToLower(c.Name)
+				colName = strings.ToLower(c.Name)
+				table.TableColumns[i].Name = colName
 				table.TableColumns[i].Type = strings.ToLower(c.Type)
-				c.GoName = c.Name
-				c.CPPName = c.Name
-				if c.Name == "int" {
-					c.CPPName = "int_"
-					c.Name = "int_"
+				table.TableColumns[i].GoName = colName
+				table.TableColumns[i].CPPName = colName
+				if colName == "int" {
+					table.TableColumns[i].CPPName = "int_"
+					table.TableColumns[i].Name = "int_"
 				}
 			}
 			if 0 != ParseSplitInfo(table) {
