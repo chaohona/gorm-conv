@@ -12,6 +12,23 @@ func getGolangPBStructName(inName string) string {
 	return "GORM_PB_Table" + getGolangPbFieldName(inName)
 }
 
+func getGolangPbFieldName_Num(srcField string) string {
+	var index int = 0
+	var got bool = false
+	for index = 0; index < len(srcField); index++ {
+		if byte(srcField[index]) >= '0' && byte(srcField[index]) <= '9' {
+			continue
+		}
+		got = true
+		break
+	}
+
+	if !got {
+		return srcField
+	}
+	return srcField[:index] + strings.ToUpper(string(srcField[index])) + srcField[index+1:]
+}
+
 func getGolangPbFieldName(srcField string) string {
 	var strList []string = strings.Split(srcField, "_")
 	var result string
@@ -21,6 +38,12 @@ func getGolangPbFieldName(srcField string) string {
 				result += "_"
 			}
 			result += s
+		} else if byte(s[0]) >= '0' && byte(s[0]) <= '9' {
+			if idx != 0 {
+				result += "_"
+			}
+
+			result += getGolangPbFieldName_Num(s)
 		} else {
 			result += strings.ToUpper(string(s[0])) + s[1:]
 		}
