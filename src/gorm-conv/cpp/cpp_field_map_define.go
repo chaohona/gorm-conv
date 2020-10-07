@@ -742,7 +742,7 @@ func CPPFieldInitTableColumnInfo_ForTable(games []common.XmlCfg, f *os.File) int
 			f.WriteString("    mapTablesColumnOrder[\"" + table.Name + "\"] = vColumns;\n")
 			f.WriteString("    unordered_map<string, GORM_PB_COLUMN_TYPE> mapColumnType = {\n")
 			for _, col := range table.TableColumns {
-				f.WriteString("        {\"" + col.Name + "\", " + CPPFieldInitTableColumnInfo_ForTable_COLTYPE(col.Type) + "},\n")
+				f.WriteString("        {\"" + col.Name + "\", " + common.CPPFieldInitTableColumnInfo_ForTable_COLTYPE(col.Type) + "},\n")
 			}
 			f.WriteString("    };\n")
 			f.WriteString("    mapTablesColumnInfo[\"" + table.Name + "\"] = mapColumnType;\n")

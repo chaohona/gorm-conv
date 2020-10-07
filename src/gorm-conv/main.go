@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"os"
 
+	"gorm-conv/client/golang"
 	"gorm-conv/common"
 	"gorm-conv/cpp"
-	"gorm-conv/golang"
 	"gorm-conv/protobuf"
 	"gorm-conv/server"
 	"gorm-conv/server/config"
 	"gorm-conv/sql"
 
 	"github.com/golang/glog"
+
+	clientCPP "gorm-conv/client/cpp"
 )
 
 func main() {
@@ -93,8 +95,12 @@ func main() {
 		fmt.Println("generate pb files success")
 	}
 	var bServerCodes bool = false
+	var bClientCodes bool = false
 	if common.Codetype != nil && *common.Codetype == "server" {
 		bServerCodes = true
+	}
+	if common.Codetype != nil && *common.Codetype == "client" {
+		bClientCodes = true
 	}
 	// 自动生成代码
 	if common.Cppoutpath != nil && *common.Cppoutpath != "" {
@@ -110,8 +116,14 @@ func main() {
 			return
 		}
 	}
+	if bClientCodes && common.Cppoutpath != nil && *common.Cppoutpath != "" {
+		if 0 != clientCPP.GeneralClientCPPCodes(games, *common.Cppoutpath) {
+			fmt.Println("gorm_server_codes_files failed.")
+			return
+		}
+	}
 	if common.Gooutpath != nil && *common.Gooutpath != "" {
-		ret = golang.GeneralGolangCodes(games, *common.Gooutpath)
+		ret = golang.GeneralClientGolangCodes(games, *common.Gooutpath)
 		if ret != 0 {
 			fmt.Println("general golang codes got error.")
 			return

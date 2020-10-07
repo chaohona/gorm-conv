@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"gorm-conv/common"
-	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
@@ -37,7 +36,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table common.TableI
 		var bigCol string = strings.ToUpper(col.Name)
 		f.WriteString("        case GORM_PB_FIELD_" + BigTable + "_" + bigCol + ":\n")
 		f.WriteString("        {\n")
-		var colType string = cpp.CPPField_CPPType(col.Type)
+		var colType string = common.CPPField_CPPType(col.Type)
 		if colType == "string" {
 			f.WriteString("            char *szData = \"\";\n")
 			f.WriteString("            const string &strData = table_" + table.Name + "." + col.Name + "();\n")
@@ -65,10 +64,10 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table common.TableI
 			f.WriteString("                pDataBuffer->Release();\n")
 		} else {
 			f.WriteString("            if (i==0)\n")
-			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`" + col.Name + "`=" + cpp.CPPFieldPackRedis_COL_FORMAT(col.Type))
+			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`" + col.Name + "`=" + common.CPPFieldPackRedis_COL_FORMAT(col.Type))
 			f.WriteString("\", table_" + table.Name + "." + col.Name + "());\n")
 			f.WriteString("            else\n")
-			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"and `" + col.Name + "`=" + cpp.CPPFieldPackRedis_COL_FORMAT(col.Type))
+			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"and `" + col.Name + "`=" + common.CPPFieldPackRedis_COL_FORMAT(col.Type))
 			f.WriteString("\", table_" + table.Name + "." + col.Name + "());\n")
 		}
 		f.WriteString("            break;\n")

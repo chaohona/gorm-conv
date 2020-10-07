@@ -20,7 +20,7 @@ func GORM_TableHash(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("        const GORM_PB_Table_" + table.Name + "& " + table.Name + " = pbTable." + table.Name + "();\n")
 			for _, s := range table.SplitInfo.SplitCols {
 				c := table.GetColumn(s)
-				var cType string = CPPField_CPPType(c.Type)
+				var cType string = common.CPPField_CPPType(c.Type)
 				if cType == "string" {
 					f.WriteString("        const string &tmp_" + strings.ToUpper(s) + " = " + table.Name + "." + c.Name + "();\n")
 				} else {
@@ -31,7 +31,7 @@ func GORM_TableHash(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("        int iTotalLen = GORM_SafeSnprintf(szSrcHash, 1024, \"")
 			for _, splitCol := range table.SplitInfo.SplitCols {
 				col := table.GetColumn(splitCol)
-				f.WriteString(CPPFieldPackRedis_COL_FORMAT(col.Type))
+				f.WriteString(common.CPPFieldPackRedis_COL_FORMAT(col.Type))
 				f.WriteString("_")
 			}
 			f.WriteString("\" ")

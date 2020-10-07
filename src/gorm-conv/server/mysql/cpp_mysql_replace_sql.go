@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"gorm-conv/common"
-	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
@@ -27,7 +26,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table common.TableInfo) stri
 		if idx != 0 {
 			DefineSQL += ", "
 		}
-		DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
+		DefineSQL += common.CPPFieldPackSQL_COL_FORMAT(col.Type)
 	}
 	DefineSQL += ") ON DUPLICATE KEY UPDATE `version`=`version`+1"
 	for _, col := range table.TableColumns {
@@ -48,7 +47,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_DefineSQL(table common.TableInfo) stri
 		DefineSQL += " `"
 		DefineSQL += col.Name
 		DefineSQL += "`="
-		DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
+		DefineSQL += common.CPPFieldPackSQL_COL_FORMAT(col.Type)
 	}
 	DefineSQL += ";\"\n"
 	return DefineSQL
@@ -61,7 +60,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table common.TableInfo, f *os.
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name
 		f.WriteString("\n")
-		var cppType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		f.WriteString("    const " + cppType + " ")
 		if cppType == "string" {
 			f.WriteString("&")
@@ -114,7 +113,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table common.TableInfo, f *os.
 			continue
 		}
 		sprintf_str += ","
-		var cppType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		var col_type_name string = table.Name + "_" + col.Name
 		if cppType == "string" {
 			sprintf_str += " sz_" + col_type_name

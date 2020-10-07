@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"gorm-conv/common"
-	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
@@ -27,7 +26,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_DefineSQL(table common.TableInfo) strin
 		if idx != 0 {
 			DefineSQL += ", "
 		}
-		DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
+		DefineSQL += common.CPPFieldPackSQL_COL_FORMAT(col.Type)
 	}
 	DefineSQL += ");\"\n"
 	return DefineSQL
@@ -40,7 +39,7 @@ func CPPFieldsMapPackInsertSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 	for _, col := range table.TableColumns {
 		var col_type_name string = table.Name + "_" + col.Name
 		f.WriteString("\n")
-		var cppType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var cppType string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		f.WriteString("    const " + cppType + " ")
 		if cppType == "string" {
 			f.WriteString("&")

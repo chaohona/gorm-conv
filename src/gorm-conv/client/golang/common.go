@@ -4,7 +4,7 @@ import (
 	"gorm-conv/common"
 )
 
-func GeneralGolangCodes(games []common.XmlCfg, outpath string) int {
+func GeneralClientGolangCodes(games []common.XmlCfg, outpath string) int {
 	if 0 != GeneralGolangCodes_Common(games, outpath) {
 		return -1
 	}

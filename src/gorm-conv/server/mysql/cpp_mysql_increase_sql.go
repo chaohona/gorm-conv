@@ -3,7 +3,6 @@ package mysql
 import (
 	"fmt"
 	"gorm-conv/common"
-	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
@@ -33,7 +32,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table common.TableInfo) (st
 
 			WhereSQL += " `"
 			WhereSQL += preCol.Name + "`="
-			WhereSQL += cpp.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
+			WhereSQL += common.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
 		}
 		if !match {
 			fmt.Println("invalid splitinfo, table:", table.Name)
@@ -49,7 +48,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_DefineSQL(table common.TableInfo) (st
 
 func CPPFieldsMapPackIncreaseSQL_ForTables_COL2SQL_FORVARIABLE(table common.TableInfo, col common.TableColumn, f *os.File) int {
 	// 如果不在splitfields，并且是字符串类型则直接跳过
-	var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+	var vtype string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 	if vtype == "string" {
 		var bmatch bool = false
 		for _, c := range table.SplitInfo.SplitCols {
@@ -121,7 +120,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table common.TableInfo, f *o
 	var vtype string
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		vtype = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		vtype = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			var bmatch bool = false
 			for _, c := range table.SplitInfo.SplitCols {
@@ -153,7 +152,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_WhereSQL(table common.TableInfo, f *o
 			if colname != preCol.Name {
 				continue
 			}
-			vtype = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
+			vtype = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
 			if vtype == "string" {
 				f.WriteString(", sz_" + table.Name + "_" + preCol.Name)
 			} else {
@@ -173,7 +172,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table common.TableInfo, f *os.
 	f.WriteString("    int iLen = iSqlLen + 128 + pMsg->ByteSizeLong() ")
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			var bmatch bool = false
 			for _, c := range table.SplitInfo.SplitCols {
@@ -226,7 +225,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table common.TableInfo, f *os.
 	f.WriteString("        switch (iFieldId)\n")
 	f.WriteString("        {\n")
 	for _, col := range table.TableColumns {
-		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			continue
 		}
@@ -238,7 +237,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table common.TableInfo, f *os.
 		f.WriteString("                cOpt = '-';\n")
 		f.WriteString("            if (iSetField != 1)\n")
 		f.WriteString("                iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, \", `" + col.Name + "`=`" + col.Name + "`%c")
-		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
+		f.WriteString(common.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", cOpt, ")
 		if vtype == "string" {
 			f.WriteString("sz_")
@@ -247,7 +246,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables_SetSQL(table common.TableInfo, f *os.
 		f.WriteString(");\n")
 		f.WriteString("            else\n")
 		f.WriteString("                iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, \" `" + col.Name + "`=`" + col.Name + "`%c")
-		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
+		f.WriteString(common.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", cOpt, ")
 		if vtype == "string" {
 			f.WriteString("sz_")
@@ -333,7 +332,7 @@ func CPPFieldsMapPackIncreaseSQL_ForTables(games []common.XmlCfg, f *os.File) in
 
 			// 释放buffer
 			for _, col := range table.TableColumns {
-				var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+				var vtype string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 				if vtype != "string" {
 					continue
 				}

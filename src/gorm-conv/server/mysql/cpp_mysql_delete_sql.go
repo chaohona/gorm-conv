@@ -3,7 +3,6 @@ package mysql
 import (
 	"fmt"
 	"gorm-conv/common"
-	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
@@ -32,7 +31,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_DefineSQL(table common.TableInfo) (stri
 			}
 			DefineSQL += " `"
 			DefineSQL += preCol.Name + "`="
-			DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
+			DefineSQL += common.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
 		}
 		if !match {
 			fmt.Println("invalid splitinfo, table:", table.Name)
@@ -66,9 +65,9 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL_NoSplit(table common.TableInfo,
 		f.WriteString("        case GORM_PB_FIELD_" + strings.ToUpper(table.Name) + "_" + strings.ToUpper(col.Name) + ":\n")
 		f.WriteString("        {\n")
 		f.WriteString("            if(i==0)\n")
-		var format string = cpp.CPPFieldPackSQL_COL_FORMAT(col.Type)
+		var format string = common.CPPFieldPackSQL_COL_FORMAT(col.Type)
 		var GORM_SafeSnprintfstr string = col.Name + "=" + format + "\", table_" + table.Name + "." + col.Name + "()"
-		if cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type) == "string" {
+		if common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type) == "string" {
 			GORM_SafeSnprintfstr += ".c_str()"
 		}
 		GORM_SafeSnprintfstr += ");\n"
@@ -114,7 +113,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 			if col.Name != cname {
 				continue
 			}
-			var colType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+			var colType string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 			f.WriteString("    const ")
 			f.WriteString(colType)
 			f.WriteString(" ")

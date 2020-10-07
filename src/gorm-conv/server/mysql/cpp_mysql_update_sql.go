@@ -3,7 +3,6 @@ package mysql
 import (
 	"fmt"
 	"gorm-conv/common"
-	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
@@ -33,7 +32,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_DefineSQL(table common.TableInfo) (stri
 
 			WhereSQL += " `"
 			WhereSQL += preCol.Name + "`="
-			WhereSQL += cpp.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
+			WhereSQL += common.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
 		}
 		if !match {
 			fmt.Println("invalid splitinfo, table:", table.Name)
@@ -48,7 +47,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_DefineSQL(table common.TableInfo) (stri
 }
 
 func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL_FORVARIABLE(table common.TableInfo, col common.TableColumn, f *os.File) int {
-	var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+	var vtype string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 
 	if vtype != "string" {
 		f.WriteString("    const " + vtype + " " + table.Name + "_" + col.Name + " = table_" + table.Name + "." + col.Name + "();\n")
@@ -109,7 +108,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table common.TableInfo, f *os.
 	var vtype string
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		vtype = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		vtype = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			f.WriteString(" + len_" + table.Name + "_" + col.Name)
 		} else {
@@ -132,7 +131,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_WhereSQL(table common.TableInfo, f *os.
 			if colname != preCol.Name {
 				continue
 			}
-			vtype = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
+			vtype = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(preCol.Type)
 			if vtype == "string" {
 				f.WriteString(", sz_" + table.Name + "_" + preCol.Name)
 			} else {
@@ -152,7 +151,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table common.TableInfo, f *os.Fi
 	f.WriteString("    int iLen = iSqlLen + 128 + pMsg->ByteSizeLong() ")
 	var intLen int64 = 0
 	for _, col := range table.TableColumns {
-		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			f.WriteString("+ len_" + table.Name + "_" + col.Name)
 		} else {
@@ -199,9 +198,9 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table common.TableInfo, f *os.Fi
 		f.WriteString("        {\n")
 		f.WriteString("            if (iSetField != 1)\n")
 		f.WriteString("                iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, \", `" + col.Name + "`=")
-		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
+		f.WriteString(common.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", ")
-		var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+		var vtype string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 		if vtype == "string" {
 			f.WriteString("sz_")
 		}
@@ -209,7 +208,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_SetSQL(table common.TableInfo, f *os.Fi
 		f.WriteString(");\n")
 		f.WriteString("            else\n")
 		f.WriteString("                iDataLen = GORM_SafeSnprintf(szSQLBegin, iLen, \"`" + col.Name + "`=")
-		f.WriteString(cpp.CPPFieldPackSQL_COL_FORMAT(col.Type))
+		f.WriteString(common.CPPFieldPackSQL_COL_FORMAT(col.Type))
 		f.WriteString("\", ")
 		if vtype == "string" {
 			f.WriteString("sz_")
@@ -293,7 +292,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables(games []common.XmlCfg, f *os.File) int 
 
 			// 释放buffer
 			for _, col := range table.TableColumns {
-				var vtype string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+				var vtype string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 				if vtype != "string" {
 					continue
 				}

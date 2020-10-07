@@ -5,7 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
+)
+
+var (
+	Type_Key_Name map[string]int = map[string]int{
+		"int": 1,
+	}
 )
 
 const (
@@ -30,8 +37,9 @@ type PrimaryKey struct {
 }
 
 type TableColumn struct {
-	GoName       string
-	CPPName      string
+	GoName       string // golang使用的列名
+	CPPName      string // cpp使用的列名
+	SQLName      string
 	Name         string `xml:"name,attr"`
 	Type         string `xml:"type,attr"`
 	NotNull      bool   `xml:"notnull,attr"`
@@ -189,12 +197,17 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 		})
 	}
 	for _, result := range results {
-		for idx, db := range result.DB.DBList.DBList {
-			result.DB.DBList.DBList[idx].Database = strings.ToLower(db.Database)
-			result.DB.DBList.DBList[idx].Name = strings.ToLower(db.Name)
+		for idx, _ := range result.DB.DBList.DBList {
+			db := &result.DB.DBList.DBList[idx]
+			db.Database = strings.ToLower(db.Database)
+			db.Name = strings.ToLower(db.Name)
 		}
 		for idx, _ := range result.DB.TableList {
 			table := &result.DB.TableList[idx]
+			if table.SplitInfo.Columns == "" {
+				fmt.Println("table has no split info:" + table.Name)
+				return nil, -1
+			}
 			table.PrimaryKey.Column = table.SplitInfo.Columns
 			var TableColumns []TableColumn
 			TableColumns = append(TableColumns, TableColumn{
@@ -216,15 +229,24 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 				tIndex.Name = strings.ToLower(tIndex.Name)
 			}
 			var colName string
-			for i, c := range table.TableColumns {
+			for i, _ := range table.TableColumns {
+				c := &table.TableColumns[i]
+				size, _ := strconv.ParseInt(c.Size, 10, 64)
+				if size == 0 {
+					c.Size = "1024"
+				}
 				colName = strings.ToLower(c.Name)
-				table.TableColumns[i].Name = colName
-				table.TableColumns[i].Type = strings.ToLower(c.Type)
-				table.TableColumns[i].GoName = colName
-				table.TableColumns[i].CPPName = colName
+				if Type_Key_Name[colName] > 0 {
+					fmt.Println("table column is class name, table:" + table.Name + ", column:" + colName)
+					return nil, -1
+				}
+				c.Name = colName
+				c.Type = strings.ToLower(c.Type)
+				c.GoName = colName
+				c.CPPName = colName
+				c.SQLName = colName
 				if colName == "int" {
-					table.TableColumns[i].CPPName = "int_"
-					table.TableColumns[i].Name = "int_"
+					c.CPPName = "int_"
 				}
 			}
 			if 0 != ParseSplitInfo(table) {

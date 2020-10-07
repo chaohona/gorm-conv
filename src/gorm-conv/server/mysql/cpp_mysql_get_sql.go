@@ -3,7 +3,6 @@ package mysql
 import (
 	"fmt"
 	"gorm-conv/common"
-	"gorm-conv/cpp"
 	"os"
 	"strconv"
 	"strings"
@@ -33,7 +32,7 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL_Where(table common.TableInfo) (s
 			}
 			DefineSQL += " `"
 			DefineSQL += preCol.Name + "`="
-			DefineSQL += cpp.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
+			DefineSQL += common.CPPFieldPackSQL_COL_FORMAT(preCol.Type)
 		}
 		if !match {
 			fmt.Println("invalid splitinfo, table:", table.Name)
@@ -83,7 +82,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One(table common.TableInfo, strsqllen stri
 			if col.Name != cname {
 				continue
 			}
-			var colType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+			var colType string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 			f.WriteString("    const ")
 			f.WriteString(colType)
 			f.WriteString(" ")
@@ -196,7 +195,7 @@ func CPPFieldsMapPackGetSQL_ForTables_One_Debug(table common.TableInfo, strsqlle
 			if col.Name != cname {
 				continue
 			}
-			var colType string = cpp.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
+			var colType string = common.CPPFieldsMapPackSQL_ForTables_COL2SQL_GetCPPType(col.Type)
 			f.WriteString("    const ")
 			f.WriteString(colType)
 			f.WriteString(" ")
