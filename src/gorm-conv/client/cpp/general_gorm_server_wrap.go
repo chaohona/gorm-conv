@@ -20,6 +20,7 @@ func GeneralClientCPPCodes_GeneralGormServerWrap(games []common.XmlCfg, outpath 
 
 	f.WriteString(`#ifndef _GORM_WRAP_H__
 #define _GORM_WRAP_H__
+#include "gorm_define.h"
 `)
 
 	// 包含所有的文件
