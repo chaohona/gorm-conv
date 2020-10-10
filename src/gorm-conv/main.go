@@ -116,11 +116,13 @@ func main() {
 			return
 		}
 	}
+	// 生成客户端CPP代码
 	if bClientCodes && common.Cppoutpath != nil && *common.Cppoutpath != "" {
 		if 0 != clientCPP.GeneralClientCPPCodes(games, *common.Cppoutpath) {
-			fmt.Println("gorm_server_codes_files failed.")
+			fmt.Println("gorm_client_codes_files failed.")
 			return
 		}
+		fmt.Println("gorm_client_codes_files success")
 	}
 	if common.Gooutpath != nil && *common.Gooutpath != "" {
 		ret = golang.GeneralClientGolangCodes(games, *common.Gooutpath)

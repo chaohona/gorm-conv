@@ -7,7 +7,7 @@ func CPP_TableColumnName(col string) string {
 // 第一个字符大写
 func CPP_TableStruct(table string) string {
 	vv := []rune(table)
-	if vv[0] > 'a' && vv[0] < 'z' {
+	if vv[0] >= 'a' && vv[0] <= 'z' {
 		vv[0] -= 32
 	}
 

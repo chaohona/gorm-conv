@@ -1,0 +1,16 @@
+syntax = "proto3";
+package gorm;
+option go_package = "gorm/gorm";
+message GORM_PB_Table_account{
+    fixed64 version = 1;
+    sfixed32 id = 2;
+    string account = 3;
+    bytes allbinary = 4;
+}
+
+message GORM_PB_Table_bag{
+    fixed64 version = 1;
+    sfixed32 id = 2;
+    bytes allbinary = 3;
+}
+

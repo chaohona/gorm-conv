@@ -1,15 +1,17 @@
 <!--uint8,int16,int32,int64,uint16,uint32,uint64,double,string,blob-->
 <giant-game version="1">
-	<table name="account" primarykey="id">
+	<table name="account" version="1">
 		<column name="id" type="int" defaultvalue="0" desc="用户id"/>
 		<column name="account" type="string" size="128" notnull="true" desc="用户名字"/>
 		<column name="allbinary" type="blob" desc="二进制数据存放"/>
 		<index name="account_id" column="id"/>
+    <splitinfo columns="id" num="2"/>
 	</table>
-	<table name="bag" primarykey="id">
+	<table name="bag" version="1">
 		<column name="id" type="int" defaultvalue="0" desc="用户id"/>
 		<column name="allbinary" type="blob" desc="二进制数据存放"/>
 		<index name="bag_id" column="id"/>
+    <splitinfo columns="id" num="2"/>
 	</table>
 	<databases>
 		<db name="mysql1" host="192.168.12.42" port="3306" user="mark" password="123456" type="mysql" database="test1"/>
