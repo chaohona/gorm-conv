@@ -112,7 +112,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    static int Get(int region, int logic_zone, int physics_zone, int64 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", int (*cb)(int64, " + structName + "*));\n")
 	f.WriteString("    static int Delete(int region, int logic_zone, int physics_zone, int64 &cbId, int (*cb)(int64), " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int SetPbMsg(int region, int logic_zone, int physics_zone, " + pbStructName + " *pbMsg, bool forceSave=false);\n")
-	f.WriteString("    int Delete(int (*cb)(int64));\n")
+	f.WriteString("    int Delete(int64 &cbId, int (*cb)(int64));\n")
 	f.WriteString("    int SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
 	//f.WriteString("    int RemoveFromLocal();\n")
 	f.WriteString("    int SaveToDB();\n")
@@ -158,7 +158,13 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	f.WriteString("}\n")
 
 	// Delete函数
-	f.WriteString("int " + structName + "::Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
+	f.WriteString("int " + structName + "::Delete(int64 &cbId, int (*cb)(int64))\n")
+	f.WriteString("{\n")
+	f.WriteString("    return 0;\n")
+	f.WriteString("}\n")
+
+	// SaveToDB函数
+	f.WriteString("int " + structName + "::SaveToDB()\n")
 	f.WriteString("{\n")
 	f.WriteString("    return 0;\n")
 	f.WriteString("}\n")
