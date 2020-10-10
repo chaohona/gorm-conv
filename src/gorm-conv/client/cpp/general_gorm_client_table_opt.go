@@ -62,7 +62,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		f.WriteString("}\n")
 	}
 	// 生成更新所有字段函数
-	f.WriteString("inline void " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false)\n")
+	f.WriteString("inline void " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave)\n")
 	f.WriteString("{\n")
 	for _, col := range table.TableColumns {
 		colStructName := common.CPP_TableColumnName(col.Name)
@@ -78,20 +78,20 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		setColFunc := "Set" + colStructName
 		if colType == "string" {
 			// Set(string&)
-			f.WriteString("inline void " + structName + "::" + setColFunc + "(const string &" + col.Name + ", bool forceSave=false)\n")
+			f.WriteString("inline void " + structName + "::" + setColFunc + "(const string &" + col.Name + ", bool forceSave)\n")
 			f.WriteString("{\n")
 			f.WriteString("    this->pTablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
 			f.WriteString("    return;\n")
 			f.WriteString("}\n")
 
 			//Set(const char*, size_t)
-			f.WriteString("inline void " + structName + "::" + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave=false)\n")
+			f.WriteString("inline void " + structName + "::" + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave)\n")
 			f.WriteString("{\n")
 			f.WriteString("    this->pTablePbValue->set_" + col.Name + "(" + col.Name + ", size);\n")
 			f.WriteString("    return;\n")
 			f.WriteString("}\n")
 		} else {
-			f.WriteString("inline void " + structName + "::" + setColFunc + "(" + colType + " " + col.Name + ", bool forceSave=false)\n")
+			f.WriteString("inline void " + structName + "::" + setColFunc + "(" + colType + " " + col.Name + ", bool forceSave)\n")
 			f.WriteString("{\n")
 			f.WriteString("    this->pTablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
 			f.WriteString("    return;\n")
