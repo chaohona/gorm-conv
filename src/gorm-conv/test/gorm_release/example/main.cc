@@ -1,5 +1,7 @@
 #include "gorm_wrap.h"
 
+using namespace gorm;
+
 GORM_Wrap *global_gorm_wrap = GORM_Wrap::Instance();
 
 int main()

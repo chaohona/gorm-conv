@@ -177,7 +177,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP(game common.XmlCfg, out
 	}
 
 	headerFile := "/gorm_client_table_opt_" + fileName + ".h"
-	f.WriteString("#include " + headerFile + "\n")
+	f.WriteString("#include " + headerFile + "\n\n")
+	f.WriteString("namespace gorm{\n\n")
 
 	for _, table := range game.DB.TableList {
 		// 生成响应的表的实现函数
@@ -185,6 +186,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP(game common.XmlCfg, out
 			return -1
 		}
 	}
+	f.WriteString("\n\n}\n")
 
 	return 0
 }
@@ -207,8 +209,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 	_, err = f.WriteString("#ifndef _GORM_CLIENT_TABLE_OPT_" + bigName + "_H__\n")
 	fmt.Println(err)
 	f.WriteString("#define _GORM_CLIENT_TABLE_OPT_" + bigName + "_H__\n")
-	f.WriteString("#include \"" + fileName + ".pb.h\n")
+	f.WriteString("#include \"" + fileName + ".pb.h\"\n")
 	f.WriteString("\n")
+	f.WriteString("namespace gorm{\n\n")
 
 	for _, table := range game.DB.TableList {
 		if 0 != GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table, f) {
@@ -224,6 +227,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 	}
 
 	// 结尾
+	// namespace gorm 结尾
+	f.WriteString("\n}\n\n")
+	// define 结尾
 	f.WriteString("\n\n#endif")
 	f.Close()
 	return 0

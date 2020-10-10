@@ -30,6 +30,8 @@ func GeneralClientCPPCodes_GeneralGormServerWrap(games []common.XmlCfg, outpath 
 		f.WriteString("#include \"" + headerName + "\"\n")
 	}
 
+	f.WriteString("\n\nnamespace gorm{\n\n")
+
 	f.WriteString(`
 class GORM_Wrap
 {
@@ -44,6 +46,9 @@ private:
 inline GORM_Wrap::Instance()
 {
 	return this->pGormWrap;
+}
+
+// namespace gorm end
 }
 `)
 
