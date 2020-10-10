@@ -35,14 +35,14 @@ class GORM_Wrap
 public:
 	int Init(char *cfgPath);
 
-	static GORM_ServerWrap *Instance();
+	static GORM_Wrap *Instance();
 private:
-	static GORM_ServerWrap *pServerWrap;
+	static GORM_Wrap *pGormWrap;
 };
 
-inline GORM_ServerWrap::Instance()
+inline GORM_Wrap::Instance()
 {
-	return this->pServerWrap;
+	return this->pGormWrap;
 }
 `)
 
