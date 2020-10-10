@@ -27,7 +27,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Desc(table 
 		getColFunc := "Get" + colStructName
 		setColFunc := "Set" + colStructName
 		if colType == "string" {
-			f.WriteString("    string &" + getColFunc + "() const;\n")
+			f.WriteString("    const string &" + getColFunc + "() const;\n")
 			f.WriteString("    void " + setColFunc + "(const string &" + col.Name + ", bool forceSave=false);\n")
 			f.WriteString("    void " + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave=false);\n")
 		} else {
@@ -53,7 +53,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		colStructName := common.CPP_TableColumnName(col.Name)
 		getColFunc := "Get" + colStructName
 		if colType == "string" {
-			f.WriteString("inline " + colType + "& " + structName + "::" + getColFunc + "() const\n")
+			f.WriteString("inline const string& " + structName + "::" + getColFunc + "() const\n")
 		} else {
 			f.WriteString("inline " + colType + " " + structName + "::" + getColFunc + "()\n")
 		}
