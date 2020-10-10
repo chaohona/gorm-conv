@@ -7,7 +7,7 @@ GORM_Wrap *global_gorm_wrap = GORM_Wrap::Instance();
 int main()
 {
 	// 初始化gorm驱动
-	if (0 != global_gorm_wrap->Init())
+	if (0 != global_gorm_wrap->Init("gorm_config.xml"))
 	{
 		return -1;
 	}

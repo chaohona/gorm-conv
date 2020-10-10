@@ -28,11 +28,11 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Desc(table 
 		setColFunc := "Set" + colStructName
 		if colType == "string" {
 			f.WriteString("    const string &" + getColFunc + "() const;\n")
-			f.WriteString("    void " + setColFunc + "(const string &" + col.Name + ", bool forceSave=false);\n")
-			f.WriteString("    void " + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave=false);\n")
+			f.WriteString("    int " + setColFunc + "(const string &" + col.Name + ", bool forceSave=false);\n")
+			f.WriteString("    int " + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave=false);\n")
 		} else {
 			f.WriteString("    " + colType + " " + getColFunc + "();\n")
-			f.WriteString("    void " + setColFunc + "(" + colType + " " + col.Name + ", bool forceSave=false);\n")
+			f.WriteString("    int " + setColFunc + "(" + colType + " " + col.Name + ", bool forceSave=false);\n")
 		}
 	}
 
@@ -62,14 +62,14 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		f.WriteString("}\n")
 	}
 	// 生成更新所有字段函数
-	f.WriteString("inline void " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave)\n")
+	f.WriteString("inline int " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave)\n")
 	f.WriteString("{\n")
 	for _, col := range table.TableColumns {
 		colStructName := common.CPP_TableColumnName(col.Name)
 		setColFunc := "Set" + colStructName
 		f.WriteString("    this->" + setColFunc + "(pbMsg->" + col.Name + "(), forceSave);\n")
 	}
-	f.WriteString("    return;\n")
+	f.WriteString("    return 0;\n")
 	f.WriteString("}\n")
 	// 生成set函数
 	for _, col := range table.TableColumns {
@@ -78,23 +78,23 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		setColFunc := "Set" + colStructName
 		if colType == "string" {
 			// Set(string&)
-			f.WriteString("inline void " + structName + "::" + setColFunc + "(const string &" + col.Name + ", bool forceSave)\n")
+			f.WriteString("inline int " + structName + "::" + setColFunc + "(const string &" + col.Name + ", bool forceSave)\n")
 			f.WriteString("{\n")
 			f.WriteString("    this->pTablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
-			f.WriteString("    return;\n")
+			f.WriteString("    return 0;\n")
 			f.WriteString("}\n")
 
 			//Set(const char*, size_t)
-			f.WriteString("inline void " + structName + "::" + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave)\n")
+			f.WriteString("inline int " + structName + "::" + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave)\n")
 			f.WriteString("{\n")
 			f.WriteString("    this->pTablePbValue->set_" + col.Name + "(" + col.Name + ", size);\n")
-			f.WriteString("    return;\n")
+			f.WriteString("    return 0;\n")
 			f.WriteString("}\n")
 		} else {
-			f.WriteString("inline void " + structName + "::" + setColFunc + "(" + colType + " " + col.Name + ", bool forceSave)\n")
+			f.WriteString("inline int " + structName + "::" + setColFunc + "(" + colType + " " + col.Name + ", bool forceSave)\n")
 			f.WriteString("{\n")
 			f.WriteString("    this->pTablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
-			f.WriteString("    return;\n")
+			f.WriteString("    return 0;\n")
 			f.WriteString("}\n")
 		}
 	}
@@ -111,10 +111,10 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    static " + structName + "* Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int Get(int region, int logic_zone, int physics_zone, int64 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", int (*cb)(int64, " + structName + "*));\n")
 	f.WriteString("    static int Delete(int region, int logic_zone, int physics_zone, int64 &cbId, int (*cb)(int64), " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
-	f.WriteString("    static void SetPbMsg(int region, int logic_zone, int physics_zone, " + pbStructName + " *pbMsg, bool forceSave=false);\n")
+	f.WriteString("    static int SetPbMsg(int region, int logic_zone, int physics_zone, " + pbStructName + " *pbMsg, bool forceSave=false);\n")
 	f.WriteString("    int Delete(int (*cb)(int64));\n")
-	f.WriteString("    void SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
-	//f.WriteString("    void RemoveFromLocal();\n")
+	f.WriteString("    int SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
+	//f.WriteString("    int RemoveFromLocal();\n")
 	f.WriteString("    int SaveToDB();\n")
 	f.WriteString("    " + pbStructName + " *GetPbMsg();\n")
 
@@ -140,9 +140,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	f.WriteString("}\n")
 
 	// 异步Get函数
-	f.WriteString(structName + "* " + structName + "::Get(int region, int logic_zone, int physics_zone, int64 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", int (*cb)(int64, " + structName + "*))\n")
+	f.WriteString("int " + structName + "::Get(int region, int logic_zone, int physics_zone, int64 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", int (*cb)(int64, " + structName + "*))\n")
 	f.WriteString("{\n")
-	f.WriteString("    return nullptr;\n")
+	f.WriteString("    return 0;\n")
 	f.WriteString("}\n")
 
 	// static Delete函数
@@ -176,8 +176,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP(game common.XmlCfg, out
 		return -1
 	}
 
-	headerFile := "/gorm_client_table_opt_" + fileName + ".h"
-	f.WriteString("#include " + headerFile + "\n\n")
+	headerFile := "gorm_client_table_opt_" + fileName + ".h"
+	f.WriteString("#include \"" + headerFile + "\"\n\n")
 	f.WriteString("namespace gorm{\n\n")
 
 	for _, table := range game.DB.TableList {
@@ -210,6 +210,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 	fmt.Println(err)
 	f.WriteString("#define _GORM_CLIENT_TABLE_OPT_" + bigName + "_H__\n")
 	f.WriteString("#include \"" + fileName + ".pb.h\"\n")
+	f.WriteString("#include \"gorm_define.h\"\n")
 	f.WriteString("\n")
 	f.WriteString("namespace gorm{\n\n")
 

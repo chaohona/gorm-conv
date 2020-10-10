@@ -43,9 +43,9 @@ private:
 	static GORM_Wrap *pGormWrap;
 };
 
-inline GORM_Wrap::Instance()
+inline GORM_Wrap* GORM_Wrap::Instance()
 {
-	return this->pGormWrap;
+	return GORM_Wrap::pGormWrap;
 }
 
 // namespace gorm end
