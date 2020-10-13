@@ -41,6 +41,7 @@ func CppRedisDefine(games []common.XmlCfg, outpath string) int {
 	defer f.Close()
 	fmt.Println("begin to general file:" + outfile)
 	err = f.Truncate(0)
+	f.WriteString(common.NOT_EDIT_WARNING)
 
 	var header string = `#include "gorm_redis_define.h"
 

@@ -22,6 +22,8 @@ func GeneralGolang_Table_Records_Table(tableIdx int64, table common.TableInfo, o
 	}()
 	err = f.Truncate(0)
 
+	f.WriteString(common.NOT_EDIT_WARNING)
+
 	var tablePbName string = getGolangPbFieldName(table.Name)
 	var pbStructName string = getGolangPBStructName(table.Name)
 

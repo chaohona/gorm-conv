@@ -1,3 +1,5 @@
+//test
+
 package cpp
 
 import (
@@ -11,8 +13,8 @@ func GeneralClientCPPCodes(games []common.XmlCfg, outpath string) int {
 		return -1
 	}
 
-	if 0 != GeneralClientCPPCodes_GeneralGormServerWrap(games, outpath) {
-		fmt.Println("GeneralClientCPPCodes_GeneralGormServerWrap failed")
+	if 0 != GeneralClientCPPCodes_GenralGormH(games, outpath) {
+		fmt.Println("GeneralClientCPPCodes_GenralGormH failed")
 		return -1
 	}
 	return 0

@@ -23,6 +23,8 @@ func GeneralGolang_HandShake(games []common.XmlCfg, outpath string) int {
 	}()
 	f.Truncate(0)
 
+	f.WriteString(common.NOT_EDIT_WARNING)
+
 	f.WriteString("package gorm\n\n")
 	f.WriteString("var g_table_schema_info GORM_PB_HAND_SHAKE_REQ = GORM_PB_HAND_SHAKE_REQ{\n")
 	f.WriteString("    Header:  &GORM_PB_REQ_HEADER{},\n")

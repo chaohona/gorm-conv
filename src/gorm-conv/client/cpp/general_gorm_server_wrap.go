@@ -1,5 +1,6 @@
 package cpp
 
+/*
 import (
 	"fmt"
 	"gorm-conv/common"
@@ -40,12 +41,12 @@ public:
 
 	static GORM_Wrap *Instance();
 private:
-	static GORM_Wrap *pGormWrap;
+	static GORM_Wrap *gormWrap;
 };
 
 inline GORM_Wrap* GORM_Wrap::Instance()
 {
-	return GORM_Wrap::pGormWrap;
+	return GORM_Wrap::gormWrap;
 }
 
 // namespace gorm end
@@ -55,3 +56,4 @@ inline GORM_Wrap* GORM_Wrap::Instance()
 	f.WriteString("\n\n#endif")
 	return 0
 }
+*/

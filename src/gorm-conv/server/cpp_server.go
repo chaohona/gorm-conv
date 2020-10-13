@@ -48,6 +48,8 @@ func gorm_general_mysql_define(games []common.XmlCfg, outpath string) int {
 	fmt.Println("begin to general file:" + outfile)
 	err = f.Truncate(0)
 
+	f.WriteString(common.NOT_EDIT_WARNING)
+
 	// 1、输出固定的头/////////////////////////
 	var header string = `#include "gorm_server_table_define.h"
 #include "gorm_table_field_map_define.h"

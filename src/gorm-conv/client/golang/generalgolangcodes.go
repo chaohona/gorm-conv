@@ -89,6 +89,8 @@ func GeneralGolangCodes_Common(games []common.XmlCfg, outpath string) int {
 	}()
 	err = f.Truncate(0)
 
+	f.WriteString(common.NOT_EDIT_WARNING)
+
 	f.WriteString(`package gorm
 
 import (

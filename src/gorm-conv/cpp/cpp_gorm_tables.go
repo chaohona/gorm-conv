@@ -19,6 +19,8 @@ func CppGormTables_H(games []common.XmlCfg, outpath string) int {
 	fmt.Println("begin to general file:" + outfile)
 	err = f.Truncate(0)
 
+	f.WriteString(common.NOT_EDIT_WARNING)
+
 	// 1、输出固定的头/////////////////////////
 	//#include "mysql.h"
 	var header string = `#ifndef _GORM_TABLES_H__
