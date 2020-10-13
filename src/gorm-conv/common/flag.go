@@ -9,7 +9,8 @@ import (
 var (
 	H = flag.Bool("h", false, "get helper")
 	// 输入xml文件
-	Inputpath  = flag.String("I", "./", "input xml files path")
+	Inputpath  = flag.String("I", "", "input xml files path")
+	Inputfile  = flag.String("xml", "", "input xml file")
 	Outputpath = flag.String("O", "./", "output files path")
 	Cppoutpath = flag.String("cpppath", "", "cpp codes file out")
 	Gooutpath  = flag.String("gopath", "", "cpp codes file out")

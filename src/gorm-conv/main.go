@@ -27,9 +27,22 @@ func main() {
 	}
 	defer glog.Flush()
 
-	if common.Inputpath != nil {
+	var inputfile string
+	var inputpath string
+
+	if common.Inputpath != nil && *common.Inputpath != "" {
 		fmt.Println("config path >> ", *common.Inputpath)
+		inputpath = *common.Inputpath
+	} else if common.Inputfile != nil && *common.Inputfile != "" {
+		fmt.Println("config file >> ", *common.Inputfile)
+		inputfile = *common.Inputfile
 	}
+
+	if inputfile == "" && inputpath == "" {
+		fmt.Println("-I/--xml there should one of them")
+		return
+	}
+
 	if common.Outputpath != nil && *common.Outputpath != "" {
 		_, err := os.Stat(*common.Outputpath)
 		if os.IsNotExist(err) {
@@ -64,7 +77,7 @@ func main() {
 	}
 
 	fmt.Println("gorm-conv begin to work.")
-	games, ret := common.ParseXmls(*common.Inputpath)
+	games, ret := common.ParseXmls(inputpath, inputfile)
 	if ret != 0 {
 		fmt.Println("parse xml failed.")
 		return

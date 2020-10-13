@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -183,17 +184,33 @@ func ParseSplitInfo(table *TableInfo) int {
 	return 0
 }
 
-func ParseXmls(strPath string) ([]XmlCfg, int) {
+func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 	var results []XmlCfg
-	files := GetXmlFiles(strPath)
+	var files []string
+	if strPath != "" {
+		files = GetXmlFiles(strPath)
+	} else {
+		files = append(files, strFilePath)
+	}
+	fmt.Println(files)
 	for _, file := range files {
-		cfg, ret := GetXmlCfg(strPath + "/" + file)
+		var fileName string = file
+		var cfg GiantGame
+		var ret int
+		// 如果参数是路径则带上路径
+		if strPath != "" {
+			cfg, ret = GetXmlCfg(strPath + "/" + file)
+		} else { // 则直接取文件
+			cfg, ret = GetXmlCfg(file)
+			_, fileName = filepath.Split(fileName)
+		}
+
 		if ret != 0 {
 			return nil, -1
 		}
 		results = append(results, XmlCfg{
 			DB:   cfg,
-			File: file,
+			File: fileName,
 		})
 	}
 	for _, result := range results {
@@ -210,6 +227,7 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 			}
 			table.PrimaryKey.Column = table.SplitInfo.Columns
 			var TableColumns []TableColumn
+			// 自动增加version字段
 			TableColumns = append(TableColumns, TableColumn{
 				Name:         "version",
 				Type:         "uint64",
@@ -232,6 +250,7 @@ func ParseXmls(strPath string) ([]XmlCfg, int) {
 			for i, _ := range table.TableColumns {
 				c := &table.TableColumns[i]
 				size, _ := strconv.ParseInt(c.Size, 10, 64)
+				// size没有则设置为默认值
 				if size == 0 {
 					c.Size = "1024"
 				}
