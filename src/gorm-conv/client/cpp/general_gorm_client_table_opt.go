@@ -59,7 +59,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 	f.WriteString("inline " + pbStructName + "*" + structName + "::GetPbMsg()\n")
 	f.WriteString("{\n")
-	f.WriteString("    return this->tablePbValue;\n")
+	f.WriteString("    return this->m_tablePbValue;\n")
 	f.WriteString("}\n")
 	// 生成Get函数
 	for _, col := range table.TableColumns {
@@ -72,7 +72,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 			f.WriteString("inline " + colType + " " + structName + "::" + getColFunc + "()\n")
 		}
 		f.WriteString("{\n")
-		f.WriteString("    return this->tablePbValue->" + col.Name + "();\n")
+		f.WriteString("    return this->m_tablePbValue->" + col.Name + "();\n")
 		f.WriteString("}\n")
 	}
 	// 生成更新所有字段函数
@@ -96,7 +96,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 			// Set(string&)
 			f.WriteString("inline int " + structName + "::" + setColFunc + "(const string &" + col.Name + ", bool forceSave)\n")
 			f.WriteString("{\n")
-			f.WriteString("    this->tablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
+			f.WriteString("    this->m_tablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
 			f.WriteString(setFiledMode(idx))
 			f.WriteString("    if (forceSave)\n")
 			f.WriteString("        return this->SaveToDB();\n")
@@ -106,7 +106,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 			//Set(const char*, size_t)
 			f.WriteString("inline int " + structName + "::" + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave)\n")
 			f.WriteString("{\n")
-			f.WriteString("    this->tablePbValue->set_" + col.Name + "(" + col.Name + ", size);\n")
+			f.WriteString("    this->m_tablePbValue->set_" + col.Name + "(" + col.Name + ", size);\n")
 			f.WriteString(setFiledMode(idx))
 			f.WriteString("    if (forceSave)\n")
 			f.WriteString("        return this->SaveToDB();\n")
@@ -115,7 +115,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		} else {
 			f.WriteString("inline int " + structName + "::" + setColFunc + "(" + colType + " " + col.Name + ", bool forceSave)\n")
 			f.WriteString("{\n")
-			f.WriteString("    this->tablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
+			f.WriteString("    this->m_tablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
 			f.WriteString(setFiledMode(idx))
 			f.WriteString("    if (forceSave)\n")
 			f.WriteString("        return this->SaveToDB();\n")
@@ -162,7 +162,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	}
 	// 其它变量
 	f.WriteString("private:\n")
-	f.WriteString("    " + pbStructName + " *tablePbValue = nullptr;\n")
+	f.WriteString("    " + pbStructName + " *m_tablePbValue = nullptr;\n")
 	f.WriteString("    GORM_FieldsOpt m_fieldOpt;\n")
 	f.WriteString("};\n\n")
 
@@ -340,7 +340,7 @@ public:
     int SetAllbinary(const string &allbinary, bool forceSave=false);
     int SetAllbinary(const char* allbinary, size_t size, bool forceSave=false);
 private:
-    GORM_PB_Table_account *tablePbValue = nullptr;
+    GORM_PB_Table_account *m_tablePbValue = nullptr;
 };
 */
 
