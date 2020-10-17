@@ -363,7 +363,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 
 	f.WriteString(common.NOT_EDIT_WARNING)
 
-	bigName := strings.ToUpper(fileName)
+	bigName := strings.ToUpper(game.GetFileNameCharacter())
 	f.WriteString("#ifndef _GORM_CLIENT_TABLE_OPT_" + bigName + "_H__\n")
 	f.WriteString("#define _GORM_CLIENT_TABLE_OPT_" + bigName + "_H__\n")
 	f.WriteString("#include \"" + fileName + ".pb.h\"\n")

@@ -118,6 +118,17 @@ type XmlCfg struct {
 	File string
 }
 
+func (this *XmlCfg) GetFileNameCharacter() (result string) {
+	for i := 0; i < len(this.File); i++ {
+		var c byte = this.File[i]
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') {
+			result += string(c)
+		}
+	}
+
+	return
+}
+
 func GetXmlFiles(folder string) []string {
 	var results []string
 	files, _ := ioutil.ReadDir(folder) //specify the current dir
