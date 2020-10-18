@@ -177,12 +177,13 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    int DoDelete();\n")
 	f.WriteString("    int DoUpdate();\n")
 	f.WriteString("    int DoInsert();\n")
+        f.WriteString("public:\n")
+	f.WriteString("    mutex mtx;\n")
 	// 其它变量
 	f.WriteString("private:\n")
 	f.WriteString("    " + pbStructName + " *tablePbValue = nullptr;\n")
 	f.WriteString("    GORM_FieldsOpt fieldOpt;\n")
 	f.WriteString("    int dirtyFlag = 0;\n")
-	f.WriteString("    mutex mtx;\n")
 	f.WriteString("};\n\n")
 
 	return 0
@@ -195,9 +196,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
-	f.WriteString("    GORM_PB_GET_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
+        f.WriteString("    GORM_PB_" + bigOpt + "_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
-	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
+	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
 	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(this->tablePbValue);\n\n")
 	f.WriteString(`
     // 打包
@@ -240,6 +241,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table common.TableInfo, f *os.File, opt string) int {
 	var bigOpt string = strings.ToUpper(opt)
 	var bigTableName string = strings.ToUpper(table.Name)
+        pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
@@ -283,8 +285,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
         clientMsg->mtx.unlock();
         delete clientMsg;
         return GORM_ERROR;
-    }
-    this->tablePbValue = clientMsg.pbRspMsg;
+    }`)
+    f.WriteString("    this->tablePbValue = dynamic_cast<"+pbStructName+"*>(clientMsg->pbRspMsg);\n")
+    f.WriteString(`
     clientMsg->mtx.unlock();
     delete clientMsg;
     return GORM_OK;
@@ -314,8 +317,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	// static Delete函数
 	f.WriteString("int " + structName + "::Delete(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", int64 &cbId, int (*cb)(int64))\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
-	f.WriteString("    unique_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
+	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
+	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
 	f.WriteString("    table->tablePbValue = pbTable.get();\n")
 	for _, c := range table.SplitInfo.SplitCols {
 		col := table.GetColumn(c)
@@ -329,7 +332,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	// static SetPbMsg函数
 	f.WriteString("int " + structName + "::SetPbMsg(int region, int logic_zone, int physics_zone, " + pbStructName + " *pbMsg, bool forceSave)\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
+	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
 	f.WriteString("    return table->SetPbMsg(pbMsg, true);\n")
 	f.WriteString("}\n")
 	//////////////////////////////////////// 带区服的接口
