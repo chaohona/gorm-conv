@@ -177,7 +177,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    int DoDelete();\n")
 	f.WriteString("    int DoUpdate();\n")
 	f.WriteString("    int DoInsert();\n")
-        f.WriteString("public:\n")
+	f.WriteString("public:\n")
 	f.WriteString("    mutex mtx;\n")
 	// 其它变量
 	f.WriteString("private:\n")
@@ -196,9 +196,14 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
-        f.WriteString("    GORM_PB_" + bigOpt + "_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
+	f.WriteString("    GORM_PB_" + bigOpt + "_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
-	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
+	if bigOpt == "DELETE" {
+		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
+	} else {
+		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
+	}
+
 	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(this->tablePbValue);\n\n")
 	f.WriteString(`
     // 打包
@@ -241,7 +246,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table common.TableInfo, f *os.File, opt string) int {
 	var bigOpt string = strings.ToUpper(opt)
 	var bigTableName string = strings.ToUpper(table.Name)
-        pbStructName := "GORM_PB_Table_" + table.Name
+	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
@@ -286,8 +291,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
         delete clientMsg;
         return GORM_ERROR;
     }`)
-    f.WriteString("    this->tablePbValue = dynamic_cast<"+pbStructName+"*>(clientMsg->pbRspMsg);\n")
-    f.WriteString(`
+	f.WriteString("    this->tablePbValue = dynamic_cast<" + pbStructName + "*>(clientMsg->pbRspMsg);\n")
+	f.WriteString(`
     clientMsg->mtx.unlock();
     delete clientMsg;
     return GORM_OK;
