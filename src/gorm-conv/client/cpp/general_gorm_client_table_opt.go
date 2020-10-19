@@ -173,10 +173,10 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 		return -1
 	}
 	f.WriteString("private:\n")
-	f.WriteString("    int DoGet();\n")
-	f.WriteString("    int DoDelete();\n")
-	f.WriteString("    int DoUpdate();\n")
-	f.WriteString("    int DoInsert();\n")
+	f.WriteString("    int DoGet(uint32 &cbId);\n")
+	f.WriteString("    int DoDelete(uint32 &cbId);\n")
+	f.WriteString("    int DoUpdate(uint32 &cbId);\n")
+	f.WriteString("    int DoInsert(uint32 &cbId);\n")
 	f.WriteString("public:\n")
 	f.WriteString("    mutex mtx;\n")
 	// 其它变量
@@ -209,15 +209,21 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
     // 打包
     if (GORM_OK != clientMsg->PackReq())
     {
+        delete clientMsg->pbReqMsg;
         delete clientMsg;
         return GORM_ERROR;
     }
+    `)
+	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString(`
     // 发送Get请求
     if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
     {
+        delete clientMsg->pbReqMsg;
         delete clientMsg;
         return GORM_ERROR;
     }
+    cbId = clientMsg->cbId;
     // 获取结果
     clientMsg = nullptr;
     for (;;)
@@ -237,6 +243,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
     clientMsg->mtx.lock();
     int code = clientMsg->rspCode.code;
     clientMsg->mtx.unlock();
+    delete clientMsg->pbReqMsg;
     delete clientMsg;
     return code;
 `)
@@ -259,15 +266,21 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
     // 打包
     if (GORM_OK != clientMsg->PackReq())
     {
+    	delete clientMsg->pbReqMsg;
         delete clientMsg;
         return GORM_ERROR;
     }
+`)
+	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString(`
     // 发送Get请求
     if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
     {
+    	delete clientMsg->pbReqMsg;
         delete clientMsg;
         return GORM_ERROR;
     }
+    cbId = clientMsg->cbId;
     // 获取结果
     clientMsg = nullptr;
     for (;;)
@@ -288,12 +301,15 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
     if (GORM_OK != clientMsg->rspCode.code)
     {
         clientMsg->mtx.unlock();
+        delete clientMsg->pbReqMsg;
         delete clientMsg;
         return GORM_ERROR;
-    }`)
+    }
+`)
 	f.WriteString("    this->tablePbValue = dynamic_cast<" + pbStructName + "*>(clientMsg->pbRspMsg);\n")
 	f.WriteString(`
     clientMsg->mtx.unlock();
+    delete clientMsg->pbReqMsg;
     delete clientMsg;
     return GORM_OK;
 `)
@@ -307,16 +323,43 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	// static 同步Get函数
 	f.WriteString(structName + "* " + structName + "::Get(int region, int logic_zone, int physics_zone," + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> lck(GORM_Wrap::Instance()->mtx);\n")
-
-	f.WriteString("    return nullptr;\n")
+	f.WriteString("    " + structName + " *table = new " + structName + "();\n")
+	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
+	f.WriteString("    table->tablePbValue = pbTable.get();\n")
+	for _, c := range table.SplitInfo.SplitCols {
+		col := table.GetColumn(c)
+		colStructName := common.CPP_TableColumnName(col.Name)
+		setColFunc := "Set" + colStructName
+		f.WriteString("    table->" + setColFunc + "(" + col.Name + ");\n")
+	}
+	f.WriteString("    uint32 cbId = 0;\n")
+	f.WriteString("    if (GORM_OK != table->DoGet(cbId))\n")
+	f.WriteString("    {\n")
+	f.WriteString("        delete table;\n")
+	f.WriteString("        return nullptr;\n")
+	f.WriteString("    }\n")
+	f.WriteString("    return table;\n")
 	f.WriteString("}\n")
 
 	// static 异步Get函数
 	f.WriteString("int " + structName + "::Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", int64 &cbId, int (*cb)(int64, " + structName + "*))\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> lck(GORM_Wrap::Instance()->mtx);\n")
-	f.WriteString("    return 0;\n")
+	f.WriteString("    " + structName + " *table = new " + structName + "();\n")
+	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
+	f.WriteString("    table->tablePbValue = pbTable.get();\n")
+	for _, c := range table.SplitInfo.SplitCols {
+		col := table.GetColumn(c)
+		colStructName := common.CPP_TableColumnName(col.Name)
+		setColFunc := "Set" + colStructName
+		f.WriteString("    table->" + setColFunc + "(" + col.Name + ");\n")
+	}
+	f.WriteString("    if (GORM_OK != table->DoGet(cbId))\n")
+	f.WriteString("    {\n")
+	f.WriteString("        delete table;\n")
+	f.WriteString("        return GORM_ERROR;\n")
+	f.WriteString("    }\n")
+	f.WriteString("    if (cb != nullptr) cb(cbId, table);\n")
+	f.WriteString("    return GORM_OK;\n")
 	f.WriteString("}\n")
 
 	// static Delete函数
@@ -362,11 +405,21 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	f.WriteString("}\n")
 	/////////////////////////////////////////// 不带区服的接口
 
+	/////////////////////////////////// 操作对象的接口
 	// Delete函数
 	f.WriteString("int " + structName + "::Delete(int64 &cbId, int (*cb)(int64))\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> lck(GORM_Wrap::Instance()->mtx);\n")
-	f.WriteString("    return 0;\n")
+	f.WriteString(`    if (GORM_OK != this->DoDelete(cbId))
+    {
+        return GORM_ERROR;
+    }
+    if (cb != nullptr)
+    {
+        cb(cbId);
+    }
+    
+    return GORM_OK;
+`)
 	f.WriteString("}\n")
 
 	// SaveToDB函数
@@ -374,33 +427,34 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	f.WriteString("{\n")
 	f.WriteString("    int flag = this->dirtyFlag;\n")
 	f.WriteString("    this->dirtyFlag = 1;\n")
+	f.WriteString("    uint32 cbId;\n")
 	f.WriteString("    if (flag == 2)\n")
-	f.WriteString("        return this->DoUpdate();\n")
+	f.WriteString("        return this->DoUpdate(cbId);\n")
 	f.WriteString("    else if (flag == 0)\n")
-	f.WriteString("        return this->DoInsert();\n")
+	f.WriteString("        return this->DoInsert(cbId);\n")
 	f.WriteString("    return 0;\n")
 	f.WriteString("}\n")
 
 	// DoGet函数
-	f.WriteString("int " + structName + "::DoGet()\n")
+	f.WriteString("int " + structName + "::DoGet(uint32 &cbId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table, f, "get")
 	f.WriteString("}\n")
 	// DoDelete函数
-	f.WriteString("int " + structName + "::DoDelete()\n")
+	f.WriteString("int " + structName + "::DoDelete(uint32 &cbId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "delete")
 	f.WriteString("}\n")
 	// DoUpdate函数
-	f.WriteString("int " + structName + "::DoUpdate()\n")
+	f.WriteString("int " + structName + "::DoUpdate(uint32 &cbId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "update")
 	f.WriteString("}\n")
 	// DoInsert函数
-	f.WriteString("int " + structName + "::DoInsert()\n")
+	f.WriteString("int " + structName + "::DoInsert(uint32 &cbId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "insert")
