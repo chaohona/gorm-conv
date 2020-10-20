@@ -233,7 +233,7 @@ func CPPFieldsMapSetTableFieldValueSub(games []common.XmlCfg, f *os.File) int {
 		for _, table := range game.DB.TableList {
 			colTotal := 0
 			for _, col := range table.TableColumns {
-				if col.Type != "blob" && col.Type != "char" && col.Type != "string" {
+				if col.Type != "blob" && col.Type != "char" && col.Type != "string" && col.Type != "bytes" {
 					totalIdx += 1
 					colTotal += 1
 					if totalIdx == 1 {
@@ -289,7 +289,7 @@ func CPPFieldsMapSetTableFieldValue(games []common.XmlCfg, f *os.File) int {
 		for _, table := range game.DB.TableList {
 			colTotal := 0
 			for _, col := range table.TableColumns {
-				if col.Type == "blob" || col.Type == "char" || col.Type == "string" {
+				if col.Type == "blob" || col.Type == "char" || col.Type == "string" || col.Type == "bytes" {
 					totalIdx += 1
 					colTotal += 1
 					if totalIdx == 1 {
@@ -342,7 +342,7 @@ func CPPFieldsMapSetTableFieldValue(games []common.XmlCfg, f *os.File) int {
 		for _, table := range game.DB.TableList {
 			colTotal := 0
 			for _, col := range table.TableColumns {
-				if col.Type == "blob" || col.Type == "char" || col.Type == "string" {
+				if col.Type == "blob" || col.Type == "char" || col.Type == "string" || col.Type == "bytes" {
 					totalIdx += 1
 					colTotal += 1
 					if totalIdx == 1 {
@@ -414,7 +414,7 @@ func CPPFieldsMapGetTableFieldValueSub(games []common.XmlCfg, f *os.File) int {
 		for _, table := range game.DB.TableList {
 			colTotal := 0
 			for _, col := range table.TableColumns {
-				if col.Type != "blob" && col.Type != "char" && col.Type != "string" {
+				if col.Type != "blob" && col.Type != "char" && col.Type != "string" && col.Type != "bytes" {
 					totalIdx += 1
 					colTotal += 1
 					if totalIdx == 1 {
@@ -474,7 +474,7 @@ func CPPFieldsMapGetTableFieldValue(games []common.XmlCfg, f *os.File) int {
 		for _, table := range game.DB.TableList {
 			colTotal := 0
 			for _, col := range table.TableColumns {
-				if col.Type == "blob" || col.Type == "char" || col.Type == "string" {
+				if col.Type == "blob" || col.Type == "char" || col.Type == "string" || col.Type == "bytes" {
 					totalIdx += 1
 					colTotal += 1
 					if totalIdx == 1 {
@@ -531,7 +531,7 @@ func CPPFieldsMapGetTableFieldValue(games []common.XmlCfg, f *os.File) int {
 		for _, table := range game.DB.TableList {
 			colTotal := 0
 			for _, col := range table.TableColumns {
-				if col.Type == "blob" || col.Type == "char" || col.Type == "string" {
+				if col.Type == "blob" || col.Type == "char" || col.Type == "string" || col.Type == "bytes" {
 					totalIdx += 1
 					colTotal += 1
 					if totalIdx == 1 {

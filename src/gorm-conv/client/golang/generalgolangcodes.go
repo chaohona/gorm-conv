@@ -64,7 +64,7 @@ func CPPField_GolangType(colType string) string {
 		return "int32"
 	case "double":
 		return "floag64"
-	case "blob":
+	case "blob", "bytes":
 		return "[]byte"
 	default:
 		{

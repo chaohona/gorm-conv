@@ -66,7 +66,7 @@ func setFiledMode(index int) string {
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(table common.TableInfo, f *os.File) int {
 	pbStructName := "GORM_PB_Table_" + table.Name
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
-	f.WriteString("inline " + pbStructName + "*" + structName + "::GetPbMsg()\n")
+	f.WriteString("inline " + pbStructName + "* " + structName + "::GetPbMsg()\n")
 	f.WriteString("{\n")
 	f.WriteString("    return this->tablePbValue;\n")
 	f.WriteString("}\n")
@@ -196,6 +196,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
+	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
 	f.WriteString("    GORM_PB_" + bigOpt + "_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
 	if bigOpt == "DELETE" {
@@ -255,6 +256,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
+	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
 	f.WriteString("    GORM_PB_GET_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
 	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")

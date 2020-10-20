@@ -34,7 +34,7 @@ func GetPBString(c common.TableColumn) string {
 		{
 			return "string " + c.Name
 		}
-	case "blob":
+	case "blob", "bytes":
 		{
 			return "bytes " + c.Name
 		}

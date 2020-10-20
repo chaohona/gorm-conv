@@ -67,7 +67,7 @@ func GeneralSQLColumn(c common.TableColumn) (string, int) {
 				strOut += "DEFAULT " + c.DefaultValue
 			}
 		}
-	case "string":
+	case "string", "bytes":
 		{
 			strOut += "varchar("
 			strOut += c.Size
