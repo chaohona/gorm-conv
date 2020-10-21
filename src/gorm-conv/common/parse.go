@@ -186,6 +186,8 @@ func ParseSplitInfo(table *TableInfo) int {
 		}
 		if !bright {
 			fmt.Println("wrong splitinfo for table:" + table.Name)
+			fmt.Println(vcols)
+			fmt.Println(table.TableColumns)
 			return -1
 		}
 		table.SplitInfo.SplitCols = append(table.SplitInfo.SplitCols, c)
@@ -255,9 +257,6 @@ func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 				tIndex.Columns = strings.ToLower(tIndex.Columns)
 				tIndex.Name = strings.ToLower(tIndex.Name)
 			}
-			if 0 != ParseSplitInfo(table) {
-				return nil, -1
-			}
 			var colName string
 			for i, _ := range table.TableColumns {
 				c := &table.TableColumns[i]
@@ -275,11 +274,14 @@ func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 				c.Type = strings.ToLower(c.Type)
 
 				// 判断此字段是否为主键
-				for _, sc := range table.SplitInfo.SplitCols {
+				/*for _, sc := range table.SplitInfo.SplitCols {
 					if sc == c.Name {
 						c.PrimaryKey = true
 					}
-				}
+				}*/
+			}
+			if 0 != ParseSplitInfo(table) {
+				return nil, -1
 			}
 		}
 	}

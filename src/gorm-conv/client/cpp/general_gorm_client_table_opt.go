@@ -159,7 +159,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("// 表" + table.Name + "\n")
 	f.WriteString("class " + structName + "\n")
 	f.WriteString("{\n")
-	f.WriteString("publoc:\b")
+	f.WriteString("public:\n")
 	f.WriteString("    ~" + structName + "();\n")
 	f.WriteString("public:\n")
 	f.WriteString("    // static带区服的接口，用于分区分服架构\n")
