@@ -38,9 +38,7 @@ type PrimaryKey struct {
 }
 
 type TableColumn struct {
-	GoName       string // golang使用的列名
-	CPPName      string // cpp使用的列名
-	SQLName      string
+	PrimaryKey   bool   // 是否是主键
 	Name         string `xml:"name,attr"`
 	Type         string `xml:"type,attr"`
 	NotNull      bool   `xml:"notnull,attr"`
@@ -257,6 +255,9 @@ func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 				tIndex.Columns = strings.ToLower(tIndex.Columns)
 				tIndex.Name = strings.ToLower(tIndex.Name)
 			}
+			if 0 != ParseSplitInfo(table) {
+				return nil, -1
+			}
 			var colName string
 			for i, _ := range table.TableColumns {
 				c := &table.TableColumns[i]
@@ -272,15 +273,13 @@ func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 				}
 				c.Name = colName
 				c.Type = strings.ToLower(c.Type)
-				c.GoName = colName
-				c.CPPName = colName
-				c.SQLName = colName
-				if colName == "int" {
-					c.CPPName = "int_"
+
+				// 判断此字段是否为主键
+				for _, sc := range table.SplitInfo.SplitCols {
+					if sc == c.Name {
+						c.PrimaryKey = true
+					}
 				}
-			}
-			if 0 != ParseSplitInfo(table) {
-				return nil, -1
 			}
 		}
 	}

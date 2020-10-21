@@ -67,7 +67,7 @@ func GeneralGolang_Table_Records_Table(tableIdx int64, table common.TableInfo, o
 
 	// 对各个字段的设置函数
 	for idx, col := range table.TableColumns {
-		var colPbName string = getGolangPbFieldName(col.GoName)
+		var colPbName string = getGolangPbFieldName(col.Name)
 		f.WriteString("func (this *" + tablePbName + ") Set" + colPbName + "(inArg " + CPPField_GolangType(col.Type) + ") {\n")
 		f.WriteString("    var msg *" + pbStructName + "  = this.msg.(*" + pbStructName + ")\n")
 		f.WriteString("    msg." + colPbName + " = inArg\n")
@@ -85,7 +85,7 @@ func GeneralGolang_Table_Records_Table(tableIdx int64, table common.TableInfo, o
 	}
 
 	for _, col := range table.TableColumns {
-		var colPbName string = getGolangPbFieldName(col.GoName)
+		var colPbName string = getGolangPbFieldName(col.Name)
 		f.WriteString("func (this *" + tablePbName + ") Get" + colPbName + "()" + CPPField_GolangType(col.Type) + " {\n")
 		f.WriteString("    var msg *" + pbStructName + "  = this.msg.(*" + pbStructName + ")\n")
 		f.WriteString("    return msg.Get" + colPbName + "()\n")

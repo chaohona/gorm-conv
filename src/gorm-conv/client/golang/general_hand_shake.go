@@ -46,7 +46,7 @@ func GeneralGolang_HandShake(games []common.XmlCfg, outpath string) int {
 				var colVer string = strconv.FormatUint(col.Version, 10)
 				f.WriteString("                &GORM_PB_TABLE_SCHEMA_INFO_COLUMN{\n")
 				f.WriteString("                    Version:  " + colVer + ",\n")
-				f.WriteString("                    Name:     \"" + col.GoName + "\",\n")
+				f.WriteString("                    Name:     \"" + col.Name + "\",\n")
 				f.WriteString("                    TypeDesc: \"" + col.Type + "\",\n")
 				f.WriteString("                    Type:     GORM_PB_COLUMN_TYPE_GORM_PB_COLUMN_TYPE_" + strings.ToUpper(col.Type) + ",\n")
 				f.WriteString("                },\n")

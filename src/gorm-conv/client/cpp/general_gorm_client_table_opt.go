@@ -34,6 +34,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Desc(table common.TableInfo, f *os.File) int {
 	f.WriteString("    /* 下面为针对表的每个字段的操作,Get为获取字段的原始数据,Set为更新字段的值 */\n")
 	for _, col := range table.TableColumns {
+		if col.PrimaryKey {
+			f.WriteString("    // 主键，设置之后不能更改")
+		}
 		f.WriteString("    // " + col.Name + "\n")
 		colType := common.CPPField_CPPType(col.Type)
 		colStructName := common.CPP_TableColumnName(col.Name)
@@ -66,6 +69,14 @@ func setFiledMode(index int) string {
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(table common.TableInfo, f *os.File) int {
 	pbStructName := "GORM_PB_Table_" + table.Name
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
+
+	f.WriteString(structName + "* " + structName + "::New()\n")
+	f.WriteString("{\n")
+	f.WriteString("    " + structName + " *result = new " + structName + "();\n")
+	f.WriteString("    result->tablePbValue = new " + pbStructName + "();\n")
+	f.WriteString("    return result;\n")
+	f.WriteString("}\n")
+
 	f.WriteString("inline " + pbStructName + "* " + structName + "::GetPbMsg()\n")
 	f.WriteString("{\n")
 	f.WriteString("    return this->tablePbValue;\n")
@@ -87,6 +98,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	// 生成更新所有字段函数
 	f.WriteString("inline int " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave)\n")
 	f.WriteString("{\n")
+	f.WriteString("    if (this->tablePbValue == nullptr)")
+	f.WriteString("        this->tablePbValue = new " + pbStructName + "();\n")
 	for _, col := range table.TableColumns {
 		colStructName := common.CPP_TableColumnName(col.Name)
 		setColFunc := "Set" + colStructName
@@ -146,6 +159,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("// 表" + table.Name + "\n")
 	f.WriteString("class " + structName + "\n")
 	f.WriteString("{\n")
+	f.WriteString("publoc:\b")
+	f.WriteString("    ~" + structName + "();\n")
 	f.WriteString("public:\n")
 	f.WriteString("    // static带区服的接口，用于分区分服架构\n")
 	f.WriteString("    static " + structName + "* Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
@@ -157,13 +172,12 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    static " + structName + "* Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int, " + structName + "*));\n")
 	f.WriteString("    static int Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int));\n")
-	//f.WriteString("    static int SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
+	//f.WriteString("    static " + structName + "* New(" + pbStructName + "* pbMsg);\n")
 
 	f.WriteString("\n")
 	f.WriteString("    // 本地操作接口\n")
 	f.WriteString("    int Delete(uint32 &cbId, int (*cb)(uint32, int));\n")
 	f.WriteString("    int SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
-	//f.WriteString("    int RemoveFromLocal();\n")
 	f.WriteString("    int SaveToDB();\n")
 	f.WriteString("    " + pbStructName + " *GetPbMsg();\n")
 
@@ -182,7 +196,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	// 其它变量
 	f.WriteString("private:\n")
 	f.WriteString("    " + pbStructName + " *tablePbValue = nullptr;\n")
-	f.WriteString("    GORM_FieldsOpt fieldOpt;\n")
+	f.WriteString("    GORM_FieldsOpt *fieldOpt;\n")
 	f.WriteString("    int dirtyFlag = 0;\n")
 	f.WriteString("};\n\n")
 
@@ -321,6 +335,15 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.TableInfo, f *os.File) int {
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 	pbStructName := "GORM_PB_Table_" + table.Name
+
+	f.WriteString(structName + "::~" + structName + "()\n")
+	f.WriteString("{\n")
+	f.WriteString("    if (this->tablePbValue != nullptr)")
+	f.WriteString("    {\n")
+	f.WriteString("        delete this->tablePbValue;\n")
+	f.WriteString("        this->tablePbValue = nullptr;\n")
+	f.WriteString("    }\n")
+	f.WriteString("}\n")
 	//////////////////////////////////////// 带区服的接口
 	// static 同步Get函数
 	f.WriteString(structName + "* " + structName + "::Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
@@ -579,10 +602,12 @@ public:
     int SetAllbinary(const string &allbinary, bool forceSave=false);
     int SetAllbinary(const char* allbinary, size_t size, bool forceSave=false);
 private:
+	// 0:新的没有持久化的数据，1:从持久化存储拉到内存的数据，2:已经持久化了的并且有更新的数据
+	char dirtyFlag = 0;
+	// 0:为没有设置主键，不能插入数据库，1为设置了主键，可以插入数据库
+    char hasSetPrimaryKey = 0;
     GORM_PB_Table_account *tablePbValue = nullptr;
     GORM_FieldsOpt fieldOpt;
-    // 0:新的没有持久化的数据，1:从持久化存储拉到内存的数据，2:已经持久化了的并且有更新的数据
-    int dirtyFlag = 0;  
 };
 */
 
