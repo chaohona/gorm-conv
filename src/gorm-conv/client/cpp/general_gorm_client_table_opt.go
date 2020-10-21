@@ -310,6 +310,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("        return GORM_NO_MORE_RECORD;\n")
 	f.WriteString("    }\n")
 	f.WriteString("    this->tablePbValue = pbRspMsg->mutable_table()->release_" + table.Name + "();\n")
+	f.WriteString("    this->dirtyFlag = 1;\n")
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 	f.WriteString("    delete clientMsg;\n")
 	f.WriteString("\n")
