@@ -70,13 +70,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	pbStructName := "GORM_PB_Table_" + table.Name
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 
-	f.WriteString(structName + "* " + structName + "::New()\n")
-	f.WriteString("{\n")
-	f.WriteString("    " + structName + " *result = new " + structName + "();\n")
-	f.WriteString("    result->tablePbValue = new " + pbStructName + "();\n")
-	f.WriteString("    return result;\n")
-	f.WriteString("}\n")
-
 	f.WriteString("inline " + pbStructName + "* " + structName + "::GetPbMsg()\n")
 	f.WriteString("{\n")
 	f.WriteString("    return this->tablePbValue;\n")
