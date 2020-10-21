@@ -189,7 +189,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	// 其它变量
 	f.WriteString("private:\n")
 	f.WriteString("    " + pbStructName + " *tablePbValue = nullptr;\n")
-	f.WriteString("    GORM_FieldsOpt *fieldOpt;\n")
+	f.WriteString("    GORM_FieldsOpt fieldOpt;\n")
 	f.WriteString("    int dirtyFlag = 0;\n")
 	f.WriteString("};\n\n")
 
