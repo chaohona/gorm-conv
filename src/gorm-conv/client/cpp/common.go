@@ -17,5 +17,10 @@ func GeneralClientCPPCodes(games []common.XmlCfg, outpath string) int {
 		fmt.Println("GeneralClientCPPCodes_GenralGormH failed")
 		return -1
 	}
+
+	if 0 != General_GormClientMsg(outpath) {
+		fmt.Println("General_GormClientMsg failed")
+		return -1
+	}
 	return 0
 }

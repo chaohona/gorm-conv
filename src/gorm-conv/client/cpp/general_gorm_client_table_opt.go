@@ -91,7 +91,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	// 生成更新所有字段函数
 	f.WriteString("inline int " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave)\n")
 	f.WriteString("{\n")
-	f.WriteString("    if (this->tablePbValue == nullptr)")
+	f.WriteString("    if (this->tablePbValue == nullptr)\n")
 	f.WriteString("        this->tablePbValue = new " + pbStructName + "();\n")
 	for _, col := range table.TableColumns {
 		colStructName := common.CPP_TableColumnName(col.Name)
@@ -153,6 +153,10 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("class " + structName + "\n")
 	f.WriteString("{\n")
 	f.WriteString("public:\n")
+	f.WriteString("    " + structName + "();\n")
+	f.WriteString("    " + structName + "(int region, int logic_zone, int physics_zone);\n")
+	f.WriteString("    " + structName + "(" + pbStructName + " *tablePbValue);\n")
+	f.WriteString("    " + structName + "(int region, int logic_zone, int physics_zone, " + pbStructName + " *tablePbValue);\n")
 	f.WriteString("    ~" + structName + "();\n")
 	f.WriteString("public:\n")
 	f.WriteString("    // static带区服的接口，用于分区分服架构\n")
@@ -165,7 +169,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    static " + structName + "* Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int, " + structName + "*));\n")
 	f.WriteString("    static int Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int));\n")
-	//f.WriteString("    static " + structName + "* New(" + pbStructName + "* pbMsg);\n")
+	f.WriteString("    static int SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
 
 	f.WriteString("\n")
 	f.WriteString("    // 本地操作接口\n")
@@ -329,6 +333,23 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 	pbStructName := "GORM_PB_Table_" + table.Name
 
+	f.WriteString(structName + "::" + structName + "()\n")
+	f.WriteString("{\n")
+	f.WriteString("}\n")
+
+	f.WriteString(structName + "::" + structName + "(int region, int logic_zone, int physics_zone)\n")
+	f.WriteString("{\n")
+	f.WriteString("}\n")
+
+	f.WriteString(structName + "::" + structName + "(" + pbStructName + " *tablePbValue)\n")
+	f.WriteString("{\n")
+	f.WriteString("    this->SetPbMsg(tablePbValue);\n")
+	f.WriteString("}\n")
+
+	f.WriteString(structName + "::" + structName + "(int region, int logic_zone, int physics_zone, " + pbStructName + " *tablePbValue)\n")
+	f.WriteString("{\n")
+	f.WriteString("}\n")
+
 	f.WriteString(structName + "::~" + structName + "()\n")
 	f.WriteString("{\n")
 	f.WriteString("    if (this->tablePbValue != nullptr)")
@@ -401,7 +422,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	f.WriteString("int " + structName + "::SetPbMsg(int region, int logic_zone, int physics_zone, " + pbStructName + " *pbMsg, bool forceSave)\n")
 	f.WriteString("{\n")
 	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
-	f.WriteString("    return table->SetPbMsg(pbMsg, true);\n")
+	f.WriteString("    return table->SetPbMsg(pbMsg, forceSave);\n")
 	f.WriteString("}\n")
 	//////////////////////////////////////// 带区服的接口
 
@@ -422,6 +443,11 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	f.WriteString("int " + structName + "::Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int))\n")
 	f.WriteString("{\n")
 	f.WriteString("    return " + structName + "::Delete(0,0,0," + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ", cbId, cb);\n")
+	f.WriteString("}\n")
+	f.WriteString("int " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave)\n")
+	f.WriteString("{\n")
+	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
+	f.WriteString("    return table->SetPbMsg(pbMsg, forceSave);\n")
 	f.WriteString("}\n")
 	/////////////////////////////////////////// 不带区服的接口
 
