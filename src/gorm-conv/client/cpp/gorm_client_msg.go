@@ -62,7 +62,6 @@ void GORM_ClientMsg::Reset()
     reqMemData = nullptr;
     pbReqMsg = nullptr;
     pbRspMsg = nullptr;
-    cbFunc = nullptr;
     rspCode.Reset();
     syncCall = 0;
     fieldOpt = nullptr;
