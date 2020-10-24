@@ -70,6 +70,31 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	pbStructName := "GORM_PB_Table_" + table.Name
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 
+	// SaveToDB函数
+	f.WriteString("inline int " + structName + "::SaveToDB()\n")
+	f.WriteString("{\n")
+	f.WriteString("    int flag = this->dirtyFlag;\n")
+	f.WriteString("    this->dirtyFlag = 1;\n")
+	f.WriteString("    uint32 cbId;\n")
+	f.WriteString("    if (flag == 2)\n")
+	f.WriteString("        return this->DoUpdate(cbId);\n")
+	f.WriteString("    else if (flag == 0)\n")
+	f.WriteString("        return this->DoUpSert(cbId);\n")
+	f.WriteString("    return 0;\n")
+	f.WriteString("}\n")
+
+	f.WriteString("inline int " + structName + "::Add()\n")
+	f.WriteString("{\n")
+	f.WriteString("    uint32 cbId;\n")
+	f.WriteString("    return this->DoInsertt(cbId);\n")
+	f.WriteString("}\n")
+
+	f.WriteString("inline int " + structName + "::Update()\n")
+	f.WriteString("{\n")
+	f.WriteString("    uint32 cbId;\n")
+	f.WriteString("    return this->DoUpdate(cbId);\n")
+	f.WriteString("}\n")
+
 	f.WriteString("inline " + pbStructName + "* " + structName + "::GetPbMsg()\n")
 	f.WriteString("{\n")
 	f.WriteString("    return this->tablePbValue;\n")
@@ -175,6 +200,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    int Delete(uint32 &cbId, int (*cb)(uint32, int));\n")
 	f.WriteString("    int SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
 	f.WriteString("    int SaveToDB();\n")
+	f.WriteString("    int Add();\n")
+	f.WriteString("    int Update();\n")
 	f.WriteString("    " + pbStructName + " *GetPbMsg();\n")
 
 	f.WriteString("\n")
@@ -187,6 +214,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    int DoDelete(uint32 &cbId);\n")
 	f.WriteString("    int DoUpdate(uint32 &cbId);\n")
 	f.WriteString("    int DoInsert(uint32 &cbId);\n")
+	f.WriteString("    // @desc 有则替换，没有则插入")
+	f.WriteString("    int DoUpSert(uint32 &cbId);\n")
 	f.WriteString("public:\n")
 	f.WriteString("    mutex mtx;\n")
 	// 其它变量
@@ -460,19 +489,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 `)
 	f.WriteString("}\n")
 
-	// SaveToDB函数
-	f.WriteString("int " + structName + "::SaveToDB()\n")
-	f.WriteString("{\n")
-	f.WriteString("    int flag = this->dirtyFlag;\n")
-	f.WriteString("    this->dirtyFlag = 1;\n")
-	f.WriteString("    uint32 cbId;\n")
-	f.WriteString("    if (flag == 2)\n")
-	f.WriteString("        return this->DoUpdate(cbId);\n")
-	f.WriteString("    else if (flag == 0)\n")
-	f.WriteString("        return this->DoInsert(cbId);\n")
-	f.WriteString("    return 0;\n")
-	f.WriteString("}\n")
-
 	// DoGet函数
 	f.WriteString("int " + structName + "::DoGet(uint32 &cbId)\n")
 	f.WriteString("{\n")
@@ -496,6 +512,12 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	f.WriteString("{\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "insert")
+	f.WriteString("}\n")
+	// DoUpSert函数
+	f.WriteString("int " + structName + "::DoUpSert(uint32 &cbId)\n")
+	f.WriteString("{\n")
+	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
+	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "replace")
 	f.WriteString("}\n")
 
 	return 0
@@ -598,8 +620,13 @@ public:
     // @desc 全量覆盖更新本条数据
     int SetPbMsg(GORM_PB_Table_account *pbMsg, bool forceSave=false);
     
-    // @desc 立即将本条数据持久化保存
+    // @desc 立即将本条数据持久化保存,已经存在的数据则更新，没有的数据则插入一条新数据
     int SaveToDB();
+    
+    // @desc 增加新的记录到数据库,插入失败则直接返回
+    int Add();
+    // @desc 更新一条记录，更新失败则返回
+    int Update();
     
     // @desc 获取原始pb结构数据，长用于发送给后端逻辑节点使用
     GORM_PB_Table_account *GetPbMsg();
