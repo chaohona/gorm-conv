@@ -111,7 +111,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		if colType == "string" {
 			f.WriteString("inline const string& " + structName + "::" + getColFunc + "()\n")
 			f.WriteString("{\n")
-			f.WriteString("    if (this->tablePbValue == nullptr) new" + pbStructName + "();\n")
+			f.WriteString("    if (this->tablePbValue == nullptr) new " + pbStructName + "();\n")
 			f.WriteString("    return this->tablePbValue->" + col.Name + "();\n")
 			f.WriteString("}\n")
 		} else {
