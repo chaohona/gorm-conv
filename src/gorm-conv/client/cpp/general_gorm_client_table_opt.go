@@ -65,6 +65,10 @@ func setFiledMode(index int) string {
 	return "    this->fieldOpt.AddField(" + strIdx + ", " + strMode + ");\n"
 }
 
+func CheckAndNewPb(pbStructName string) string {
+	return string("    if (this->tablePbValue == nullptr) this->tablePbValue = new " + pbStructName + "();\n")
+}
+
 // 头文件中的inline函数实现
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(table common.TableInfo, f *os.File) int {
 	pbStructName := "GORM_PB_Table_" + table.Name
@@ -86,7 +90,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("inline int " + structName + "::Add()\n")
 	f.WriteString("{\n")
 	f.WriteString("    uint32 cbId;\n")
-	f.WriteString("    return this->DoInsertt(cbId);\n")
+	f.WriteString("    return this->DoInsert(cbId);\n")
 	f.WriteString("}\n")
 
 	f.WriteString("inline int " + structName + "::Update()\n")
@@ -110,14 +114,14 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 			f.WriteString("inline " + colType + " " + structName + "::" + getColFunc + "()\n")
 		}
 		f.WriteString("{\n")
+		f.WriteString(CheckAndNewPb(pbStructName))
 		f.WriteString("    return this->tablePbValue->" + col.Name + "();\n")
 		f.WriteString("}\n")
 	}
 	// 生成更新所有字段函数
 	f.WriteString("inline int " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave)\n")
 	f.WriteString("{\n")
-	f.WriteString("    if (this->tablePbValue == nullptr)\n")
-	f.WriteString("        this->tablePbValue = new " + pbStructName + "();\n")
+	f.WriteString(CheckAndNewPb(pbStructName))
 	for _, col := range table.TableColumns {
 		colStructName := common.CPP_TableColumnName(col.Name)
 		setColFunc := "Set" + colStructName
@@ -136,6 +140,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 			// Set(string&)
 			f.WriteString("inline int " + structName + "::" + setColFunc + "(const string &" + col.Name + ", bool forceSave)\n")
 			f.WriteString("{\n")
+			f.WriteString(CheckAndNewPb(pbStructName))
 			f.WriteString("    this->tablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
 			f.WriteString(setFiledMode(idx))
 			f.WriteString("    if (this->dirtyFlag != 0) this->dirtyFlag = 2;\n")
@@ -147,6 +152,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 			//Set(const char*, size_t)
 			f.WriteString("inline int " + structName + "::" + setColFunc + "(const char* " + col.Name + ", size_t size, bool forceSave)\n")
 			f.WriteString("{\n")
+			f.WriteString(CheckAndNewPb(pbStructName))
 			f.WriteString("    this->tablePbValue->set_" + col.Name + "(" + col.Name + ", size);\n")
 			f.WriteString(setFiledMode(idx))
 			f.WriteString("    if (this->dirtyFlag != 0) this->dirtyFlag = 2;\n")
@@ -157,6 +163,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		} else {
 			f.WriteString("inline int " + structName + "::" + setColFunc + "(" + colType + " " + col.Name + ", bool forceSave)\n")
 			f.WriteString("{\n")
+			f.WriteString(CheckAndNewPb(pbStructName))
 			f.WriteString("    this->tablePbValue->set_" + col.Name + "(" + col.Name + ");\n")
 			f.WriteString(setFiledMode(idx))
 			f.WriteString("    if (this->dirtyFlag != 0) this->dirtyFlag = 2;\n")
@@ -214,7 +221,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    int DoDelete(uint32 &cbId);\n")
 	f.WriteString("    int DoUpdate(uint32 &cbId);\n")
 	f.WriteString("    int DoInsert(uint32 &cbId);\n")
-	f.WriteString("    // @desc 有则替换，没有则插入")
+	f.WriteString("    // @desc 有则替换，没有则插入\n")
 	f.WriteString("    int DoUpSert(uint32 &cbId);\n")
 	f.WriteString("public:\n")
 	f.WriteString("    mutex mtx;\n")
