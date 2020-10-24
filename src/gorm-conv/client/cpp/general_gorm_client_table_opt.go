@@ -110,13 +110,17 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		getColFunc := "Get" + colStructName
 		if colType == "string" {
 			f.WriteString("inline const string& " + structName + "::" + getColFunc + "() const\n")
+			f.WriteString("{\n")
+			f.WriteString("    if (this->tablePbValue == nullptr) return string(\"\");\n")
+			f.WriteString("    return this->tablePbValue->" + col.Name + "();\n")
+			f.WriteString("}\n")
 		} else {
 			f.WriteString("inline " + colType + " " + structName + "::" + getColFunc + "()\n")
+			f.WriteString("{\n")
+			f.WriteString("    if (this->tablePbValue == nullptr) return string(\"\");\n")
+			f.WriteString("    return this->tablePbValue->" + col.Name + "();\n")
+			f.WriteString("}\n")
 		}
-		f.WriteString("{\n")
-		f.WriteString(CheckAndNewPb(pbStructName))
-		f.WriteString("    return this->tablePbValue->" + col.Name + "();\n")
-		f.WriteString("}\n")
 	}
 	// 生成更新所有字段函数
 	f.WriteString("inline int " + structName + "::SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave)\n")
