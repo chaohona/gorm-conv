@@ -256,14 +256,14 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	}
 
 	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(this->tablePbValue);\n\n")
-	f.WriteString(`
-    // 打包
-    if (GORM_OK != clientMsg->PackReq())
-    {
-        delete clientMsg;
-        return GORM_ERROR;
-    }
-`)
+	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
+	f.WriteString("    {\n")
+	f.WriteString("        pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("        delete clientMsg;\n")
+	f.WriteString("        return GORM_ERROR;\n")
+	f.WriteString("    }\n")
+
+	f.WriteString("    // 使用完，交还外部数据\n")
 	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
 	f.WriteString(`
     // 发送Get请求
@@ -311,14 +311,15 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
 	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
 	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(this->tablePbValue);\n\n")
-	f.WriteString(`
-    // 打包
-    if (GORM_OK != clientMsg->PackReq())
-    {
-        delete clientMsg;
-        return GORM_ERROR;
-    }
-`)
+
+	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
+	f.WriteString("    {\n")
+	f.WriteString("        pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("        delete clientMsg;\n")
+	f.WriteString("        return GORM_ERROR;\n")
+	f.WriteString("    }\n")
+
+	f.WriteString("    // 使用完，交还外部数据\n")
 	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
 	f.WriteString(`
     // 发送Get请求
