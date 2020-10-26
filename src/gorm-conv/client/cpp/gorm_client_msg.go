@@ -123,12 +123,11 @@ int GORM_ClientMsg::ParseRspGet(char *msgBeginPos, int msgLen)
     return GORM_OK;
 }
 
-
 #define GORM_CLIENTREQUEST_SETHEADER()                                          \
 if (fieldOpt->iUsedIdx<0) return GORM_ERROR;                                    \
 GORM_PB_REQ_HEADER *header = pPbReq->mutable_header();                          \
 header->set_reqflag(reqFlag);                                                   \
-header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);      \ 
+header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);      \
 header->set_tableid(tableId);                                                   \
 header->set_verpolice(verPolicy);
 
