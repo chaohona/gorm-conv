@@ -673,6 +673,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 	f.WriteString("#include \"" + fileName + ".pb.h\"\n")
 	f.WriteString("#include \"gorm_define.h\"\n")
 	f.WriteString("#include \"gorm_utils.h\"\n")
+	f.WriteString("#include \"gorm_error.h\"\n")
 	f.WriteString("\n")
 	f.WriteString(exampleCodes)
 	f.WriteString("namespace gorm{\n\n")
