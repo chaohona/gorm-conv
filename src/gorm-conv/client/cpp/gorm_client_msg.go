@@ -66,6 +66,14 @@ void GORM_ClientMsg::Reset()
     syncCall = 0;
     fieldOpt = nullptr;
 }
+void GORM_ClientMsg::Wait()    // 发送完等待响应
+{
+
+}
+
+void GORM_ClientMsg::Signal()    // 接收到响应之后通知结束等待
+{
+}
 
 int GORM_ClientMsg::ParseRsp(char *msgBeginPos, int msgLen)
 {
