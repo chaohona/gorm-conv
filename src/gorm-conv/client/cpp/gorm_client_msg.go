@@ -128,7 +128,7 @@ int GORM_ClientMsg::ParseRspGet(char *msgBeginPos, int msgLen)
 if (fieldOpt->iUsedIdx<0) return GORM_ERROR;                                    \
 GORM_PB_REQ_HEADER *header = pPbReq->mutable_header();                          \
 header->set_reqflag(reqFlag);                                                   \
-header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);        \
+header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);      \ 
 header->set_tableid(tableId);                                                   \
 header->set_verpolice(verPolicy);
 
@@ -152,6 +152,10 @@ int GORM_ClientMsg::PackReq()
     case GORM_CMD_UPDATE:
     {
         return this->PackReqUpdate();
+    }
+    case GORM_CMD_REPLACE:
+    {
+        return this->PackReplace();
     }
     }
     
@@ -177,12 +181,7 @@ int GORM_ClientMsg::PackReqDelete()
 int GORM_ClientMsg::PackReqGet()
 {
     GORM_PB_GET_REQ  *pPbReq = dynamic_cast<GORM_PB_GET_REQ*>(pbReqMsg);
-if (fieldOpt->iUsedIdx<0) return GORM_ERROR;                                    
-GORM_PB_REQ_HEADER *header = pPbReq->mutable_header();                          
-header->set_reqflag(reqFlag);                                                   
-header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);        
-header->set_tableid(tableId);                                                   
-header->set_verpolice(verPolicy);
+	GORM_CLIENTREQUEST_SETHEADER();
     
     return this->MakeSendBuff();
 }
@@ -190,6 +189,14 @@ header->set_verpolice(verPolicy);
 int GORM_ClientMsg::PackReqUpdate()
 {
     GORM_PB_UPDATE_REQ  *pPbReq = dynamic_cast<GORM_PB_UPDATE_REQ*>(pbReqMsg);
+    GORM_CLIENTREQUEST_SETHEADER();
+    
+    return this->MakeSendBuff();
+}
+
+int GORM_ClientMsg::PackReplace()
+{
+    GORM_PB_REPLACE_REQ  *pPbReq = dynamic_cast<GORM_PB_REPLACE_REQ*>(pbReqMsg);
     GORM_CLIENTREQUEST_SETHEADER();
     
     return this->MakeSendBuff();
