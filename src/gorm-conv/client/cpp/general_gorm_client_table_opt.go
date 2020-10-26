@@ -206,6 +206,12 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("{\n")
 	f.WriteString("    return this->tablePbValue;\n")
 	f.WriteString("}\n")
+	f.WriteString("inline " + pbStructName + "* " + structName + "::ReleasePbMsg() // 将pb消息返回，并将本地数据置为空(转移数据属主)\n")
+	f.WriteString("{\n")
+	f.WriteString("    auto *pbMsg = this->tablePbValue;\n")
+	f.WriteString("    this->tablePbValue = nullptr;\n")
+	f.WriteString("    return pbMsg;\n")
+	f.WriteString("}\n")
 	// 生成Get函数
 	for _, col := range table.TableColumns {
 		colType := common.CPPField_CPPType(col.Type)
@@ -324,6 +330,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    int Add();\n")
 	f.WriteString("    int Update();\n")
 	f.WriteString("    " + pbStructName + " *GetPbMsg();\n")
+	f.WriteString("    " + pbStructName + " *ReleasePbMsg(); // 将pb消息返回，并将本地数据置为空(转移数据属主)\n")
 
 	f.WriteString("\n")
 	// 声明每个字段的存取方法

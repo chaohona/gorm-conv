@@ -116,8 +116,8 @@ func main() {
 		bClientCodes = true
 	}
 	// 自动生成代码
-	if common.Cppoutpath != nil && *common.Cppoutpath != "" {
-		ret = cpp.GeneralCppCodes(games, *common.Cppoutpath)
+	if bServerCodes && common.Cppoutpath != nil && *common.Cppoutpath != "" {
+		ret = cpp.GeneralCppServerCodes(games, *common.Cppoutpath)
 		if ret != 0 {
 			fmt.Println("generate cpp codes got error.")
 			return
