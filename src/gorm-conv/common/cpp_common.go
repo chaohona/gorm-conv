@@ -197,7 +197,7 @@ func CPPFieldPackSQL_COL_FORMAT(colType string) string {
 		}
 	default:
 		{
-			DefineSQL += "\\\"%s\\\""
+			DefineSQL += "'%s'"
 		}
 	}
 	return DefineSQL
