@@ -125,6 +125,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table common.TableInfo, f *os.
 	sprintf_str += ");\n"
 	f.WriteString("\n")
 	f.WriteString(len_str)
+	f.WriteString("iLen *= 2;\n")
 
 	var bufferName string = "pReqData"
 	var bufferSize string = "iLen<<1"
