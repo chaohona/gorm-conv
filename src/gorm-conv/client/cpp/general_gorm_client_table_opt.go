@@ -98,7 +98,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("}\n")
 
 	// static 异步Get函数
-	f.WriteString("inline int " + structName + "::Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int, " + structName + "*))\n")
+	f.WriteString("inline int " + structName + "::Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
 	f.WriteString("    " + structName + " *table = new " + structName + "();\n")
 	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
@@ -120,7 +120,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("}\n")
 
 	// static Delete函数
-	f.WriteString("inline int " + structName + "::Delete(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int))\n")
+	f.WriteString("inline int " + structName + "::Delete(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
 	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
 	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
@@ -150,13 +150,13 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("}\n")
 
 	// static 不带区服，异步Get函数
-	f.WriteString("inline int " + structName + "::Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int, " + structName + "*))\n")
+	f.WriteString("inline int " + structName + "::Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
 	f.WriteString("    return " + structName + "::Get(0,0,0, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ", cbId, cb);\n")
 	f.WriteString("}\n")
 
 	// static Delete函数
-	f.WriteString("inline int " + structName + "::Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int))\n")
+	f.WriteString("inline int " + structName + "::Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
 	f.WriteString("    return " + structName + "::Delete(0,0,0," + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ", cbId, cb);\n")
 	f.WriteString("}\n")
@@ -164,7 +164,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 
 	/////////////////////////////////// 操作对象的接口
 	// Delete函数
-	f.WriteString("inline int " + structName + "::Delete(uint32 &cbId, int (*cb)(uint32, int))\n")
+	f.WriteString("inline int " + structName + "::Delete(uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
 	f.WriteString("    int retCode = this->DoDelete(cbId);\n")
 	f.WriteString(`
@@ -310,6 +310,21 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	}
 	f.WriteString(";\n")
 	f.WriteString("}\n")
+
+	// 函数GetCallBack
+	f.WriteString("inline void " + structName + "::GetCallBack(GORM_ClientMsg *clientMsg)\n")
+	f.WriteString("{\n")
+	f.WriteString("    if (clientMsg == nullptr) return;\n")
+	f.WriteString("    GORM_PB_GET_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_RSP*>(clientMsg->pbRspMsg);\n")
+	f.WriteString("    if (pbRspMsg == nullptr || !pbRspMsg->table().has_" + table.Name + "())\n")
+	f.WriteString("    {\n")
+	f.WriteString("        clientMsg->cbFunc(clientMsg->cbId, clientMsg->rspCode.code, nullptr);\n")
+	f.WriteString("        return;\n")
+	f.WriteString("    }\n")
+	f.WriteString("    " + structName + " *table = new " + structName + "(pbRspMsg->table().release_" + table.Name + "));\n")
+	f.WriteString("    clientMsg->cbFunc(clientMsg->cbId, clientMsg->rspCode.code, table);\n")
+	f.WriteString("    return;\n")
+	f.WriteString("}\n")
 	return 0
 }
 
@@ -319,7 +334,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("// 表" + table.Name + "\n")
-	f.WriteString("class " + structName + "\n")
+	f.WriteString("class " + structName + ": public GORM_ClientTable\n")
 	f.WriteString("{\n")
 	f.WriteString("public:\n")
 	f.WriteString("    " + structName + "(){}\n")
@@ -336,19 +351,19 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    }\n")
 	f.WriteString("public:\n")
 	f.WriteString("    // static带区服的接口，用于分区分服架构\n")
-	f.WriteString("    static " + structName + "* Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
-	f.WriteString("    static int Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int, " + structName + "*));\n")
-	f.WriteString("    static int Delete(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int));\n")
+	f.WriteString("    static shared_ptr<" + structName + "> Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
+	f.WriteString("    static int Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
+	f.WriteString("    static int Delete(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    static int SetPbMsg(int region, int logic_zone, int physics_zone, " + pbStructName + " *pbMsg, bool forceSave=false);\n")
 	f.WriteString("\n")
 	f.WriteString("    // static不带区服的接口，用于全区全服架构\n")
-	f.WriteString("    static " + structName + "* Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
-	f.WriteString("    static int Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int, " + structName + "*));\n")
-	f.WriteString("    static int Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, int (*cb)(uint32, int));\n")
+	f.WriteString("    static shared_ptr<" + structName + "> Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
+	f.WriteString("    static int Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
+	f.WriteString("    static int Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 
 	f.WriteString("\n")
 	f.WriteString("    // 本地操作接口\n")
-	f.WriteString("    int Delete(uint32 &cbId, int (*cb)(uint32, int));\n")
+	f.WriteString("    int Delete(uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    int SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
 	f.WriteString("    // 更新数据到数据库，有则更新，没有则插入。如果业务侧确认是新插入数据则建议使用Update接口，确认是新增数据则建议使用Add接口\n")
 	f.WriteString("    int SaveToDB();\n")
@@ -369,6 +384,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    int DoInsert(uint32 &cbId);\n")
 	f.WriteString("    int DoUpSert(uint32 &cbId);\n")
 	f.WriteString("    bool HasSetPrimaryKey();\n")
+	f.WriteString("\n")
+	f.WriteString("    friend class GORM_ClientMsg;\n")
+	f.WriteString("    static void GetCallBack(GORM_ClientMsg *clientMsg);\n")
 	f.WriteString("public:\n")
 	f.WriteString("    mutex mtx;\n")
 	// 其它变量
@@ -448,6 +466,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table common.TableInfo, f *os.File, opt string) int {
 	var bigOpt string = strings.ToUpper(opt)
 	var bigTableName string = strings.ToUpper(table.Name)
+	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 	///	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
@@ -456,6 +475,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
 	f.WriteString("    GORM_PB_GET_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
+	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
 	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
 	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(this->tablePbValue);\n\n")
 
@@ -504,7 +524,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
     }
     GORM_PB_GET_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_RSP*>(clientMsg->pbRspMsg);
 `)
-	f.WriteString("    if (!pbRspMsg->table().has_" + table.Name + "())\n")
+	f.WriteString("    if (pbRspMsg == nullptr || !pbRspMsg->table().has_" + table.Name + "())\n")
 	f.WriteString("    {\n")
 	f.WriteString("        clientMsg->mtx.unlock();\n")
 	f.WriteString("        delete clientMsg;\n")
@@ -717,6 +737,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 	f.WriteString("#include \"gorm_define.h\"\n")
 	f.WriteString("#include \"gorm_utils.h\"\n")
 	f.WriteString("#include \"gorm_error.h\"\n")
+	f.WriteString("#include \"gorm_table.h\"\n")
 	f.WriteString("\n")
 	f.WriteString(exampleCodes)
 	f.WriteString("namespace gorm{\n\n")

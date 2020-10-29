@@ -50,6 +50,11 @@ void GORM_ClientMsg::Reset()
         delete this->pbReqMsg;
         this->pbReqMsg = nullptr;
     }
+    if (this->reqTable != nullptr)
+    {
+        delete this->reqTable;
+        this->reqTable = nullptr;
+    }
     sendChannelId = -1;   
     region = 0;
     logicZone = 0;
