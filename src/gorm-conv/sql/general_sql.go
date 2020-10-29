@@ -102,9 +102,13 @@ func GeneralSQLColumn(c common.TableColumn) (string, int) {
 				strOut += "NULL"
 			}
 		}
-	case "blob", "bytes":
+	case "blob":
 		{
 			strOut += "mediumblob"
+		}
+	case "bytes":
+		{
+			strOut += "blob"
 		}
 	default:
 		{
