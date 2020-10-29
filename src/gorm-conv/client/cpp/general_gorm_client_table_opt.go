@@ -393,7 +393,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
     clientMsg->Wait();	// 等待响应
     clientMsg = nullptr;
     // 获取结果
-    for (;;)
+    for (int i=0; i<1000;i++)
     {
         if (GORM_OK != GORM_ClientThreadPool::Instance()->GetResponse(clientMsg))
         {
@@ -404,8 +404,11 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
         {
             break;
         }
-        
+        ThreadSleepMilliSeconds(1); 
     }
+
+    if (clientMsg == nullptr)
+	return GORM_ERROR;
 
     clientMsg->mtx.lock();
     int code = clientMsg->rspCode.code;
@@ -451,7 +454,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
     clientMsg->Wait();	// 等待响应
     // 获取结果
     clientMsg = nullptr;
-    for (;;)
+    for (int i=0;i<1000;i++)
     {
         if (GORM_OK != GORM_ClientThreadPool::Instance()->GetResponse(clientMsg))
         {
@@ -462,8 +465,10 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
         {
             break;
         }
-        
+        ThreadSleepMilliSeconds(1); 
     }
+    if (clientMsg == nullptr)
+	return GORM_ERROR;
 
     clientMsg->mtx.lock();
     if (GORM_OK != clientMsg->rspCode.code)
