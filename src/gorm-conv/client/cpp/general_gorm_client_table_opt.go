@@ -210,6 +210,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("{\n")
 	f.WriteString("    auto *pbMsg = this->tablePbValue;\n")
 	f.WriteString("    this->tablePbValue = nullptr;\n")
+	f.WriteString("    this->fieldOpt.Reset();\n")
 	f.WriteString("    return pbMsg;\n")
 	f.WriteString("}\n")
 	// 生成Get函数
@@ -286,6 +287,29 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 			f.WriteString("}\n")
 		}
 	}
+
+	// HasSetPrimaryKey
+	f.WriteString("inline bool " + structName + "::HasSetPrimaryKey()\n")
+	f.WriteString("{\n")
+	// return ((fieldOpt.szFieldCollections[0] & 1) >0) && ((fieldOpt.szFieldCollections[1] & 1) >0);
+	f.WriteString("    return ")
+	for nameIdx, cname := range table.SplitInfo.SplitCols {
+		for idx, c := range table.TableColumns {
+			if cname != c.Name {
+				continue
+			}
+			var index int = idx >> 3
+			var value int = 1 << (idx & 0x07)
+			var strIndex string = strconv.FormatInt(int64(index), 10)
+			var strValue string = strconv.FormatInt(int64(value), 10)
+			if nameIdx != 0 {
+				f.WriteString(" && ")
+			}
+			f.WriteString("((fieldOpt.szFieldCollections[" + strIndex + "]&" + strValue + ")>0)")
+		}
+	}
+	f.WriteString(";\n")
+	f.WriteString("}\n")
 	return 0
 }
 
@@ -326,6 +350,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    // 本地操作接口\n")
 	f.WriteString("    int Delete(uint32 &cbId, int (*cb)(uint32, int));\n")
 	f.WriteString("    int SetPbMsg(" + pbStructName + " *pbMsg, bool forceSave=false);\n")
+	f.WriteString("    // 更新数据到数据库，有则更新，没有则插入。如果业务侧确认是新插入数据则建议使用Update接口，确认是新增数据则建议使用Add接口\n")
 	f.WriteString("    int SaveToDB();\n")
 	f.WriteString("    int Add();\n")
 	f.WriteString("    int Update();\n")
@@ -342,15 +367,15 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    int DoDelete(uint32 &cbId);\n")
 	f.WriteString("    int DoUpdate(uint32 &cbId);\n")
 	f.WriteString("    int DoInsert(uint32 &cbId);\n")
-	f.WriteString("    // @desc 有则替换，没有则插入\n")
 	f.WriteString("    int DoUpSert(uint32 &cbId);\n")
+	f.WriteString("    bool HasSetPrimaryKey();\n")
 	f.WriteString("public:\n")
 	f.WriteString("    mutex mtx;\n")
 	// 其它变量
 	f.WriteString("private:\n")
+	f.WriteString("    char dirtyFlag = 0;\n")
 	f.WriteString("    " + pbStructName + " *tablePbValue = nullptr;\n")
 	f.WriteString("    GORM_FieldsOpt fieldOpt;\n")
-	f.WriteString("    int dirtyFlag = 0;\n")
 	f.WriteString("};\n\n")
 
 	return 0
@@ -495,30 +520,38 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	// DoGet函数
 	f.WriteString("int " + structName + "::DoGet(uint32 &cbId)\n")
 	f.WriteString("{\n")
+	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table, f, "get")
 	f.WriteString("}\n")
 	// DoDelete函数
 	f.WriteString("int " + structName + "::DoDelete(uint32 &cbId)\n")
 	f.WriteString("{\n")
+	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "delete")
 	f.WriteString("}\n")
 	// DoUpdate函数
 	f.WriteString("int " + structName + "::DoUpdate(uint32 &cbId)\n")
 	f.WriteString("{\n")
+	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
+	f.WriteString("    if (this->dirtyFlag == 1) return GORM_NOT_DIRTY_DATA;\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "update")
 	f.WriteString("}\n")
 	// DoInsert函数
 	f.WriteString("int " + structName + "::DoInsert(uint32 &cbId)\n")
 	f.WriteString("{\n")
+	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
+	f.WriteString("    if (this->dirtyFlag == 1) return GORM_NOT_DIRTY_DATA;\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "insert")
 	f.WriteString("}\n")
 	// DoUpSert函数
 	f.WriteString("int " + structName + "::DoUpSert(uint32 &cbId)\n")
 	f.WriteString("{\n")
+	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
+	f.WriteString("    if (this->dirtyFlag == 1) return GORM_NOT_DIRTY_DATA;\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "replace")
 	f.WriteString("}\n")
@@ -648,8 +681,6 @@ public:
 private:
 	// 0:新的没有持久化的数据，1:从持久化存储拉到内存的数据，2:已经持久化了的并且有更新的数据
 	char dirtyFlag = 0;
-	// 0:为没有设置主键，不能插入数据库，1为设置了主键，可以插入数据库
-    char hasSetPrimaryKey = 0;
     GORM_PB_Table_account *tablePbValue = nullptr;
     GORM_FieldsOpt fieldOpt;
 };
