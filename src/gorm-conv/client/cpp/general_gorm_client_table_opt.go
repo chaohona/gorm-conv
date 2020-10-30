@@ -76,7 +76,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 
 	//////////////////////////////////////// 带区服的接口
 	// static 同步Get函数
-	f.WriteString("inline " + structName + "* " + structName + "::Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
+	f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
 	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
 	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
