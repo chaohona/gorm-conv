@@ -451,7 +451,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
         return GORM_ERROR;
 
     shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
-    unique_lock<mutex> lck(sharedClientMsg->mtx);
+    unique_lock<mutex> msgLk(sharedClientMsg->mtx);
     int code = sharedClientMsg->rspCode.code;
     
     return code;
@@ -511,7 +511,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
         return GORM_ERROR;
 
     shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
-    unique_lock<mutex> lck(sharedClientMsg->mtx);
+    unique_lock<mutex> msgLk(sharedClientMsg->mtx);
     if (GORM_OK != sharedClientMsg->rspCode.code)
     {
         return sharedClientMsg->rspCode.code;
