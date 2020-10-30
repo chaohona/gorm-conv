@@ -113,7 +113,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("    {\n")
 	f.WriteString("        return retCode;\n")
 	f.WriteString("    }\n")
-	f.WriteString("    if (cb != nullptr) cb(cbId, retCode, table);\n")
+	f.WriteString("    if (cbFunc != nullptr) cbFunc(cbId, retCode, table);\n")
 	f.WriteString("    return GORM_OK;\n")
 	f.WriteString("}\n")
 
@@ -129,7 +129,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		setColFunc := "Set" + colStructName
 		f.WriteString("    table->" + setColFunc + "(" + col.Name + ");\n")
 	}
-	f.WriteString("    return table->Delete(cbId, cb);\n")
+	f.WriteString("    return table->Delete(cbId, cbFunc);\n")
 	f.WriteString("}\n")
 
 	// static SetPbMsg函数
@@ -166,9 +166,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("{\n")
 	f.WriteString("    int retCode = this->DoDelete(cbId);\n")
 	f.WriteString(`
-    if (cb != nullptr)
+    if (cbFunc != nullptr)
     {
-        cb(cbId, retCode, nullptr);
+        cbFunc(cbId, retCode, nullptr);
     }
     
     return GORM_OK;
@@ -728,6 +728,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 	f.WriteString("#include \"gorm_utils.h\"\n")
 	f.WriteString("#include \"gorm_error.h\"\n")
 	f.WriteString("#include \"gorm_table.h\"\n")
+	f.WriteString("#include \"gorm_client_msg.h\"")
 	f.WriteString("\n")
 	f.WriteString(exampleCodes)
 	f.WriteString("namespace gorm{\n\n")
