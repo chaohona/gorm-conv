@@ -78,7 +78,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	// static 同步Get函数
 	f.WriteString("inline " + structName + "* " + structName + "::Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
-	f.WriteString("    " + structName + " *table = new " + structName + "();\n")
+	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
 	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
 	f.WriteString("    table->tablePbValue = pbTable.get();\n")
 	for _, c := range table.SplitInfo.SplitCols {
@@ -91,7 +91,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("    retCode = table->DoGet(cbId);\n")
 	f.WriteString("    if (GORM_OK != retCode)\n")
 	f.WriteString("    {\n")
-	f.WriteString("        delete table;\n")
 	f.WriteString("        return nullptr;\n")
 	f.WriteString("    }\n")
 	f.WriteString("    return table;\n")
@@ -100,7 +99,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	// static 异步Get函数
 	f.WriteString("inline int " + structName + "::Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
-	f.WriteString("    " + structName + " *table = new " + structName + "();\n")
+	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
 	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
 	f.WriteString("    table->tablePbValue = pbTable.get();\n")
 	for _, c := range table.SplitInfo.SplitCols {
@@ -112,7 +111,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("    int retCode = table->DoGet(cbId);\n")
 	f.WriteString("    if (GORM_OK != retCode)\n")
 	f.WriteString("    {\n")
-	f.WriteString("        delete table;\n")
 	f.WriteString("        return retCode;\n")
 	f.WriteString("    }\n")
 	f.WriteString("    if (cb != nullptr) cb(cbId, retCode, table);\n")
@@ -170,7 +168,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString(`
     if (cb != nullptr)
     {
-        cb(cbId, retCode);
+        cb(cbId, retCode, nullptr);
     }
     
     return GORM_OK;
@@ -441,7 +439,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
         if (GORM_OK != GORM_ClientThreadPool::Instance()->GetResponse(clientMsg))
         {
             return GORM_ERROR;
-            break;
         }
         if (clientMsg != nullptr)
         {
@@ -451,12 +448,11 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
     }
 
     if (clientMsg == nullptr)
-	return GORM_ERROR;
+        return GORM_ERROR;
 
-    clientMsg->mtx.lock();
-    int code = clientMsg->rspCode.code;
-    clientMsg->mtx.unlock();
-    delete clientMsg;
+    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
+    unique_lock<mutex> lck(sharedClientMsg->mtx);
+    int code = sharedClientMsg->rspCode.code;
     
     return code;
 `)
@@ -504,7 +500,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
         if (GORM_OK != GORM_ClientThreadPool::Instance()->GetResponse(clientMsg))
         {
             return GORM_ERROR;
-            break;
         }
         if (clientMsg != nullptr)
         {
@@ -513,27 +508,22 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
         ThreadSleepMilliSeconds(1); 
     }
     if (clientMsg == nullptr)
-	return GORM_ERROR;
+        return GORM_ERROR;
 
-    clientMsg->mtx.lock();
-    if (GORM_OK != clientMsg->rspCode.code)
+    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
+    unique_lock<mutex> lck(sharedClientMsg->mtx);
+    if (GORM_OK != sharedClientMsg->rspCode.code)
     {
-        clientMsg->mtx.unlock();
-        delete clientMsg;
-        return clientMsg->rspCode.code;
+        return sharedClientMsg->rspCode.code;
     }
-    GORM_PB_GET_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_RSP*>(clientMsg->pbRspMsg);
+    GORM_PB_GET_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_RSP*>(sharedClientMsg->pbRspMsg);
 `)
 	f.WriteString("    if (pbRspMsg == nullptr || !pbRspMsg->table().has_" + table.Name + "())\n")
 	f.WriteString("    {\n")
-	f.WriteString("        clientMsg->mtx.unlock();\n")
-	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        return GORM_NO_MORE_RECORD;\n")
 	f.WriteString("    }\n")
 	f.WriteString("    this->tablePbValue = pbRspMsg->mutable_table()->release_" + table.Name + "();\n")
 	f.WriteString("    this->dirtyFlag = 1;\n")
-	f.WriteString("    clientMsg->mtx.unlock();\n")
-	f.WriteString("    delete clientMsg;\n")
 	f.WriteString("\n")
 	f.WriteString("    return GORM_OK;\n")
 	return 0
