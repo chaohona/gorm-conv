@@ -52,7 +52,6 @@ void GORM_ClientMsg::Reset()
     }
     if (this->reqTable != nullptr)
     {
-        delete this->reqTable;
         this->reqTable = nullptr;
     }
     sendChannelId = -1;   
