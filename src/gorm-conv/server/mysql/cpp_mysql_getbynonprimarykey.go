@@ -49,16 +49,16 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table common.TableI
 			var bufferSize string = "strData.size()<<1"
 			PrintGetBuffFromMemPool(f, bufferName, bufferSize)
 
-			f.WriteString(`                    iTmpLen=mysql_real_escape_string(mysql, pDataBuffer->m_uszData, strData.c_str(), strData.size());
+			f.WriteString(`                iTmpLen=mysql_real_escape_string(mysql, pDataBuffer->m_uszData, strData.c_str(), strData.size());
                 pDataBuffer->m_uszData[iTmpLen] = 0;
                 pDataBuffer->m_sUsedSize = iTmpLen;
                 szData = pDataBuffer->m_uszData;`)
 			f.WriteString("\n            }\n")
 
 			f.WriteString("            if (i==0)\n")
-			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`" + col.Name + "`=`%s`\", szData);\n")
+			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`" + col.Name + "`=" + common.CPPFieldPackSQL_COL_FORMAT(col.Type) + "\", szData);\n")
 			f.WriteString("            else\n")
-			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \" and `" + col.Name + "`=`%s`\", szData);\n")
+			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \" and `" + col.Name + "`=" + common.CPPFieldPackSQL_COL_FORMAT(col.Type) + "\", szData);\n")
 
 			f.WriteString("            if (pDataBuffer != nullptr)\n")
 			f.WriteString("                pDataBuffer->Release();\n")

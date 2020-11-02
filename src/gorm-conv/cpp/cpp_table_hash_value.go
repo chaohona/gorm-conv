@@ -37,7 +37,13 @@ func GORM_TableHash(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("\" ")
 			for _, splitCol := range table.SplitInfo.SplitCols {
 				f.WriteString(", ")
-				f.WriteString("tmp_" + strings.ToUpper(splitCol))
+				col := table.GetColumn(splitCol)
+				var cType string = common.CPPField_CPPType(col.Type)
+				if cType == "string" {
+					f.WriteString("tmp_" + strings.ToUpper(splitCol) + ".c_str()")
+				} else {
+					f.WriteString("tmp_" + strings.ToUpper(splitCol))
+				}
 			}
 			f.WriteString(");\n")
 			f.WriteString("        if (iTotalLen > 1024)\n")
