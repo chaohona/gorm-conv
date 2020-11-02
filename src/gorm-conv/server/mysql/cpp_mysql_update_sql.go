@@ -56,7 +56,7 @@ func CPPFieldsMapPackUpdateSQL_ForTables_COL2SQL_FORVARIABLE(table common.TableI
 
 	var table_col string = table.Name + "_" + col.Name
 	f.WriteString("    const string &" + table_col + " = table_" + table.Name + "." + col.Name + "();\n")
-	f.WriteString("    char *sz_" + table_col + " = \"\";\n")
+	f.WriteString("    const char *sz_" + table_col + " = \"\";\n")
 	f.WriteString("    int len_" + table_col + " = 0;\n")
 	f.WriteString("    GORM_MemPoolData *buffer_" + table_col + " = nullptr;\n")
 	f.WriteString("    if(" + table_col + ".size() > 0)\n")

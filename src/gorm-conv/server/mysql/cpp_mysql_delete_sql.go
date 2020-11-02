@@ -125,7 +125,7 @@ func CPPFieldsMapPackDeleteSQL_ForTables_COL2SQL(table common.TableInfo, f *os.F
 
 			var table_col string = table.Name + "_" + col.Name
 			if colType == "string" {
-				f.WriteString("    char *sz_" + table_col + " = \"\";\n")
+				f.WriteString("    const char *sz_" + table_col + " = \"\";\n")
 				f.WriteString("    int len_" + table_col + " = 0;\n")
 				f.WriteString("    GORM_MemPoolData *buffer_" + table_col + " = nullptr;\n")
 				f.WriteString("    if(" + table_col + ".size() > 0)\n")
