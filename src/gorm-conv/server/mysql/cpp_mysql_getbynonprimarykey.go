@@ -38,7 +38,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table common.TableI
 		f.WriteString("        {\n")
 		var colType string = common.CPPField_CPPType(col.Type)
 		if colType == "string" {
-			f.WriteString("            char *szData = \"\";\n")
+			f.WriteString("            const char *szData = \"\";\n")
 			f.WriteString("            const string &strData = table_" + table.Name + "." + col.Name + "();\n")
 			f.WriteString("            GORM_MemPoolData *pDataBuffer = nullptr;\n")
 			f.WriteString("            int iTmpLen = 0;\n")

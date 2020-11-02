@@ -68,7 +68,7 @@ func CPPFieldsMapPackReplaceSQL_ForTables_COL2SQL(table common.TableInfo, f *os.
 		f.WriteString(col_type_name + " = " + "table_" + table.Name + "." + col.Name + "();\n")
 		if cppType == "string" {
 			var mempoolstr string = "buffer_" + col_type_name
-			f.WriteString("    char *sz_" + col_type_name + " = \"\";\n")
+			f.WriteString("    const char *sz_" + col_type_name + " = \"\";\n")
 			f.WriteString("    int len_" + col_type_name + " = 0;\n")
 			f.WriteString("    GORM_MemPoolData *" + mempoolstr + " = nullptr;\n")
 			f.WriteString("    if(" + col_type_name + ".size()>0)\n")
