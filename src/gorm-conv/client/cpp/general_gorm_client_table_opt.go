@@ -476,9 +476,13 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    else\n")
 	f.WriteString("    {\n")
 	f.WriteString("        sharedPbValue = make_shared<" + pbStructName + ">();\n")
+	f.WriteString("        this->tablePbValue = sharedPbValue.get();\n")
 	for _, colName := range table.SplitInfo.SplitCols {
-		f.WriteString("        sharedPbValue->set_" + colName + "(" + colName + ");\n")
+		//f.WriteString("        sharedPbValue->set_" + colName + "(" + colName + ");\n")
+		colStructName := common.CPP_TableColumnName(colName)
+		f.WriteString("        this->Set" + colStructName + "(" + colName + ")")
 	}
+	f.WriteString("        this->tablePbValue = nullptr;\n")
 	f.WriteString("        tmpPbValue = sharedPbValue.get();\n")
 	f.WriteString("    }\n")
 
