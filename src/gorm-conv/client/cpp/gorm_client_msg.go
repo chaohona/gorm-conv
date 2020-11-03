@@ -104,7 +104,7 @@ int GORM_ClientMsg::ParseRspGet(char *msgBeginPos, int msgLen)
     if (!this->pbRspMsg->ParseFromArray(msgBeginPos, msgLen))
     {
         this->rspCode.code = GORM_RSP_UNPACK_FAILED;
-        return GORM_ERROR;
+        return GORM_RSP_UNPACK_FAILED;
     }
     if (pbGetMsg->has_retcode())
     {
@@ -133,7 +133,7 @@ int GORM_ClientMsg::ParseRspGet(char *msgBeginPos, int msgLen)
     }
     if (!pbGetMsg->has_table())
     {
-        return GORM_OK;
+        return GORM_NO_MORE_RECORD;
     }
 
     return GORM_OK;
