@@ -30,11 +30,11 @@ func GetPBString(c common.TableColumn) string {
 		{
 			return "fixed64 " + c.Name
 		}
-	case "string", "char":
+	case "char":
 		{
 			return "string " + c.Name
 		}
-	case "blob", "bytes":
+	case "blob", "bytes", "string":
 		{
 			return "bytes " + c.Name
 		}

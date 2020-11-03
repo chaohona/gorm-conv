@@ -56,14 +56,14 @@ type TableInfo struct {
 	PrimaryKey   PrimaryKey
 }
 
-func (this *TableInfo) GetColumn(name string) TableColumn {
-	for _, tc := range this.TableColumns {
+func (this *TableInfo) GetColumn(name string) *TableColumn {
+	for idx, tc := range this.TableColumns {
 		if name == tc.Name {
-			return tc
+			return &this.TableColumns[idx]
 		}
 	}
 
-	return TableColumn{}
+	return &TableColumn{}
 }
 
 type DataBaseInfo struct {
@@ -282,6 +282,11 @@ func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 			}
 			if 0 != ParseSplitInfo(table) {
 				return nil, -1
+			}
+			// 主键判断
+			for _, colName := range table.SplitInfo.SplitCols {
+				col := table.GetColumn(colName)
+				col.PrimaryKey = true
 			}
 		}
 	}

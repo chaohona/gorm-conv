@@ -202,6 +202,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 
 	f.WriteString("inline " + pbStructName + "* " + structName + "::GetPbMsg()\n")
 	f.WriteString("{\n")
+	f.WriteString("    if (this->tablePbValue == nullptr) this->tablePbValue = new " + pbStructName + "();\n")
 	f.WriteString("    return this->tablePbValue;\n")
 	f.WriteString("}\n")
 	f.WriteString("inline " + pbStructName + "* " + structName + "::ReleasePbMsg() // 将pb消息返回，并将本地数据置为空(转移数据属主)\n")

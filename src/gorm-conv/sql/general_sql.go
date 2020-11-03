@@ -97,7 +97,7 @@ func GeneralSQLColumn(c common.TableColumn) (string, int) {
 			} else if c.DefaultValue != "" {
 				strOut += " DEFAULT "
 				strOut += c.DefaultValue
-			} else {
+			} else { // 如果是主键，不能默认为NULL
 				strOut += " DEFAULT "
 				strOut += "NULL"
 			}
