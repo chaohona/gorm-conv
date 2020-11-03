@@ -79,6 +79,10 @@ void GORM_ClientMsg::Signal()    // 接收到响应之后通知结束等待
 {
 }
 
+void GORM_ClientMsg::ProcCallBack()
+{
+}
+
 int GORM_ClientMsg::ParseRsp(char *msgBeginPos, int msgLen)
 {
     // 组装消息
