@@ -21,6 +21,16 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table commo
 	return result
 }
 
+func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfoName(table common.TableInfo) (result string) {
+	for idx, str := range table.SplitInfo.SplitCols {
+		if idx != 0 {
+			result += ", "
+		}
+		result += str
+	}
+	return result
+}
+
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table common.TableInfo) (result string) {
 	for idx, str := range table.SplitInfo.SplitCols {
 		if idx != 0 {
@@ -79,16 +89,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
 	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
-	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
-	f.WriteString("    table->tablePbValue = pbTable.get();\n")
-	for _, c := range table.SplitInfo.SplitCols {
-		col := table.GetColumn(c)
-		colStructName := common.CPP_TableColumnName(col.Name)
-		setColFunc := "Set" + colStructName
-		f.WriteString("    table->" + setColFunc + "(" + col.Name + ");\n")
-	}
 	f.WriteString("    uint32 cbId = 0;\n")
-	f.WriteString("    retCode = table->DoGet(cbId);\n")
+	f.WriteString("    retCode = table->DoGet(cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfoName(table) + ");\n")
 	f.WriteString("    if (GORM_OK != retCode)\n")
 	f.WriteString("    {\n")
 	f.WriteString("        return nullptr;\n")
@@ -100,15 +102,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("inline int " + structName + "::Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
 	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
-	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
-	f.WriteString("    table->tablePbValue = pbTable.get();\n")
-	for _, c := range table.SplitInfo.SplitCols {
-		col := table.GetColumn(c)
-		colStructName := common.CPP_TableColumnName(col.Name)
-		setColFunc := "Set" + colStructName
-		f.WriteString("    table->" + setColFunc + "(" + col.Name + ");\n")
-	}
-	f.WriteString("    int retCode = table->DoGet(cbId);\n")
+	f.WriteString("    int retCode = table->DoGet(cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfoName(table) + ");\n")
 	f.WriteString("    if (GORM_OK != retCode)\n")
 	f.WriteString("    {\n")
 	f.WriteString("        return retCode;\n")
@@ -377,7 +371,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 		return -1
 	}
 	f.WriteString("private:\n")
-	f.WriteString("    int DoGet(uint32 &cbId);\n")
+	f.WriteString("    int DoGet(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    int DoDelete(uint32 &cbId);\n")
 	f.WriteString("    int DoUpdate(uint32 &cbId);\n")
 	f.WriteString("    int DoInsert(uint32 &cbId);\n")
@@ -464,7 +458,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	var bigOpt string = strings.ToUpper(opt)
 	var bigTableName string = strings.ToUpper(table.Name)
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
-	///	pbStructName := "GORM_PB_Table_" + table.Name
+	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
@@ -474,7 +468,21 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
 	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
 	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
-	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(this->tablePbValue);\n\n")
+
+	f.WriteString("    shared_ptr<" + pbStructName + "> sharedPbValue = nullptr;\n")
+	f.WriteString("    " + structName + " *tmpPbValue = nullptr;\n")
+	f.WriteString("    if (this->tablePbValue != nullptr)\n")
+	f.WriteString("        tmpPbValue = this->tablePbValue;\n")
+	f.WriteString("    else\n")
+	f.WriteString("    {\n")
+	f.WriteString("        sharedPbValue = make_shared<" + structName + ">();\n")
+	for _, colName := range table.SplitInfo.SplitCols {
+		f.WriteString("        sharedPbValue->set_" + colName + "(" + colName + ");\n")
+	}
+	f.WriteString("        tmpPbValue = sharedPbValue.get();\n")
+	f.WriteString("    }\n")
+
+	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(tmpPbValue);\n\n")
 
 	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
 	f.WriteString("    {\n")
@@ -523,6 +531,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    {\n")
 	f.WriteString("        return GORM_NO_MORE_RECORD;\n")
 	f.WriteString("    }\n")
+	f.WriteString("    if (this->tablePbValue != nullptr) delete this->tablePbValue;\n")
 	f.WriteString("    this->tablePbValue = pbRspMsg->mutable_table()->release_" + table.Name + "();\n")
 	f.WriteString("    this->dirtyFlag = 1;\n")
 	f.WriteString("\n")
@@ -534,7 +543,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 
 	// DoGet函数
-	f.WriteString("int " + structName + "::DoGet(uint32 &cbId)\n")
+	f.WriteString("int " + structName + "::DoGet(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
 	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
