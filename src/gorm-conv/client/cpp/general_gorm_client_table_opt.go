@@ -470,12 +470,12 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
 
 	f.WriteString("    shared_ptr<" + pbStructName + "> sharedPbValue = nullptr;\n")
-	f.WriteString("    " + structName + " *tmpPbValue = nullptr;\n")
+	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")
 	f.WriteString("    if (this->tablePbValue != nullptr)\n")
 	f.WriteString("        tmpPbValue = this->tablePbValue;\n")
 	f.WriteString("    else\n")
 	f.WriteString("    {\n")
-	f.WriteString("        sharedPbValue = make_shared<" + structName + ">();\n")
+	f.WriteString("        sharedPbValue = make_shared<" + pbStructName + ">();\n")
 	for _, colName := range table.SplitInfo.SplitCols {
 		f.WriteString("        sharedPbValue->set_" + colName + "(" + colName + ");\n")
 	}
@@ -545,7 +545,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	// DoGet函数
 	f.WriteString("int " + structName + "::DoGet(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
-	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
 	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table, f, "get")
 	f.WriteString("}\n")
