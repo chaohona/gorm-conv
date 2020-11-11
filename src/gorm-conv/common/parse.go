@@ -22,19 +22,16 @@ const (
 )
 
 type TableIndex struct {
-	Name    string `xml:"name,attr"`
-	Columns string `xml:"columns,attr"`
-	Unique  bool   `xml:"unique,attr"`
+	Name         string `xml:"name,attr"`
+	Columns      string `xml:"columns,attr"`
+	Unique       bool   `xml:"unique,attr"`
+	IndexColumns []string
 }
 
 type SplitInfo struct {
-	Columns   string `xml:"columns,attr"`
-	Num       uint16 `xml:"num,attr"`
+	Columns   string
 	SplitCols []string
-}
-
-type PrimaryKey struct {
-	Column string
+	Num       uint16
 }
 
 type TableColumn struct {
@@ -52,8 +49,8 @@ type TableInfo struct {
 	Version      uint64        `xml:"version,attr"`
 	TableColumns []TableColumn `xml:"column"`
 	TableIndex   []TableIndex  `xml:"index"`
-	SplitInfo    SplitInfo     `xml:"splitinfo"`
-	PrimaryKey   PrimaryKey
+	Split        string        `xml:"splitinfo,attr"`
+	SplitInfo    SplitInfo
 }
 
 func (this *TableInfo) GetColumn(name string) *TableColumn {
@@ -109,6 +106,21 @@ func (this *GiantGame) GetTableInfo(tableName string) (*TableInfo, bool) {
 	}
 
 	return nil, false
+}
+
+func (this *Routes) GetRouteNum(tableName string) uint16 {
+	var result uint16 = 0
+	for _, r := range this.TableList {
+		if r.Name != tableName {
+			continue
+		}
+		for _, tdb := range r.RoutesTableDBList {
+			num, _ := strconv.ParseInt(tdb.SplitNum, 10, 64)
+			result += uint16(num)
+		}
+	}
+
+	return result
 }
 
 type XmlCfg struct {
@@ -169,8 +181,10 @@ func GetXmlCfg(infile string) (GiantGame, int) {
 	return result, 0
 }
 
-func ParseSplitInfo(table *TableInfo) int {
+func ParseSplitInfo(table *TableInfo, router Routes) int {
 	table.SplitInfo.SplitCols = []string{}
+	table.SplitInfo.Columns = table.Split
+	table.SplitInfo.Num = router.GetRouteNum(table.Name)
 	if table.SplitInfo.Columns == "" {
 		return 0
 	}
@@ -232,11 +246,10 @@ func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 		}
 		for idx, _ := range result.DB.TableList {
 			table := &result.DB.TableList[idx]
-			if table.SplitInfo.Columns == "" {
+			if table.Split == "" {
 				fmt.Println("table has no split info:" + table.Name)
 				return nil, -1
 			}
-			table.PrimaryKey.Column = table.SplitInfo.Columns
 			var TableColumns []TableColumn
 			// 自动增加version字段
 			TableColumns = append(TableColumns, TableColumn{
@@ -251,7 +264,6 @@ func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 				return nil, -1
 			}
 			table.Name = strings.ToLower(table.Name)
-			table.PrimaryKey.Column = strings.ToLower(table.PrimaryKey.Column)
 			for i, _ := range table.TableIndex {
 				tIndex := &table.TableIndex[i]
 				tIndex.Columns = strings.ToLower(tIndex.Columns)
@@ -280,13 +292,55 @@ func ParseXmls(strPath string, strFilePath string) ([]XmlCfg, int) {
 					}
 				}*/
 			}
-			if 0 != ParseSplitInfo(table) {
+			if 0 != ParseSplitInfo(table, result.DB.Routes) {
 				return nil, -1
 			}
 			// 主键判断
 			for _, colName := range table.SplitInfo.SplitCols {
 				col := table.GetColumn(colName)
 				col.PrimaryKey = true
+			}
+			// split信息判断
+			for idx, _ := range table.TableIndex {
+				tableIndex := &table.TableIndex[idx]
+				if tableIndex.Columns == "" {
+					fmt.Println("table index config failed, table name:" + table.Name + ", index name:" + tableIndex.Name)
+					return nil, -1
+				}
+				tableIndex.Columns = strings.ToLower(tableIndex.Columns)
+				tableIndex.IndexColumns = strings.Split(tableIndex.Columns, ",")
+				// 判断index是否正确
+				for _, cname := range tableIndex.IndexColumns {
+					col := table.GetColumn(cname)
+					if col == nil {
+						fmt.Println("table index config failed, table name:" + table.Name + ", index name:" + tableIndex.Name)
+						return nil, -1
+					}
+				}
+				// 判断index名字是否重复
+				for nowIdx, nowTableIndex := range table.TableIndex {
+					if nowIdx == idx {
+						continue
+					}
+					if nowTableIndex.Name == table.TableIndex[idx].Name {
+						fmt.Println("table index config failed, same index name, table name:" + table.Name + ", index name:" + tableIndex.Name)
+						return nil, -1
+					}
+				}
+				// 判断index是否包含splitinfo
+				for _, sname := range table.SplitInfo.SplitCols {
+					var match bool = false
+					for _, cname := range tableIndex.IndexColumns {
+						if sname == cname {
+							match = true
+							break
+						}
+					}
+					if !match {
+						fmt.Println("table index config failed, table name:" + table.Name + ", index name:" + tableIndex.Name)
+						return nil, -1
+					}
+				}
 			}
 		}
 	}

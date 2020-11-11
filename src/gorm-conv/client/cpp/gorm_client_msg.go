@@ -92,6 +92,10 @@ int GORM_ClientMsg::ParseRsp(char *msgBeginPos, int msgLen)
     {
         return this->ParseRspGet(msgBeginPos, msgLen);
     }
+    case GORM_CMD_GET_BY_NON_PRIMARY_KEY:
+    {
+        return this->ParseRspGetByNonPrimaryKey(msgBeginPos, msgLen);
+    }
     }
     
     return GORM_OK;
@@ -172,6 +176,10 @@ int GORM_ClientMsg::PackReq()
     {
         return this->PackReplace();
     }
+    case GORM_CMD_GET_BY_NON_PRIMARY_KEY:
+    {
+        return this->PackGetByNonPrimaryKey();
+    }
     }
     
     return GORM_OK;
@@ -212,6 +220,14 @@ int GORM_ClientMsg::PackReqUpdate()
 int GORM_ClientMsg::PackReplace()
 {
     GORM_PB_REPLACE_REQ  *pPbReq = dynamic_cast<GORM_PB_REPLACE_REQ*>(pbReqMsg);
+    GORM_CLIENTREQUEST_SETHEADER();
+    
+    return this->MakeSendBuff();
+}
+
+int GORM_ClientMsg::PackGetByNonPrimaryKey()
+{
+    GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ  *pPbReq = dynamic_cast<GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ*>(pbReqMsg);
     GORM_CLIENTREQUEST_SETHEADER();
     
     return this->MakeSendBuff();

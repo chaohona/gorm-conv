@@ -21,6 +21,19 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table commo
 	return result
 }
 
+func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table common.TableInfo, tableIndex common.TableIndex) (result string) {
+	for idx, str := range tableIndex.IndexColumns {
+		if idx != 0 {
+			result += ", "
+		}
+		col := table.GetColumn(str)
+		result += common.CPPField_CPPType(col.Type)
+		result += " "
+		result += str
+	}
+	return result
+}
+
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfoName(table common.TableInfo) (result string) {
 	for idx, str := range table.SplitInfo.SplitCols {
 		if idx != 0 {
@@ -33,6 +46,16 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfoName(table c
 
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table common.TableInfo) (result string) {
 	for idx, str := range table.SplitInfo.SplitCols {
+		if idx != 0 {
+			result += ", "
+		}
+		result += str
+	}
+	return result
+}
+
+func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex_Param(tableIndex common.TableIndex) (result string) {
+	for idx, str := range tableIndex.IndexColumns {
 		if idx != 0 {
 			result += ", "
 		}
@@ -85,12 +108,25 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 
 	//////////////////////////////////////// 带区服的接口
+	for _, tableIndex := range table.TableIndex {
+		f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::GetBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
+		f.WriteString("{\n")
+		f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
+		f.WriteString("    uint32 cbId = 0;\n")
+		f.WriteString("    retCode = table->DoGetBy" + tableIndex.Name + "(cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex_Param(tableIndex) + ");\n")
+		f.WriteString("    if (GORM_OK != retCode)\n")
+		f.WriteString("    {\n")
+		f.WriteString("        return nullptr;\n")
+		f.WriteString("    }\n")
+		f.WriteString("    return table;\n")
+		f.WriteString("}\n")
+	}
 	// static 同步Get函数
 	f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
 	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
 	f.WriteString("    uint32 cbId = 0;\n")
-	f.WriteString("    retCode = table->DoGet(cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfoName(table) + ");\n")
+	f.WriteString("    retCode = table->DoGet(cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ");\n")
 	f.WriteString("    if (GORM_OK != retCode)\n")
 	f.WriteString("    {\n")
 	f.WriteString("        return nullptr;\n")
@@ -102,7 +138,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("inline int " + structName + "::Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
 	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
-	f.WriteString("    int retCode = table->DoGet(cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfoName(table) + ");\n")
+	f.WriteString("    int retCode = table->DoGet(cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ");\n")
 	f.WriteString("    if (GORM_OK != retCode)\n")
 	f.WriteString("    {\n")
 	f.WriteString("        return retCode;\n")
@@ -136,6 +172,21 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 
 	/////////////////////////////////////////// 不带区服的接口
 	// static 不带区服的同步Get函数
+	for _, tableIndex := range table.TableIndex {
+		f.WriteString("inline vector<" + structName + "*> " + structName + "::GetVectorBy" + tableIndex.Name + "(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
+		f.WriteString("{\n")
+		f.WriteString("    return " + structName + "::GetVectorBy" + tableIndex.Name + "(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex_Param(tableIndex) + ");\n")
+		f.WriteString("}\n")
+
+		f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::GetBy" + tableIndex.Name + "(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
+		f.WriteString("{\n")
+		f.WriteString("    return " + structName + "::GetBy" + tableIndex.Name + "(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex_Param(tableIndex) + ");\n")
+		f.WriteString("}\n")
+	}
+	f.WriteString("inline vector<" + structName + "*> " + structName + "::GetVector(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
+	f.WriteString("{\n")
+	f.WriteString("    return " + structName + "::Get(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ");\n")
+	f.WriteString("}\n")
 	f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
 	f.WriteString("    return " + structName + "::Get(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ");\n")
@@ -152,6 +203,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	f.WriteString("{\n")
 	f.WriteString("    return " + structName + "::Delete(0,0,0," + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ", cbId, cbFunc);\n")
 	f.WriteString("}\n")
+
 	/////////////////////////////////////////// 不带区服的接口
 
 	/////////////////////////////////// 操作对象的接口
@@ -344,13 +396,24 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    }\n")
 	f.WriteString("public:\n")
 	f.WriteString("    // static带区服的接口，用于分区分服架构\n")
+	// 根据index取数据的接口
+	for _, tableIndex := range table.TableIndex {
+		f.WriteString("    static shared_ptr<" + structName + "> GetBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
+		f.WriteString("    static vector<" + structName + "*> GetVectorBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
+	}
 	f.WriteString("    static shared_ptr<" + structName + "> Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
+	f.WriteString("    static vector<" + structName + "*> GetVector(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    static int Delete(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    static int SetPbMsg(int region, int logic_zone, int physics_zone, " + pbStructName + " *pbMsg, bool forceSave=false);\n")
 	f.WriteString("\n")
 	f.WriteString("    // static不带区服的接口，用于全区全服架构\n")
+	for _, tableIndex := range table.TableIndex {
+		f.WriteString("    static shared_ptr<" + structName + "> GetBy" + tableIndex.Name + "(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
+		f.WriteString("    static vector<" + structName + "*> GetVectorBy" + tableIndex.Name + "(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
+	}
 	f.WriteString("    static shared_ptr<" + structName + "> Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
+	f.WriteString("    static vector<" + structName + "*> GetVector(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    static int Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 
@@ -371,6 +434,11 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 		return -1
 	}
 	f.WriteString("private:\n")
+	for _, tableIndex := range table.TableIndex {
+		f.WriteString("    int DoGetBy" + tableIndex.Name + "(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
+		//f.WriteString("    int DoGetVectorBy" + tableIndex.Name + "(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
+	}
+	//f.WriteString("    int DoGetVector(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    int DoGet(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    int DoDelete(uint32 &cbId);\n")
 	f.WriteString("    int DoUpdate(uint32 &cbId);\n")
@@ -389,157 +457,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    GORM_FieldsOpt fieldOpt;\n")
 	f.WriteString("};\n\n")
 
-	return 0
-}
-
-func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table common.TableInfo, f *os.File, opt string) int {
-	var bigOpt string = strings.ToUpper(opt)
-	var bigTableName string = strings.ToUpper(table.Name)
-
-	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
-	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
-	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
-	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
-	f.WriteString("    GORM_PB_" + bigOpt + "_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
-	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
-	if bigOpt == "DELETE" {
-		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
-	} else {
-		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
-	}
-
-	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(this->tablePbValue);\n\n")
-	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
-	f.WriteString("    {\n")
-	f.WriteString("        pbTableAll->release_" + table.Name + "();\n")
-	f.WriteString("        delete clientMsg;\n")
-	f.WriteString("        return GORM_ERROR;\n")
-	f.WriteString("    }\n")
-
-	f.WriteString("    // 使用完，交还外部数据\n")
-	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
-	f.WriteString(`
-    // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
-    {
-        delete clientMsg;
-        return GORM_ERROR;
-    }
-    cbId = clientMsg->cbId;
-    clientMsg->Wait();	// 等待响应
-    clientMsg = nullptr;
-    // 获取结果
-    for (int i=0; i<1000;i++)
-    {
-        if (GORM_OK != GORM_ClientThreadPool::Instance()->GetResponse(clientMsg))
-        {
-            return GORM_ERROR;
-        }
-        if (clientMsg != nullptr)
-        {
-            break;
-        }
-        ThreadSleepMilliSeconds(1); 
-    }
-
-    if (clientMsg == nullptr)
-        return GORM_ERROR;
-
-    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
-    unique_lock<mutex> msgLk(sharedClientMsg->mtx);
-    int code = sharedClientMsg->rspCode.code;
-    
-    return code;
-`)
-	return 0
-}
-
-func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table common.TableInfo, f *os.File, opt string) int {
-	var bigOpt string = strings.ToUpper(opt)
-	var bigTableName string = strings.ToUpper(table.Name)
-	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
-	pbStructName := "GORM_PB_Table_" + table.Name
-
-	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
-	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
-	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
-	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
-	f.WriteString("    GORM_PB_GET_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
-	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
-	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
-	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
-
-	f.WriteString("    shared_ptr<" + pbStructName + "> sharedPbValue = nullptr;\n")
-	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")
-	f.WriteString("    if (this->tablePbValue != nullptr)\n")
-	f.WriteString("        tmpPbValue = this->tablePbValue;\n")
-	f.WriteString("    else\n")
-	f.WriteString("    {\n")
-	f.WriteString("        sharedPbValue = make_shared<" + pbStructName + ">();\n")
-	f.WriteString("        this->tablePbValue = sharedPbValue.get();\n")
-	for _, colName := range table.SplitInfo.SplitCols {
-		//f.WriteString("        sharedPbValue->set_" + colName + "(" + colName + ");\n")
-		colStructName := common.CPP_TableColumnName(colName)
-		f.WriteString("        this->Set" + colStructName + "(" + colName + ");\n")
-	}
-	f.WriteString("        this->tablePbValue = nullptr;\n")
-	f.WriteString("        tmpPbValue = sharedPbValue.get();\n")
-	f.WriteString("    }\n")
-
-	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(tmpPbValue);\n\n")
-
-	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
-	f.WriteString("    {\n")
-	f.WriteString("        pbTableAll->release_" + table.Name + "();\n")
-	f.WriteString("        delete clientMsg;\n")
-	f.WriteString("        return GORM_ERROR;\n")
-	f.WriteString("    }\n")
-
-	f.WriteString("    // 使用完，交还外部数据\n")
-	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
-	f.WriteString(`
-    // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
-    {
-        delete clientMsg;
-        return GORM_ERROR;
-    }
-    cbId = clientMsg->cbId;
-    clientMsg->Wait();	// 等待响应
-    // 获取结果
-    clientMsg = nullptr;
-    for (int i=0;i<1000;i++)
-    {
-        if (GORM_OK != GORM_ClientThreadPool::Instance()->GetResponse(clientMsg))
-        {
-            return GORM_ERROR;
-        }
-        if (clientMsg != nullptr)
-        {
-            break;
-        }
-        ThreadSleepMilliSeconds(1); 
-    }
-    if (clientMsg == nullptr)
-        return GORM_ERROR;
-
-    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
-    unique_lock<mutex> msgLk(sharedClientMsg->mtx);
-    if (GORM_OK != sharedClientMsg->rspCode.code)
-    {
-        return sharedClientMsg->rspCode.code;
-    }
-    GORM_PB_GET_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_RSP*>(sharedClientMsg->pbRspMsg);
-`)
-	f.WriteString("    if (pbRspMsg == nullptr || !pbRspMsg->table().has_" + table.Name + "())\n")
-	f.WriteString("    {\n")
-	f.WriteString("        return GORM_NO_MORE_RECORD;\n")
-	f.WriteString("    }\n")
-	f.WriteString("    if (this->tablePbValue != nullptr) delete this->tablePbValue;\n")
-	f.WriteString("    this->tablePbValue = pbRspMsg->mutable_table()->release_" + table.Name + "();\n")
-	f.WriteString("    this->dirtyFlag = 1;\n")
-	f.WriteString("\n")
-	f.WriteString("    return GORM_OK;\n")
 	return 0
 }
 
@@ -581,6 +498,26 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "replace")
 	f.WriteString("}\n")
 
+	// 为索引生成获取函数
+	for _, tableIndex := range table.TableIndex {
+		f.WriteString("int " + structName + "::DoGetBy" + tableIndex.Name + "(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
+		f.WriteString("{\n")
+		f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
+		GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(table, tableIndex, f)
+		f.WriteString("}\n")
+	}
+
+	// 生成所有的返回数组的函数GetVector
+	f.WriteString("vector<" + structName + "*> " + structName + "::GetVector(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
+	f.WriteString("{\n")
+	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table, 1, 0, f)
+	f.WriteString("}\n\n")
+	for i, tableIndex := range table.TableIndex {
+		f.WriteString("vector<" + structName + "*> " + structName + "::GetVectorBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
+		f.WriteString("{\n")
+		GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table, 2, i, f)
+		f.WriteString("}\n\n")
+	}
 	return 0
 }
 

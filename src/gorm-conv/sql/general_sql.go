@@ -152,26 +152,12 @@ func CreateTableSQL(table common.TableInfo) ([]byte, int) {
 			strOut += ")"
 		}
 	}
-	if table.PrimaryKey.Column != "" {
-		var cols []string = strings.Split(table.PrimaryKey.Column, ",")
-		strOut += ",\n    PRIMARY KEY ("
-		for idx, c := range cols {
-			if idx != 0 {
-				strOut += ","
-			}
-			strOut += "`"
-			strOut += c
-			strOut += "`"
-		}
-		strOut += ")"
-	}
 	strOut += "\n) ENGINE=InnoDB DEFAULT CHARSET=utf8;\n"
 	return []byte(strOut), 0
 }
 
 func GeneralSQLBuff(table common.TableInfo, tableNum int) ([]byte, int) {
 	var totalOut string
-
 	for index := uint16(0); index <= table.SplitInfo.Num; index++ {
 		var strOut string = "CREATE TABLE `" + table.Name + "_" + strconv.FormatInt(int64(index), 10) + "`(\n"
 		totalOut += strOut
