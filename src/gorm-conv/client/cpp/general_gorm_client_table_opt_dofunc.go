@@ -169,7 +169,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	f.WriteString("    GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ *getReq = new GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ();\n")
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
 	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
-	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
+	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
 
 	f.WriteString("    shared_ptr<" + pbStructName + "> sharedPbValue = nullptr;\n")
 	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")
