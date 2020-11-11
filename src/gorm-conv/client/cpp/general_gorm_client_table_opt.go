@@ -185,7 +185,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	}
 	f.WriteString("inline vector<" + structName + "*> " + structName + "::GetVector(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
-	f.WriteString("    return " + structName + "::Get(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ");\n")
+	f.WriteString("    return " + structName + "::GetVector(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ");\n")
 	f.WriteString("}\n")
 	f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
@@ -557,99 +557,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP(game common.XmlCfg, out
 	return 0
 }
 
-var exampleCodes string = `/*
-// 函数Get、Delete、SetPbMsg、SaveToDB、GetPbMsg为所有的表都会对应的操作函数
-// 除了上面4个函数，其它函数都为更新表结构中的字段
-class GORM_ClientTableAccount
-{
-public:
-	// @desc 	以同步方式获取account表中的一条数据，此函数有一个对应的不带区服信息的函数
-	// @param	region数据所在可用域（机房）
-	// @param	logic_zone数据所属逻辑区
-	// @param	physics_zone数组所属物理区
-	// @param	id表的主键，不同的表主键类型与个数不同
-	// @retval	获取到的数据
-    static GORM_ClientTableAccount* Get(int region, int logic_zone, int physics_zone, int &retCode, int32 id);
-    // 不带区服信息的函数
-    static GORM_ClientTableAccount* Get(int32 id);
-    
-    // @desc 	以异步方式获取account表中的一条数据，此函数有一个对应的不带区服信息的函数
-	// @param	region数据所在可用域（机房）
-	// @param	logic_zone数据所属逻辑区
-	// @param	physics_zone数组所属物理区
-	// @param	cbId异步请求的回调id
-	// @param	id表的主键，不同的表主键类型与个数不同
-	// @param	cb异步请求的回调函数
-	//			回调函数的参数解释:
-	//			int64对应上面的cbId, GORM_ClientTableAccount*获取到的数据的
-	// @retval	0  成功，等待回调
-				<0 失败
-    static int Get(int region, int logic_zone, int physics_zone, int32 id, int64 &cbId, int (*cb)(int64, int&, GORM_ClientTableAccount*));
-    // 不带区服信息的函数
-    static int Get(int32 id, int64 &cbId, int (*cb)(int64, int&, GORM_ClientTableAccount*));
-    
-    // @desc 	以异步方式删除account表中的一条数据，此函数有一个对应的不带区服信息的函数
-	// @param	region数据所在可用域（机房）
-	// @param	logic_zone数据所属逻辑区
-	// @param	physics_zone数组所属物理区
-	// @param	cbId异步请求的回调id
-	// @param	cb异步请求的回调函数,可为nullptr，表示不关心结果
-	//			回调函数的参数解释:
-	//			int64对应上面的cbId
-	// @param	id表的主键，不同的表主键类型与个数不同
-	// @retval	0  成功，等待回调
-				<0 失败
-    static int Delete(int region, int logic_zone, int physics_zone, int32 id, int64 &cbId, int (*cb)(int64, int&));
-    // 不带区服信息的函数
-    static int Delete(int32 id, int64 &cbId, int (*cb)(int64, int&));
-    
-    // @desc 	全量更新数据，此函数有一个对应的不带区服信息的函数
-    // @param	pbMsg需要覆盖更新的pb数据
-    // @param	forceSave是否立即持久化，默认值为false不立即持久化
-    // @retval	0  成功
-				<0 失败
-    static int SetPbMsg(int region, int logic_zone, int physics_zone, GORM_PB_Table_account *pbMsg, bool forceSave=false);
-    // 不带区服信息的函数
-    static int SetPbMsg(GORM_PB_Table_account *pbMsg, bool forceSave=false);
-    
-    // @desc 删除本条数据
-    int Delete(int64 &cbId, int (*cb)(int64));
-    
-    // @desc 全量覆盖更新本条数据
-    int SetPbMsg(GORM_PB_Table_account *pbMsg, bool forceSave=false);
-    
-    // @desc 立即将本条数据持久化保存,已经存在的数据则更新，没有的数据则插入一条新数据
-    int SaveToDB();
-    
-    // @desc 增加新的记录到数据库,插入失败则直接返回
-    int Add();
-    // @desc 更新一条记录，更新失败则返回
-    int Update();
-    
-    // @desc 获取原始pb结构数据，长用于发送给后端逻辑节点使用
-    GORM_PB_Table_account *GetPbMsg();
-    
-    // 以下为针对字段的Get，Set操作
-    uint64 GetVersion();
-    int SetVersion(uint64 version, bool forceSave=false);
-    int32 GetId();
-    int SetId(int32 id, bool forceSave=false);
-    const string &GetAccount() const;
-    int SetAccount(const string &account, bool forceSave=false);
-    int SetAccount(const char* account, size_t size, bool forceSave=false);
-    const string &GetAllbinary() const;
-    int SetAllbinary(const string &allbinary, bool forceSave=false);
-    int SetAllbinary(const char* allbinary, size_t size, bool forceSave=false);
-private:
-	// 0:新的没有持久化的数据，1:从持久化存储拉到内存的数据，2:已经持久化了的并且有更新的数据
-	char dirtyFlag = 0;
-    GORM_PB_Table_account *tablePbValue = nullptr;
-    GORM_FieldsOpt fieldOpt;
-};
-*/
-
-`
-
 // 头文件实现
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpath string) int {
 	fileName := game.File[:len(game.File)-4]
@@ -678,7 +585,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 	f.WriteString("#include \"gorm_client_msg.h\"\n")
 	f.WriteString("#include \"gorm_pb_proto.pb.h\"\n")
 	f.WriteString("\n")
-	f.WriteString(exampleCodes)
 	f.WriteString("namespace gorm{\n\n")
 
 	for _, table := range game.DB.TableList {

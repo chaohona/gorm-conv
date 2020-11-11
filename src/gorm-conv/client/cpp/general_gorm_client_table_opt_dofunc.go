@@ -255,29 +255,29 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	f.WriteString("    " + structName + " forRequest;\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_GET_BY_NON_PRIMARY_KEY;\n")
-	f.WriteString("    clientMsg->fieldOpt = &forRequest->fieldOpt;\n")
+	f.WriteString("    clientMsg->fieldOpt = &forRequest.fieldOpt;\n")
 	f.WriteString("    GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ *getReq = new GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ();\n")
 	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
 	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
-	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
+	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
 
 	f.WriteString("    shared_ptr<" + pbStructName + "> sharedPbValue = nullptr;\n")
 	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")
 	f.WriteString("    sharedPbValue = make_shared<" + pbStructName + ">();\n")
-	f.WriteString("    forRequest->tablePbValue = sharedPbValue.get();\n")
+	f.WriteString("    forRequest.tablePbValue = sharedPbValue.get();\n")
 	if forIndexOrSplit == 1 {
 		for _, colName := range table.TableIndex[indexIndex].IndexColumns {
 			colStructName := common.CPP_TableColumnName(colName)
-			f.WriteString("    forRequest->Set" + colStructName + "(" + colName + ");\n")
+			f.WriteString("    forRequest.Set" + colStructName + "(" + colName + ");\n")
 		}
 	} else {
 		for _, colName := range table.SplitInfo.SplitCols {
 			colStructName := common.CPP_TableColumnName(colName)
-			f.WriteString("    forRequest->Set" + colStructName + "(" + colName + ");\n")
+			f.WriteString("    forRequest.Set" + colStructName + "(" + colName + ");\n")
 		}
 	}
 
-	f.WriteString("    forRequest->tablePbValue = nullptr;\n")
+	f.WriteString("    forRequest.tablePbValue = nullptr;\n")
 	f.WriteString("    tmpPbValue = sharedPbValue.get();\n")
 
 	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(tmpPbValue);\n\n")
