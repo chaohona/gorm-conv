@@ -265,7 +265,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")
 	f.WriteString("    sharedPbValue = make_shared<" + pbStructName + ">();\n")
 	f.WriteString("    forRequest.tablePbValue = sharedPbValue.get();\n")
-	if forIndexOrSplit == 1 {
+	if forIndexOrSplit == 2 {
 		for _, colName := range table.TableIndex[indexIndex].IndexColumns {
 			colStructName := common.CPP_TableColumnName(colName)
 			f.WriteString("    forRequest.Set" + colStructName + "(" + colName + ");\n")
@@ -326,7 +326,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
     unique_lock<mutex> msgLk(sharedClientMsg->mtx);
     if (GORM_OK != sharedClientMsg->rspCode.code)
     {
-        return sharedClientMsg->rspCode.code;
+        retCode = sharedClientMsg->rspCode.code;
+		return result;  
     }
     GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP*>(sharedClientMsg->pbRspMsg);
     for(int i=0; i<pbRspMsg->tables_size(); i++)
