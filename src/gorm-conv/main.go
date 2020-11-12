@@ -25,6 +25,7 @@ func main() {
 		flag.Usage()
 		return
 	}
+
 	defer glog.Flush()
 
 	var inputfile string

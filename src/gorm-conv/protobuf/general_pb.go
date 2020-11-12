@@ -562,6 +562,7 @@ message GORM_PB_REQ_HEADER
 	optional fixed32 				ReqFlag  = 4;	// 参见GORM_CMD_FLAG_XXX
 	optional bytes					FieldMode	= 5;
 	optional GORM_PB_SPLIT_INFO 	SplitTableInfo = 6;	// 分库分表信息
+	optional sfixed32			Limit = 7;	// slect * from table limit ??;
 }
 
 message GORM_PB_HEART_REQ
@@ -722,6 +723,8 @@ message GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP
 	repeated GORM_PB_TABLE 			Tables 	= 2;
 }
 `
+
+	// 如果是proto3，则吧optional去掉
 	if *common.Protoversion == "3" {
 		proto_string = strings.Replace(proto_string, "optional ", "", -1)
 	}

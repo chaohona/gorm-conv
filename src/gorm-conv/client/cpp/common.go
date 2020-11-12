@@ -7,7 +7,13 @@ import (
 	"gorm-conv/common"
 )
 
+var SupportCppCoroutine bool = false
+
 func GeneralClientCPPCodes(games []common.XmlCfg, outpath string) int {
+	if common.CPP_Coroutine != nil && *common.CPP_Coroutine == "true" {
+		SupportCppCoroutine = true
+	}
+
 	if 0 != GeneralClientCPPCodes_GeneralGormClientTableOpt(games, outpath) {
 		fmt.Println("GeneralClientCPPCodes_GeneralGormClientTableOpt failed")
 		return -1

@@ -91,7 +91,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 `)
 
 	f.WriteString("    int iLen = strlen(GetByNonPrimaySQL_" + BigTable + ");\n")
-	f.WriteString("    int iTotalLen = 64*vFields.size() + iLen + table_" + table.Name + ".ByteSizeLong();\n")
+	f.WriteString("    int iTotalLen = 64*vFields.size() + iLen + table_" + table.Name + ".ByteSizeLong() + 32;\n")
 
 	var bufferName string = "pReqData"
 	var bufferSize string = "iTotalLen"
@@ -109,6 +109,9 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 	f.WriteString("        }\n")
 	f.WriteString("    }\n")
 
+	f.WriteString("    int nowLimit = header.limit();\n")
+	f.WriteString("    if (nowLimit < 1) nowLimit = 1;\n")
+	f.WriteString("    iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \" limit=%d\", nowLimit);\n")
 	f.WriteString("    pReqData->m_sUsedSize = iLen;\n")
 	f.WriteString("    return GORM_OK;\n")
 	f.WriteString("}\n")
