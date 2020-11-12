@@ -192,7 +192,7 @@ header->set_reqflag(reqFlag);                                                   
 header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);      \
 header->set_tableid(tableId);                                                   \
 header->set_verpolice(verPolicy);												\
-header->set_limitnum(limitNum);
+header->set_limit(limitNum);
 
 int GORM_ClientMsg::PackReq()
 {
