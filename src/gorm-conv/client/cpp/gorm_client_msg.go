@@ -143,6 +143,48 @@ int GORM_ClientMsg::ParseRspGet(char *msgBeginPos, int msgLen)
     return GORM_OK;
 }
 
+int GORM_ClientMsg::ParseRspGetByNonPrimaryKey(char *msgBeginPos, int msgLen)
+{
+    GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP *pbGetMsg = new GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP();
+    this->pbRspMsg = pbGetMsg;
+    if (!this->pbRspMsg->ParseFromArray(msgBeginPos, msgLen))
+    {
+        this->rspCode.code = GORM_RSP_UNPACK_FAILED;
+        return GORM_RSP_UNPACK_FAILED;
+    }
+    if (pbGetMsg->has_retcode())
+    {
+        const GORM_PB_Ret_Code &pbRetCode = pbGetMsg->retcode();
+        this->rspCode.code = pbRetCode.code();
+        if (pbRetCode.dbcode() != 0)
+        {
+            this->rspCode.dbError = pbRetCode.dbcode();
+            this->rspCode.dbErrorInfo[0] = '\n';
+            const string &dbErrInfo = pbRetCode.dberrinfo();
+            int errMsgLen = dbErrInfo.length();
+            if (errMsgLen >= GORM_MAX_DB_ERR_INFO)
+            {
+                errMsgLen = GORM_MAX_DB_ERR_INFO - 1;
+            }
+            if (errMsgLen >0)
+            {
+                memcpy(this->rspCode.dbErrorInfo, dbErrInfo.c_str(), errMsgLen);
+                this->rspCode.dbErrorInfo[errMsgLen] = '\n';
+            }
+        }
+    }
+    if (this->rspCode.code != GORM_OK)
+    {
+        return this->rspCode.code;
+    }
+    if (!pbGetMsg->tables_size())
+    {
+        return GORM_NO_MORE_RECORD;
+    }
+
+    return GORM_OK;
+}
+
 #define GORM_CLIENTREQUEST_SETHEADER()                                          \
 if (fieldOpt->iUsedIdx<0) return GORM_ERROR;                                    \
 GORM_PB_REQ_HEADER *header = pPbReq->mutable_header();                          \
