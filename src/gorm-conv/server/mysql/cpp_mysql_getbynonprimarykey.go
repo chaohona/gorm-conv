@@ -111,7 +111,8 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 
 	f.WriteString("    int nowLimit = header.limit();\n")
 	f.WriteString("    if (nowLimit < 1) nowLimit = 1;\n")
-	f.WriteString("    iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \" limit=%d\", nowLimit);\n")
+	f.WriteString("    if (nowLimit > 1024) nowLimit = 1024;\n")
+	f.WriteString("    iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \" limit %d\", nowLimit);\n")
 	f.WriteString("    pReqData->m_sUsedSize = iLen;\n")
 	f.WriteString("    return GORM_OK;\n")
 	f.WriteString("}\n")

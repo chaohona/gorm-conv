@@ -28,6 +28,7 @@ echo build %1 error!
 :copy /y d:\work\codes\gorm-conv\bin\windows_386\gorm-conv.exe D:\work\codes\gorm\golang\test\bin\gorm-conv.exe
 :copy /y d:\work\codes\gorm-conv\bin\windows_386\gorm-conv.exe D:\work\codes\gorm\cpp\bin\gorm-conv.exe
 copy /y d:\work\codes\gorm-conv\bin\windows_386\gorm-conv.exe D:\work\codes\gorm_cpp\bin\gorm-conv.exe
+copy /y d:\work\codes\gorm-conv\bin\windows_386\gorm-conv.exe D:\work\codes\github.com\gorm\tools\bin\gorm-conv.exe
 exit /b 0
 
 :clean
