@@ -191,7 +191,8 @@ GORM_PB_REQ_HEADER *header = pPbReq->mutable_header();                          
 header->set_reqflag(reqFlag);                                                   \
 header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);      \
 header->set_tableid(tableId);                                                   \
-header->set_verpolice(verPolicy);
+header->set_verpolice(verPolicy);												\
+header->set_limitnum(limitNum);
 
 int GORM_ClientMsg::PackReq()
 {
