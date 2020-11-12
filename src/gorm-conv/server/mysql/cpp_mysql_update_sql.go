@@ -301,10 +301,11 @@ func CPPFieldsMapPackUpdateSQL_ForTables(games []common.XmlCfg, f *os.File) int 
 			}
 
 			f.WriteString("    \n")
-
-			f.WriteString("#ifdef GORM_DEBUG\n")
-			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-			f.WriteString("#endif\n")
+			/*
+				f.WriteString("#ifdef GORM_DEBUG\n")
+				f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
+				f.WriteString("#endif\n")
+			*/
 			f.WriteString("    return GORM_OK;\n")
 			f.WriteString("}\n")
 		}

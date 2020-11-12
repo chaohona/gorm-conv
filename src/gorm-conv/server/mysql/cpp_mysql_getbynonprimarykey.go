@@ -119,6 +119,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 }
 
 func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_OneDEBUG(table common.TableInfo, f *os.File) int {
+	return 0
 	var BigTable string = strings.ToUpper(table.Name)
 	var defineSQL string = CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table, true)
 	f.WriteString("#ifdef GORM_DEBUG\n")
@@ -193,10 +194,10 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []common.XmlCfg, f *o
 			f.WriteString("        if (!table.has_" + table.Name + "())\n")
 			f.WriteString("            return GORM_REQ_NO_RECORDS;\n")
 			f.WriteString("        const GORM_PB_Table_" + table.Name + " &table_" + table.Name + " = table." + table.Name + "();\n")
-			f.WriteString("#ifdef GORM_DEBUG\n")
+			/*f.WriteString("#ifdef GORM_DEBUG\n")
 			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
 			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One_DEBUG(pMemPool, pMySQLEvent, iTableIndex, table.custom_columns(), table_" + table.Name + ", pMsg->header(), pReqData);\n")
-			f.WriteString("#endif\n")
+			f.WriteString("#endif\n")*/
 			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(pMemPool, mysql, iTableIndex, table_" + table.Name + ", pMsg->header(), pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")

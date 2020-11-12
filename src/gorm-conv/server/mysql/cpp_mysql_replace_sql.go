@@ -185,9 +185,11 @@ func CPPFieldsMapPackReplaceSQL_ForTables(games []common.XmlCfg, f *os.File) int
 			f.WriteString("            return GORM_REQ_NO_RECORDS;\n")
 			f.WriteString("        const GORM_PB_Table_" + table.Name + " &table_" + table.Name + " = table." + table.Name + "();\n")
 
-			f.WriteString("#ifdef GORM_DEBUG\n")
-			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-			f.WriteString("#endif\n")
+			/*
+				f.WriteString("#ifdef GORM_DEBUG\n")
+				f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
+				f.WriteString("#endif\n")
+			*/
 			f.WriteString("        return GORM_PackReplaceSQL" + BigTable + "_One(pMemPool, mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")

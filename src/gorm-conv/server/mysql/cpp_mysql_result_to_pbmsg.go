@@ -20,14 +20,16 @@ func GORM_MySQLResult2PbMSG_SwitchTable(games []common.XmlCfg, f *os.File) int {
 		for _, table := range game.DB.TableList {
 			f.WriteString("    case GORM_PB_TABLE_IDX_" + strings.ToUpper(table.Name) + ":\n")
 			f.WriteString("    {\n")
-			f.WriteString("    #ifdef GORM_DEBUG\n")
-			f.WriteString("        GORM_PB_Table_" + table.Name + " *pSrcTable = pPbTable->mutable_" + table.Name + "();\n")
-			f.WriteString("        GORM_PB_CUSTEM_COLUMNS *pColumns = pPbTable->mutable_custom_columns();\n")
-			f.WriteString("        return GORM_MySQLResult2PbMSG_" + strings.ToUpper(table.Name) + "_DEBUG(pMySQLEvent, pSrcTable, pColumns, row, lengths);\n")
-			f.WriteString("    #else\n")
+			/*
+				f.WriteString("    #ifdef GORM_DEBUG\n")
+				f.WriteString("        GORM_PB_Table_" + table.Name + " *pSrcTable = pPbTable->mutable_" + table.Name + "();\n")
+				f.WriteString("        GORM_PB_CUSTEM_COLUMNS *pColumns = pPbTable->mutable_custom_columns();\n")
+				f.WriteString("        return GORM_MySQLResult2PbMSG_" + strings.ToUpper(table.Name) + "_DEBUG(pMySQLEvent, pSrcTable, pColumns, row, lengths);\n")
+				f.WriteString("    #else\n")
+			*/
 			f.WriteString("        GORM_PB_Table_" + table.Name + " *pSrcTable = pPbTable->mutable_" + table.Name + "();\n")
 			f.WriteString("        return GORM_MySQLResult2PbMSG_" + strings.ToUpper(table.Name) + "(pSrcTable, row, lengths);\n")
-			f.WriteString("    #endif\n")
+			//f.WriteString("    #endif\n")
 			f.WriteString("    }\n")
 		}
 	}
@@ -58,6 +60,7 @@ func GORM_MySQLResult2PbMSG_Tables(games []common.XmlCfg, f *os.File) int {
 }
 
 func GORM_MySQLResult2PbMSG_Tables_DEBUG(games []common.XmlCfg, f *os.File) int {
+	return 0
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			f.WriteString("#ifdef GORM_DEBUG\n")

@@ -20,9 +20,11 @@ func CPPFieldsMapPackBatchGetSQL(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("        if (!table.has_" + table.Name + "())\n")
 			f.WriteString("            return GORM_REQ_NO_RECORDS;\n")
 
-			f.WriteString("#ifdef GORM_DEBUG\n")
-			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-			f.WriteString("#endif\n")
+			/*
+				f.WriteString("#ifdef GORM_DEBUG\n")
+				f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
+				f.WriteString("#endif\n")
+			*/
 			var tableIndex string = "uiHashValue"
 			f.WriteString("        return GORM_PackGetSQL" + bigTable + "_ONE(pMemPool, mysql, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
 			f.WriteString("    }\n")
@@ -48,9 +50,11 @@ func CPPFieldsMapPackInsertTableSQL(games []common.XmlCfg, f *os.File) int {
 			f.WriteString("        if (!table.has_" + table.Name + "())\n")
 			f.WriteString("            return GORM_REQ_NO_RECORDS;\n")
 
-			f.WriteString("#ifdef GORM_DEBUG\n")
-			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-			f.WriteString("#endif\n")
+			/*
+				f.WriteString("#ifdef GORM_DEBUG\n")
+				f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
+				f.WriteString("#endif\n")
+			*/
 			var tableIndex string = "uiHashValue"
 			f.WriteString("        return GORM_PackInsertSQL" + bigTable + "_ONE(pMemPool, pMySQLEvent, pMySQLEvent->m_pMySQL, " + tableIndex + ", table." + table.Name + "(), pReqData);\n")
 			f.WriteString("    }\n")
