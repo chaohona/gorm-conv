@@ -100,7 +100,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    GORM_PB_GET_REQ getReq;\n")
 	f.WriteString("    clientMsg->pbReqMsg = &getReq;\n")
 	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
-	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
+	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq.mutable_table();\n")
 
 	f.WriteString("    shared_ptr<" + pbStructName + "> sharedPbValue = nullptr;\n")
 	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")

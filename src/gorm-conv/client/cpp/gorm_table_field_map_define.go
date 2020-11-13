@@ -39,5 +39,7 @@ namespace gorm{
 		fmt.Println("GORM_InitTableSchemaInfo failed.")
 		return -1
 	}
+
+	f.WriteString("\n}\n")
 	return 0
 }
