@@ -22,7 +22,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table comm
 		defineSQL += "`"
 	}
 	if !bDebug {
-		defineSQL += " from " + table.Name + "_%d where \"\n"
+		defineSQL += " from " + table.Name + "_%d \"\n"
 	} else {
 		defineSQL += "\"\n"
 	}
@@ -84,10 +84,10 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 	f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(shared_ptr<GORM_MemPool> &pMemPool, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", const GORM_PB_REQ_HEADER &header, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString(`
+	vector<int> vFields;
 	string fieldMode = header.fieldmode();
-    if (fieldMode == "")
-        return GORM_REQ_NO_RECORDS;
-    vector<int> vFields = GORM_FieldsOpt::GetFields(fieldMode.c_str(), fieldMode.size());
+    if (fieldMode.size() != 0)
+        vFields = GORM_FieldsOpt::GetFields(fieldMode.c_str(), fieldMode.size());
 `)
 
 	f.WriteString("    int iLen = strlen(GetByNonPrimaySQL_" + BigTable + ");\n")
@@ -99,6 +99,8 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 
 	f.WriteString("    char *szSQLBegin = pReqData->m_uszData;\n")
 	f.WriteString("    iLen = GORM_SafeSnprintf(szSQLBegin, iLen, GetByNonPrimaySQL_" + BigTable + ", iTableIndex);\n")
+	f.WriteString("    if (vFields.size() > 0 )\n")
+	f.WriteString("        iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \" where \");\n")
 	f.WriteString("    for(int i=0; i<vFields.size(); i++)\n")
 	f.WriteString("    {\n")
 	f.WriteString("        switch (vFields[i])\n")
@@ -111,7 +113,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 
 	f.WriteString("    int nowLimit = header.limit();\n")
 	f.WriteString("    if (nowLimit < 1) nowLimit = 1;\n")
-	f.WriteString("    if (nowLimit > 1024) nowLimit = 1024;\n")
+	f.WriteString("    if (nowLimit > GORM_MAX_LIMIT_NUM) nowLimit = GORM_MAX_LIMIT_NUM;\n")
 	f.WriteString("    iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \" limit %d\", nowLimit);\n")
 	f.WriteString("    pReqData->m_sUsedSize = iLen;\n")
 	f.WriteString("    return GORM_OK;\n")

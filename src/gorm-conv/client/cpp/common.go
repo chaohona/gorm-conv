@@ -7,6 +7,7 @@ import (
 	"gorm-conv/common"
 )
 
+// 是否需要支持协程
 var SupportCppCoroutine bool = false
 
 func GeneralClientCPPCodes(games []common.XmlCfg, outpath string) int {
@@ -26,6 +27,11 @@ func GeneralClientCPPCodes(games []common.XmlCfg, outpath string) int {
 
 	if 0 != General_GormClientMsg(outpath) {
 		fmt.Println("General_GormClientMsg failed")
+		return -1
+	}
+
+	if 0 != CppFieldsMapDefine(games, outpath) {
+		fmt.Println("CppFieldsMapDefine failed")
 		return -1
 	}
 	return 0

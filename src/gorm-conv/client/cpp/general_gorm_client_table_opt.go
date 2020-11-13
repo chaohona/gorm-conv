@@ -68,7 +68,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Desc(table 
 	f.WriteString("    /* 下面为针对表的每个字段的操作,Get为获取字段的原始数据,Set为更新字段的值 */\n")
 	for _, col := range table.TableColumns {
 		if col.PrimaryKey {
-			f.WriteString("    // 主键，设置之后不能更改")
+			f.WriteString("    // 此字段为路由项，设置之后不能更改\n")
 		}
 		f.WriteString("    // " + col.Name + "\n")
 		colType := common.CPPField_CPPType(col.Type)
@@ -395,6 +395,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("        }\n")
 	f.WriteString("    }\n")
 	f.WriteString("public:\n")
+	f.WriteString("    // 取出分表中的所有数据，暂时最多只支持取出GORM_MAX_LIMIT_NUM条数据\n")
+	f.WriteString("    static vector<" + structName + "*> GetAllRows(int &retCode, int tableIndex=0);\n")
 	f.WriteString("    // static带区服的接口，用于分区分服架构\n")
 	// 根据index取数据的接口
 	for _, tableIndex := range table.TableIndex {
@@ -463,38 +465,38 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.TableInfo, f *os.File) int {
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 
+	f.WriteString("vector<" + structName + "*> " + structName + "::GetAllRows(int &retCode, int tableIndex)\n")
+	f.WriteString("{\n")
+	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(table, f)
+	f.WriteString("}\n\n")
+
 	// DoGet函数
 	f.WriteString("int " + structName + "::DoGet(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table, f, "get")
 	f.WriteString("}\n")
 	// DoDelete函数
 	f.WriteString("int " + structName + "::DoDelete(uint32 &cbId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
-	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "delete")
 	f.WriteString("}\n")
 	// DoUpdate函数
 	f.WriteString("int " + structName + "::DoUpdate(uint32 &cbId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
-	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "update")
 	f.WriteString("}\n")
 	// DoInsert函数
 	f.WriteString("int " + structName + "::DoInsert(uint32 &cbId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
-	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "insert")
 	f.WriteString("}\n")
 	// DoUpSert函数
 	f.WriteString("int " + structName + "::DoUpSert(uint32 &cbId)\n")
 	f.WriteString("{\n")
 	f.WriteString("    if (!this->HasSetPrimaryKey()) return GORM_NO_PRIMARY_KEY;\n")
-	f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table, f, "replace")
 	f.WriteString("}\n")
 
@@ -502,7 +504,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	for _, tableIndex := range table.TableIndex {
 		f.WriteString("int " + structName + "::DoGetBy" + tableIndex.Name + "(uint32 &cbId, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
 		f.WriteString("{\n")
-		f.WriteString("    unique_lock<mutex> lck(this->mtx);\n")
 		GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(table, tableIndex, f)
 		f.WriteString("}\n")
 	}

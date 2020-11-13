@@ -11,27 +11,32 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	var bigTableName string = strings.ToUpper(table.Name)
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
+	f.WriteString("{\n")
+	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
 	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
-	f.WriteString("    GORM_PB_" + bigOpt + "_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
-	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
+	f.WriteString("    GORM_PB_" + bigOpt + "_REQ getReq;\n")
+	f.WriteString("    clientMsg->pbReqMsg = &getReq;\n")
 	if bigOpt == "DELETE" {
-		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
+		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq.mutable_table();\n")
 	} else {
-		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
+		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq.add_tables();\n")
 	}
 
 	f.WriteString("    pbTableAll->set_allocated_" + table.Name + "(this->tablePbValue);\n\n")
 	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
 	f.WriteString("    {\n")
 	f.WriteString("        pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("        clientMsg->mtx.unlock();\n")
 	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        return GORM_ERROR;\n")
 	f.WriteString("    }\n")
+	f.WriteString("    clientMsg->mtx.unlock();\n")
 
 	f.WriteString("    // 使用完，交还外部数据\n")
 	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
     if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
@@ -39,6 +44,16 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
         delete clientMsg;
         return GORM_ERROR;
     }
+`)
+	// 支持协程
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->YieldCo();\n")
+		f.WriteString("    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);\n")
+		f.WriteString("    unique_lock<mutex> msgLk(sharedClientMsg->mtx);\n")
+		f.WriteString("    int code = sharedClientMsg->rspCode.code;\n")
+		f.WriteString("    return code;\n")
+	} else {
+		f.WriteString(`
     cbId = clientMsg->cbId;
     clientMsg->Wait();	// 等待响应
     clientMsg = nullptr;
@@ -65,6 +80,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
     
     return code;
 `)
+	}
+
 	return 0
 }
 
@@ -75,11 +92,13 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
+	f.WriteString("{\n")
+	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
 	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
-	f.WriteString("    GORM_PB_GET_REQ *getReq = new GORM_PB_" + bigOpt + "_REQ();\n")
-	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
+	f.WriteString("    GORM_PB_GET_REQ getReq;\n")
+	f.WriteString("    clientMsg->pbReqMsg = &getReq;\n")
 	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
 	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->mutable_table();\n")
 
@@ -105,12 +124,15 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
 	f.WriteString("    {\n")
 	f.WriteString("        pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("        clientMsg->mtx.unlock();\n")
 	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        return GORM_ERROR;\n")
 	f.WriteString("    }\n")
+	f.WriteString("    clientMsg->mtx.unlock();\n")
 
 	f.WriteString("    // 使用完，交还外部数据\n")
 	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)")
 	f.WriteString(`
     // 发送Get请求
     if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
@@ -119,6 +141,11 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
         return GORM_ERROR;
     }
     cbId = clientMsg->cbId;
+`)
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->YieldCo();\n")
+	} else {
+		f.WriteString(`
     clientMsg->Wait();	// 等待响应
     // 获取结果
     clientMsg = nullptr;
@@ -136,7 +163,10 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
     }
     if (clientMsg == nullptr)
         return GORM_ERROR;
+`)
+	}
 
+	f.WriteString(`
     shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
     unique_lock<mutex> msgLk(sharedClientMsg->mtx);
     if (GORM_OK != sharedClientMsg->rspCode.code)
@@ -163,13 +193,15 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
+	f.WriteString("{\n")
+	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_GET_BY_NON_PRIMARY_KEY;\n")
 	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
-	f.WriteString("    GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ *getReq = new GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ();\n")
-	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
+	f.WriteString("    GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ getReq;\n")
+	f.WriteString("    clientMsg->pbReqMsg = &getReq;\n")
 	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
-	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
+	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq.add_tables();\n")
 
 	f.WriteString("    shared_ptr<" + pbStructName + "> sharedPbValue = nullptr;\n")
 	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")
@@ -192,12 +224,15 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
 	f.WriteString("    {\n")
 	f.WriteString("        pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("        clientMsg->mtx.unlock();\n")
 	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        return GORM_ERROR;\n")
 	f.WriteString("    }\n")
+	f.WriteString("    clientMsg->mtx.unlock();\n")
 
 	f.WriteString("    // 使用完，交还外部数据\n")
 	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("} // end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
     if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
@@ -205,6 +240,11 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
         delete clientMsg;
         return GORM_ERROR;
     }
+`)
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->YieldCo();\n")
+	} else {
+		f.WriteString(`
     cbId = clientMsg->cbId;
     clientMsg->Wait();	// 等待响应
     // 获取结果
@@ -223,7 +263,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
     }
     if (clientMsg == nullptr)
         return GORM_ERROR;
-
+`)
+		f.WriteString(`
     shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
     unique_lock<mutex> msgLk(sharedClientMsg->mtx);
     if (GORM_OK != sharedClientMsg->rspCode.code)
@@ -232,6 +273,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
     }
     GORM_PB_GET_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_RSP*>(sharedClientMsg->pbRspMsg);
 `)
+	}
 	f.WriteString("    if (pbRspMsg == nullptr || !pbRspMsg->table().has_" + table.Name + "())\n")
 	f.WriteString("    {\n")
 	f.WriteString("        return GORM_NO_MORE_RECORD;\n")
@@ -252,15 +294,17 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("    vector<" + structName + "*> result;\n")
+	f.WriteString("{\n")
+	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    " + structName + " forRequest;\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_GET_BY_NON_PRIMARY_KEY;\n")
 	f.WriteString("    clientMsg->fieldOpt = &forRequest.fieldOpt;\n")
-	f.WriteString("    GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ *getReq = new GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ();\n")
-	f.WriteString("    clientMsg->pbReqMsg = getReq;\n")
-	f.WriteString("    clientMsg->limitNum = 1024;\n")
+	f.WriteString("    GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ getReq;\n")
+	f.WriteString("    clientMsg->pbReqMsg = &getReq;\n")
+	f.WriteString("    clientMsg->limitNum = GORM_MAX_LIMIT_NUM;\n")
 	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
-	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq->add_tables();\n")
+	f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq.add_tables();\n")
 
 	f.WriteString("    shared_ptr<" + pbStructName + "> sharedPbValue = nullptr;\n")
 	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")
@@ -286,13 +330,16 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
 	f.WriteString("    {\n")
 	f.WriteString("        pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("        clientMsg->mtx.unlock();\n")
 	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        retCode = GORM_ERROR;\n")
 	f.WriteString("        return result;\n")
 	f.WriteString("    }\n")
+	f.WriteString("    clientMsg->mtx.unlock();\n")
 
 	f.WriteString("    // 使用完，交还外部数据\n")
 	f.WriteString("    pbTableAll->release_" + table.Name + "();\n")
+	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
     if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
@@ -301,6 +348,11 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
         retCode = GORM_ERROR;
         return result;
     }
+`)
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->YieldCo();\n")
+	} else {
+		f.WriteString(`
     clientMsg->Wait();	// 等待响应
     // 获取结果
     clientMsg = nullptr;
@@ -322,7 +374,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 		retCode = GORM_ERROR;
 		return result;  	
     }
-
+`)
+	}
+	f.WriteString(`
     shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
     unique_lock<mutex> msgLk(sharedClientMsg->mtx);
     if (GORM_OK != sharedClientMsg->rspCode.code)
@@ -339,10 +393,102 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
             continue;
         }
 `)
+
 	f.WriteString("        " + structName + " *nowTable = new " + structName + "();\n")
 	f.WriteString("        nowTable->tablePbValue = pbTables->release_" + table.Name + "();\n")
 	f.WriteString("        nowTable->dirtyFlag = 1;\n")
 	f.WriteString("        result.push_back(nowTable);\n")
 	f.WriteString("    }\n")
-	f.WriteString("    return result;\n")
+	f.WriteString("    return std::move(result);\n")
+}
+
+// forIndexOrSplit 为1则是split，为2则是index
+func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(table common.TableInfo, f *os.File) {
+	var bigTableName string = strings.ToUpper(table.Name)
+	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
+
+	f.WriteString("    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();\n")
+	f.WriteString("    vector<" + structName + "*> result;\n")
+	f.WriteString("{\n")
+	f.WriteString("    clientMsg->mtx.lock();\n")
+	f.WriteString("    " + structName + " forRequest;\n")
+	f.WriteString("    clientMsg->reqFlag |= GORM_REQ_REF_TO_TABLE_INDEX;\n")
+	f.WriteString("    clientMsg->refTableIndex = tableIndex;\n")
+	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
+	f.WriteString("    clientMsg->reqCmd = GORM_CMD_GET_BY_NON_PRIMARY_KEY;\n")
+	f.WriteString("    clientMsg->fieldOpt = &forRequest.fieldOpt;\n")
+	f.WriteString("    GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ getReq;\n")
+	f.WriteString("    clientMsg->pbReqMsg = &getReq;\n")
+	f.WriteString("    clientMsg->limitNum = GORM_MAX_LIMIT_NUM;\n")
+	f.WriteString("    clientMsg->getCBFunc = " + structName + "::GetCallBack;\n")
+	f.WriteString("    if (GORM_OK != clientMsg->PackReq())\n")
+	f.WriteString("    {\n")
+	f.WriteString("        clientMsg->mtx.unlock();\n")
+	f.WriteString("        delete clientMsg;\n")
+	f.WriteString("        retCode = GORM_ERROR;\n")
+	f.WriteString("        return result;\n")
+	f.WriteString("    }\n")
+	f.WriteString("    clientMsg->mtx.unlock();\n")
+
+	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
+	f.WriteString(`
+    // 发送Get请求
+    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
+    {
+        delete clientMsg;
+        retCode = GORM_ERROR;
+        return result;
+    }
+`)
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->YieldCo();\n")
+	} else {
+		f.WriteString(`
+    clientMsg->Wait();	// 等待响应
+    // 获取结果
+    clientMsg = nullptr;
+    for (int i=0;i<1000;i++)
+    {
+        if (GORM_OK != GORM_ClientThreadPool::Instance()->GetResponse(clientMsg))
+        {
+            retCode = GORM_ERROR;
+			return result; 
+        }
+        if (clientMsg != nullptr)
+        {
+            break;
+        }
+        ThreadSleepMilliSeconds(1); 
+    }
+    if (clientMsg == nullptr)
+    {
+		retCode = GORM_ERROR;
+		return result;  	
+    }
+`)
+	}
+	f.WriteString(`
+    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
+    unique_lock<mutex> msgLk(sharedClientMsg->mtx);
+    if (GORM_OK != sharedClientMsg->rspCode.code)
+    {
+        retCode = sharedClientMsg->rspCode.code;
+		return result;  
+    }
+    GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP*>(sharedClientMsg->pbRspMsg);
+    for(int i=0; i<pbRspMsg->tables_size(); i++)
+    {
+        auto pbTables = pbRspMsg->mutable_tables(i);
+        if (!pbTables->has_currency())
+        {
+            continue;
+        }
+`)
+
+	f.WriteString("        " + structName + " *nowTable = new " + structName + "();\n")
+	f.WriteString("        nowTable->tablePbValue = pbTables->release_" + table.Name + "();\n")
+	f.WriteString("        nowTable->dirtyFlag = 1;\n")
+	f.WriteString("        result.push_back(nowTable);\n")
+	f.WriteString("    }\n")
+	f.WriteString("    return std::move(result);\n")
 }

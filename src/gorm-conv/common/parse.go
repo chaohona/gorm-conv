@@ -50,6 +50,7 @@ type TableInfo struct {
 	TableColumns []TableColumn `xml:"column"`
 	TableIndex   []TableIndex  `xml:"index"`
 	Split        string        `xml:"splitinfo,attr"`
+	PrimaryKey   string        `xml:"primarykey,attr"`
 	SplitInfo    SplitInfo
 }
 
