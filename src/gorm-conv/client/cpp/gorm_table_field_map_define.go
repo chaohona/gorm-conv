@@ -25,6 +25,7 @@ func CppFieldsMapDefine(games []common.XmlCfg, outpath string) int {
 	var header string = `#include "gorm_table_field_map_define.h"
 #include "gorm_pb_tables_inc.pb.h"
 #include "gorm_pb_proto.pb.h"
+#include "gorm_client_msg.h"
 
 namespace gorm{
 
@@ -39,6 +40,35 @@ namespace gorm{
 		fmt.Println("GORM_InitTableSchemaInfo failed.")
 		return -1
 	}
+
+	f.WriteString(`
+
+GORM_ClientMsg *GORM_GetHandShakeMessage(int &iResult)
+{
+    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();
+    clientMsg->mtx.lock();
+    clientMsg->reqCmd = GORM_CMD_HAND_SHAKE;
+    GORM_PB_HAND_SHAKE_REQ handShakeReq;
+    clientMsg->pbReqMsg = &handShakeReq;
+    if (GORM_OK != GORM_InitTableSchemaInfo(&handShakeReq))
+    {
+        iResult = GORM_ERROR;
+        delete clientMsg;
+        return nullptr;
+    }
+    if (GORM_OK != clientMsg->PackReq())
+    {
+        clientMsg->mtx.unlock();
+        delete clientMsg;
+        iResult = GORM_ERROR;
+        return nullptr;
+    }
+    clientMsg->mtx.unlock();
+
+    return clientMsg;
+}
+
+`)
 
 	f.WriteString("\n}\n")
 	return 0

@@ -186,13 +186,17 @@ int GORM_ClientMsg::ParseRspGetByNonPrimaryKey(char *msgBeginPos, int msgLen)
 }
 
 #define GORM_CLIENTREQUEST_SETHEADER()                                          \
-if (fieldOpt->iUsedIdx<0) return GORM_ERROR;                                    \
+if (pPbReq == nullptr)                                                          \
+    return GORM_OK;                                                             \
+if (fieldOpt != nullptr && fieldOpt->iUsedIdx >= 0)                             \
+    header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);  \
 GORM_PB_REQ_HEADER *header = pPbReq->mutable_header();                          \
 header->set_reqflag(reqFlag);                                                   \
-header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);      \
 header->set_tableid(tableId);                                                   \
 header->set_verpolice(verPolicy);												\
 header->set_limit(limitNum);
+
+
 
 int GORM_ClientMsg::PackReq()
 {
@@ -222,6 +226,10 @@ int GORM_ClientMsg::PackReq()
     case GORM_CMD_GET_BY_NON_PRIMARY_KEY:
     {
         return this->PackGetByNonPrimaryKey();
+    }
+    case GORM_CMD_HAND_SHAKE:
+    {
+    	return this->PackHandShake();
     }
     }
     
@@ -271,6 +279,14 @@ int GORM_ClientMsg::PackReplace()
 int GORM_ClientMsg::PackGetByNonPrimaryKey()
 {
     GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ  *pPbReq = dynamic_cast<GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ*>(pbReqMsg);
+    GORM_CLIENTREQUEST_SETHEADER();
+    
+    return this->MakeSendBuff();
+}
+
+int GORM_ClientMsg::PackHandShake()
+{
+    GORM_PB_HAND_SHAKE_REQ  *pPbReq = dynamic_cast<GORM_PB_HAND_SHAKE_REQ*>(pbReqMsg);
     GORM_CLIENTREQUEST_SETHEADER();
     
     return this->MakeSendBuff();
