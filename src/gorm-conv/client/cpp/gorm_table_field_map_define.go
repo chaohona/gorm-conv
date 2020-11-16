@@ -27,6 +27,8 @@ func CppFieldsMapDefine(games []common.XmlCfg, outpath string) int {
 #include "gorm_pb_proto.pb.h"
 #include "gorm_client_msg.h"
 
+#include <mutex>
+
 namespace gorm{
 
 `
@@ -45,28 +47,28 @@ namespace gorm{
 
 GORM_ClientMsg *GORM_GetHandShakeMessage(int &iResult)
 {
-    GORM_ClientMsg *clientMsg = new GORM_ClientMsg();
-    clientMsg->mtx.lock();
-    clientMsg->reqCmd = GORM_CMD_HAND_SHAKE;
-    GORM_PB_HAND_SHAKE_REQ handShakeReq;
-    clientMsg->pbReqMsg = &handShakeReq;
-    if (GORM_OK != GORM_InitTableSchemaInfo(&handShakeReq))
-    {
-        iResult = GORM_ERROR;
-        delete clientMsg;
-        return nullptr;
-    }
-    if (GORM_OK != clientMsg->PackReq())
-    {
-        clientMsg->mtx.unlock();
-        delete clientMsg;
-        iResult = GORM_ERROR;
-        return nullptr;
-    }
-    clientMsg->mtx.unlock();
+    static GORM_ClientMsg clientMsg;
+    static std::once_flag flag;
+    static int packResult = GORM_OK;
+    call_once(flag, [&](){
+        unique_lock<mutex> lck(clientMsg.mtx);
+        clientMsg.reqCmd = GORM_CMD_HAND_SHAKE;
+        GORM_PB_HAND_SHAKE_REQ handShakeReq;
+        clientMsg.pbReqMsg = &handShakeReq;
+        if (GORM_OK != GORM_InitTableSchemaInfo(&handShakeReq))
+        {
+            packResult = GORM_ERROR;
+        }
+        if (GORM_OK != clientMsg.PackReq())
+        {
+            packResult = GORM_ERROR;
+        }
+    });
 
-    return clientMsg;
+    iResult = packResult;
+    return &clientMsg;
 }
+
 
 `)
 
