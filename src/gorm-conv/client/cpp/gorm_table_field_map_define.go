@@ -45,7 +45,7 @@ namespace gorm{
 
 	f.WriteString(`
 
-GORM_ClientMsg *GORM_GetHandShakeMessage(int &iResult)
+GORM_ClientMsg *GORM_GetHandShakeMessage(int &result)
 {
     static GORM_ClientMsg clientMsg;
     static std::once_flag flag;
@@ -53,6 +53,7 @@ GORM_ClientMsg *GORM_GetHandShakeMessage(int &iResult)
     call_once(flag, [&](){
         unique_lock<mutex> lck(clientMsg.mtx);
         clientMsg.reqCmd = GORM_CMD_HAND_SHAKE;
+        clientMsg.needCBFlag = GORM_REQUEST_NOT_NEED_CB;
         GORM_PB_HAND_SHAKE_REQ handShakeReq;
         clientMsg.pbReqMsg = &handShakeReq;
         if (GORM_OK != GORM_InitTableSchemaInfo(&handShakeReq))
@@ -65,7 +66,7 @@ GORM_ClientMsg *GORM_GetHandShakeMessage(int &iResult)
         }
     });
 
-    iResult = packResult;
+    result = packResult;
     return &clientMsg;
 }
 

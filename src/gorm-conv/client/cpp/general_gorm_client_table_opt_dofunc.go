@@ -39,7 +39,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
+    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
     {
         delete clientMsg;
         return GORM_ERROR;
@@ -135,7 +135,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
+    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
     {
         delete clientMsg;
         return GORM_ERROR;
@@ -235,7 +235,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	f.WriteString("} // end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
+    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
     {
         delete clientMsg;
         return GORM_ERROR;
@@ -342,7 +342,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
+    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
     {
         delete clientMsg;
         retCode = GORM_ERROR;
@@ -433,7 +433,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(tabl
 	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg, clientMsg->cbId))
+    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
     {
         delete clientMsg;
         retCode = GORM_ERROR;
