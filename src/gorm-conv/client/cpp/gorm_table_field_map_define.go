@@ -64,6 +64,7 @@ GORM_ClientMsg *GORM_GetHandShakeMessage(int &result)
         {
             packResult = GORM_ERROR;
         }
+        clientMsg.pbReqMsg = nullptr;
     });
 
     result = packResult;
