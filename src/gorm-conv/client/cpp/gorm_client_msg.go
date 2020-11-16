@@ -54,7 +54,7 @@ void GORM_ClientMsg::Reset()
     {
         this->reqTable = nullptr;
     }
-    sendChannelId = -1;   
+    needCBFlag = GORM_REQUEST_NEED_CB;
     region = 0;
     logicZone = 0;
     physicZone = 0;
@@ -67,7 +67,6 @@ void GORM_ClientMsg::Reset()
     pbReqMsg = nullptr;
     pbRspMsg = nullptr;
     rspCode.Reset();
-    syncCall = 0;
     fieldOpt = nullptr;
 }
 void GORM_ClientMsg::Wait()    // 发送完等待响应
@@ -188,9 +187,9 @@ int GORM_ClientMsg::ParseRspGetByNonPrimaryKey(char *msgBeginPos, int msgLen)
 #define GORM_CLIENTREQUEST_SETHEADER()                                          \
 if (pPbReq == nullptr)                                                          \
     return GORM_OK;                                                             \
+GORM_PB_REQ_HEADER *header = pPbReq->mutable_header();                          \
 if (fieldOpt != nullptr && fieldOpt->iUsedIdx >= 0)                             \
     header->set_fieldmode(fieldOpt->szFieldCollections, fieldOpt->iUsedIdx+1);  \
-GORM_PB_REQ_HEADER *header = pPbReq->mutable_header();                          \
 header->set_reqflag(reqFlag);                                                   \
 header->set_tableid(tableId);                                                   \
 header->set_verpolice(verPolicy);												\
