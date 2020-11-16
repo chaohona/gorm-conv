@@ -193,8 +193,8 @@ if (fieldOpt != nullptr && fieldOpt->iUsedIdx >= 0)                             
 header->set_reqflag(reqFlag);                                                   \
 header->set_tableid(tableId);                                                   \
 header->set_verpolice(verPolicy);												\
-header->set_limit(limitNum);
-
+header->set_limit(limitNum);                                                    \
+if (refTableIndex >= 0) header->set_reftableindex(refTableIndex);
 
 
 int GORM_ClientMsg::PackReq()
