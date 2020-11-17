@@ -12,7 +12,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx)\n")
+	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("}\n")
 	f.WriteString("{\n")
@@ -92,7 +92,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx)\n")
+	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("}\n")
 	f.WriteString("{\n")
@@ -197,7 +197,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx)\n")
+	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("}\n")
 	f.WriteString("{\n")
@@ -302,7 +302,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx)\n")
+	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("}\n")
 	f.WriteString("    vector<" + structName + "*> result;\n")
@@ -422,7 +422,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(tabl
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
 	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx)\n")
+	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("}\n")
 	f.WriteString("    vector<" + structName + "*> result;\n")
