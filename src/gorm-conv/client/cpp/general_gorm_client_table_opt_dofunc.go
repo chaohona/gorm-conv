@@ -48,10 +48,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	// 支持协程
 	if SupportCppCoroutine {
 		f.WriteString("    clientMsg->YieldCo();\n")
-		f.WriteString("    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);\n")
-		f.WriteString("    unique_lock<mutex> msgLk(sharedClientMsg->mtx);\n")
-		f.WriteString("    int code = sharedClientMsg->rspCode.code;\n")
-		f.WriteString("    return code;\n")
 	} else {
 		f.WriteString(`
     cbId = clientMsg->cbId;
@@ -73,14 +69,13 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 
     if (clientMsg == nullptr)
         return GORM_ERROR;
-
-    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
-    unique_lock<mutex> msgLk(sharedClientMsg->mtx);
-    int code = sharedClientMsg->rspCode.code;
-    
-    return code;
 `)
 	}
+
+	f.WriteString("    shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);\n")
+	f.WriteString("    unique_lock<mutex> msgLk(sharedClientMsg->mtx);\n")
+	f.WriteString("    int code = sharedClientMsg->rspCode.code;\n")
+	f.WriteString("    return code;\n")
 
 	return 0
 }
@@ -264,7 +259,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
     if (clientMsg == nullptr)
         return GORM_ERROR;
 `)
-		f.WriteString(`
+	}
+
+	f.WriteString(`
     shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
     unique_lock<mutex> msgLk(sharedClientMsg->mtx);
     if (GORM_OK != sharedClientMsg->rspCode.code)
@@ -273,7 +270,6 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
     }
     GORM_PB_GET_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_RSP*>(sharedClientMsg->pbRspMsg);
 `)
-	}
 	f.WriteString("    if (pbRspMsg == nullptr || !pbRspMsg->table().has_" + table.Name + "())\n")
 	f.WriteString("    {\n")
 	f.WriteString("        return GORM_NO_MORE_RECORD;\n")
@@ -376,6 +372,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
     }
 `)
 	}
+
 	f.WriteString(`
     shared_ptr<GORM_ClientMsg> sharedClientMsg(clientMsg);
     unique_lock<mutex> msgLk(sharedClientMsg->mtx);
