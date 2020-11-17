@@ -47,7 +47,6 @@ void GORM_ClientMsg::Reset()
     }
     if (this->pbReqMsg != nullptr)
     {
-        delete this->pbReqMsg;
         this->pbReqMsg = nullptr;
     }
     if (this->reqTable != nullptr)
