@@ -11,10 +11,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	var bigTableName string = strings.ToUpper(table.Name)
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
-	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
-	f.WriteString("}\n")
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
@@ -91,10 +88,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
-	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
-	f.WriteString("}\n")
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
@@ -196,10 +190,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
-	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
-	f.WriteString("}\n")
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
@@ -301,10 +292,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
-	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
-	f.WriteString("}\n")
 	f.WriteString("    vector<" + structName + "*> result;\n")
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
@@ -421,10 +409,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(tabl
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
-	f.WriteString("{\n")
-	f.WriteString("    unique_lock<mutex> msgLk(GORM_Wrap::Instance()->mtx);\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
-	f.WriteString("}\n")
 	f.WriteString("    vector<" + structName + "*> result;\n")
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
