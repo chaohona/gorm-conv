@@ -14,6 +14,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->container_ = GORM_Wrap::Instance()->GetContainer();\n")
+	}
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
 	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
@@ -91,6 +94,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->container_ = GORM_Wrap::Instance()->GetContainer();\n")
+	}
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_" + bigOpt + ";\n")
 	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
@@ -193,6 +199,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->container_ = GORM_Wrap::Instance()->GetContainer();\n")
+	}
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_GET_BY_NON_PRIMARY_KEY;\n")
 	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
@@ -297,6 +306,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    " + structName + " forRequest;\n")
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->container_ = GORM_Wrap::Instance()->GetContainer();\n")
+	}
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
 	f.WriteString("    clientMsg->reqCmd = GORM_CMD_GET_BY_NON_PRIMARY_KEY;\n")
 	f.WriteString("    clientMsg->fieldOpt = &forRequest.fieldOpt;\n")
@@ -414,6 +426,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(tabl
 	f.WriteString("{\n")
 	f.WriteString("    clientMsg->mtx.lock();\n")
 	f.WriteString("    " + structName + " forRequest;\n")
+	if SupportCppCoroutine {
+		f.WriteString("    clientMsg->container_ = GORM_Wrap::Instance()->GetContainer();\n")
+	}
 	f.WriteString("    clientMsg->reqFlag |= GORM_REQ_REF_TO_TABLE_INDEX;\n")
 	f.WriteString("    clientMsg->refTableIndex = tableIndex;\n")
 	f.WriteString("    clientMsg->tableId = GORM_PB_TABLE_IDX_" + bigTableName + ";\n")
