@@ -173,9 +173,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	/////////////////////////////////////////// 不带区服的接口
 	// static 不带区服的同步Get函数
 	for _, tableIndex := range table.TableIndex {
-		f.WriteString("inline vector<" + structName + "*> " + structName + "::GetVectorBy" + tableIndex.Name + "(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
+		f.WriteString("inline int " + structName + "::GetVectorBy" + tableIndex.Name + "(vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
 		f.WriteString("{\n")
-		f.WriteString("    return " + structName + "::GetVectorBy" + tableIndex.Name + "(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex_Param(tableIndex) + ");\n")
+		f.WriteString("    return " + structName + "::GetVectorBy" + tableIndex.Name + "(0,0,0, outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex_Param(tableIndex) + ");\n")
 		f.WriteString("}\n")
 
 		f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::GetBy" + tableIndex.Name + "(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
@@ -183,9 +183,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		f.WriteString("    return " + structName + "::GetBy" + tableIndex.Name + "(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex_Param(tableIndex) + ");\n")
 		f.WriteString("}\n")
 	}
-	f.WriteString("inline vector<" + structName + "*> " + structName + "::GetVector(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
+	f.WriteString("inline int " + structName + "::GetVector(vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
-	f.WriteString("    return " + structName + "::GetVector(0,0,0, retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ");\n")
+	f.WriteString("    return " + structName + "::GetVector(0,0,0, outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo_Param(table) + ");\n")
 	f.WriteString("}\n")
 	f.WriteString("inline shared_ptr<" + structName + "> " + structName + "::Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
@@ -396,15 +396,15 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    }\n")
 	f.WriteString("public:\n")
 	f.WriteString("    // 取出分表中的所有数据，暂时最多只支持取出GORM_MAX_LIMIT_NUM条数据\n")
-	f.WriteString("    static vector<" + structName + "*> GetAllRows(int &retCode, int tableIndex=0);\n")
+	f.WriteString("    static int GetAllRows(vector<shared_ptr<" + structName + ">> &outResult, int tableIndex=0);\n")
 	f.WriteString("    // static带区服的接口，用于分区分服架构\n")
 	// 根据index取数据的接口
 	for _, tableIndex := range table.TableIndex {
 		f.WriteString("    static shared_ptr<" + structName + "> GetBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
-		f.WriteString("    static vector<" + structName + "*> GetVectorBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
+		f.WriteString("    static int GetVectorBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
 	}
 	f.WriteString("    static shared_ptr<" + structName + "> Get(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
-	f.WriteString("    static vector<" + structName + "*> GetVector(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
+	f.WriteString("    static int GetVector(int region, int logic_zone, int physics_zone, vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int Get(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    static int Delete(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    static int SetPbMsg(int region, int logic_zone, int physics_zone, " + pbStructName + " *pbMsg, bool forceSave=false);\n")
@@ -412,10 +412,10 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 	f.WriteString("    // static不带区服的接口，用于全区全服架构\n")
 	for _, tableIndex := range table.TableIndex {
 		f.WriteString("    static shared_ptr<" + structName + "> GetBy" + tableIndex.Name + "(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
-		f.WriteString("    static vector<" + structName + "*> GetVectorBy" + tableIndex.Name + "(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
+		f.WriteString("    static int GetVectorBy" + tableIndex.Name + "(vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
 	}
 	f.WriteString("    static shared_ptr<" + structName + "> Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
-	f.WriteString("    static vector<" + structName + "*> GetVector(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
+	f.WriteString("    static int GetVector(vecotr<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    static int Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 
@@ -465,7 +465,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.TableInfo, f *os.File) int {
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 
-	f.WriteString("vector<" + structName + "*> " + structName + "::GetAllRows(int &retCode, int tableIndex)\n")
+	f.WriteString("int GetAllRows(vector<shared_ptr<" + structName + ">> &outResult, int tableIndex=0)\n")
 	f.WriteString("{\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(table, f)
 	f.WriteString("}\n\n")
@@ -509,12 +509,12 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	}
 
 	// 生成所有的返回数组的函数GetVector
-	f.WriteString("vector<" + structName + "*> " + structName + "::GetVector(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
+	f.WriteString("int " + structName + "::GetVector(int region, int logic_zone, int physics_zone, vecotr<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table, 1, 0, f)
 	f.WriteString("}\n\n")
 	for i, tableIndex := range table.TableIndex {
-		f.WriteString("vector<" + structName + "*> " + structName + "::GetVectorBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
+		f.WriteString("int " + structName + "::GetVectorBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, vecotr<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
 		f.WriteString("{\n")
 		GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table, 2, i, f)
 		f.WriteString("}\n\n")
