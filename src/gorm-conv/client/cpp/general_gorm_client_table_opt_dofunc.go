@@ -490,7 +490,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(tabl
         }
 `)
 
-	f.WriteString("        sahred_ptr<" + structName + "> nowTable = make_shared<" + structName + ">();\n")
+	f.WriteString("        shared_ptr<" + structName + "> nowTable = make_shared<" + structName + ">();\n")
 	f.WriteString("        nowTable->tablePbValue = pbTables->release_" + table.Name + "();\n")
 	f.WriteString("        nowTable->dirtyFlag = 1;\n")
 	f.WriteString("        outResult.push_back(nowTable);\n")
