@@ -583,7 +583,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_H(game common.XmlCfg, outpa
 	f.WriteString("#ifndef _GORM_CLIENT_TABLE_OPT_" + bigName + "_H__\n")
 	f.WriteString("#define _GORM_CLIENT_TABLE_OPT_" + bigName + "_H__\n")
 	f.WriteString("#include \"" + fileName + ".pb.h\"\n")
-	f.WriteString("#include gorm_sys_inc.h\"\n")
+	f.WriteString("#include \"gorm_sys_inc.h\"\n")
 	f.WriteString("#include \"gorm_define.h\"\n")
 	f.WriteString("#include \"gorm_utils.h\"\n")
 	f.WriteString("#include \"gorm_error.h\"\n")
