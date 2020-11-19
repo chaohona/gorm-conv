@@ -415,7 +415,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 		f.WriteString("    static int GetVectorBy" + tableIndex.Name + "(vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ");\n")
 	}
 	f.WriteString("    static shared_ptr<" + structName + "> Get(int &retCode, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
-	f.WriteString("    static int GetVector(vecotr<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
+	f.WriteString("    static int GetVector(vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ");\n")
 	f.WriteString("    static int Get(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 	f.WriteString("    static int Delete(" + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc);\n")
 
@@ -509,12 +509,12 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.Tabl
 	}
 
 	// 生成所有的返回数组的函数GetVector
-	f.WriteString("int " + structName + "::GetVector(int region, int logic_zone, int physics_zone, vecotr<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
+	f.WriteString("int " + structName + "::GetVector(int region, int logic_zone, int physics_zone, vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ")\n")
 	f.WriteString("{\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table, 1, 0, f)
 	f.WriteString("}\n\n")
 	for i, tableIndex := range table.TableIndex {
-		f.WriteString("int " + structName + "::GetVectorBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, vecotr<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
+		f.WriteString("int " + structName + "::GetVectorBy" + tableIndex.Name + "(int region, int logic_zone, int physics_zone, vector<shared_ptr<" + structName + ">> &outResult, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_TableIndex(table, tableIndex) + ")\n")
 		f.WriteString("{\n")
 		GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table, 2, i, f)
 		f.WriteString("}\n\n")
