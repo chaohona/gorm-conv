@@ -465,7 +465,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H(table common.TableI
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table(table common.TableInfo, f *os.File) int {
 	structName := "GORM_ClientTable" + common.CPP_TableStruct(table.Name)
 
-	f.WriteString("int " + structName + "::GetAllRows(vector<shared_ptr<" + structName + ">> &outResult, int tableIndex=0)\n")
+	f.WriteString("int " + structName + "::GetAllRows(vector<shared_ptr<" + structName + ">> &outResult, int tableIndex)\n")
 	f.WriteString("{\n")
 	GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(table, f)
 	f.WriteString("}\n\n")
