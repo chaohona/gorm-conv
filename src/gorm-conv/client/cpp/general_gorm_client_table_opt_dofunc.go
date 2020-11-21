@@ -49,9 +49,12 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
         return GORM_ERROR;
     }
 `)
+
 	// 支持协程
 	if SupportCppCoroutine {
+		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
+		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     cbId = clientMsg->cbId;
@@ -146,7 +149,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
     cbId = clientMsg->cbId;
 `)
 	if SupportCppCoroutine {
+		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
+		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     clientMsg->Wait();	// 等待响应
@@ -249,7 +254,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
     }
 `)
 	if SupportCppCoroutine {
+		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
+		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     cbId = clientMsg->cbId;
@@ -359,7 +366,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
     }
 `)
 	if SupportCppCoroutine {
+		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
+		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     clientMsg->Wait();	// 等待响应
@@ -449,7 +458,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(tabl
     }
 `)
 	if SupportCppCoroutine {
+		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
+		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     clientMsg->Wait();	// 等待响应

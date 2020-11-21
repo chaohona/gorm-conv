@@ -17,7 +17,14 @@ install:
         	echo "\033[32mmake $$ser success... \033[0m";\
         fi;\
 	done
-	
+	cp -rf bin/gorm-conv /root/gorm/tools/bin/
+	cp -rf bin/gorm-conv ./src/gorm-conv/test/gorm_release/bin
+	cp -rf bin/gorm-conv /root/gorm/cpp/bin
+	cp -rf bin/gorm-conv /root/gorm_cpp/bin
+	cp -rf bin/gorm-conv /root/hongchao/gorm/tools/bin
+	cp -rf bin/gorm-conv /root/github.com/gorm_make/tools/bin
+	cp -rf bin/gorm-conv /root/database/gorm_client_cpp/bin
+
 	
 clean:
 	export GOPATH=$(PWD)\
