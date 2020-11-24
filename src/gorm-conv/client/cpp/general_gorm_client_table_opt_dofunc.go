@@ -400,6 +400,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 		return sharedClientMsg->rspCode.code;  
     }
     GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP*>(sharedClientMsg->pbRspMsg);
+    if (pbRspMsg == nullptr)
+    	return GORM_OK;
     for(int i=0; i<pbRspMsg->tables_size(); i++)
     {
         auto pbTables = pbRspMsg->mutable_tables(i);
@@ -491,6 +493,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(tabl
 		return sharedClientMsg->rspCode.code;
     }
     GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP *pbRspMsg = dynamic_cast<GORM_PB_GET_BY_NON_PRIMARY_KEY_RSP*>(sharedClientMsg->pbRspMsg);
+    if (pbRspMsg == nullptr)
+    	return GORM_OK;
     for(int i=0; i<pbRspMsg->tables_size(); i++)
     {
         auto pbTables = pbRspMsg->mutable_tables(i);
