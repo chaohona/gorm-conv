@@ -3,7 +3,6 @@ package mysql
 import (
 	"gorm-conv/common"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -39,7 +38,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table common.TableI
 		var colType string = common.CPPField_CPPType(col.Type)
 		if colType == "string" {
 			f.WriteString("            const char *szData = \"\";\n")
-			f.WriteString("            const string &strData = table_" + table.Name + "." + col.Name + "();\n")
+			f.WriteString("            const string &strData = table_" + table.Name + "->" + col.Name + "();\n")
 			f.WriteString("            GORM_MemPoolData *pDataBuffer = nullptr;\n")
 			f.WriteString("            int iTmpLen = 0;\n")
 			f.WriteString("            if (strData.size() > 0)\n")
@@ -65,10 +64,10 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table common.TableI
 		} else {
 			f.WriteString("            if (i==0)\n")
 			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"`" + col.Name + "`=" + common.CPPFieldPackRedis_COL_FORMAT(col.Type))
-			f.WriteString("\", table_" + table.Name + "." + col.Name + "());\n")
+			f.WriteString("\", table_" + table.Name + "->" + col.Name + "());\n")
 			f.WriteString("            else\n")
 			f.WriteString("                iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \"and `" + col.Name + "`=" + common.CPPFieldPackRedis_COL_FORMAT(col.Type))
-			f.WriteString("\", table_" + table.Name + "." + col.Name + "());\n")
+			f.WriteString("\", table_" + table.Name + "->" + col.Name + "());\n")
 		}
 		f.WriteString("            break;\n")
 		f.WriteString("        }\n")
@@ -81,7 +80,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 	var BigTable string = strings.ToUpper(table.Name)
 	var defineSQL string = CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table, false)
 	f.WriteString((defineSQL))
-	f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(shared_ptr<GORM_MemPool> &pMemPool, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", const GORM_PB_REQ_HEADER &header, GORM_MemPoolData *&pReqData)\n")
+	f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(shared_ptr<GORM_MemPool> &pMemPool, MYSQL* mysql, int iTableIndex, const GORM_PB_Table_" + table.Name + " *table_" + table.Name + ", const GORM_PB_REQ_HEADER &header, GORM_MemPoolData *&pReqData)\n")
 	f.WriteString("{\n")
 	f.WriteString(`
 	vector<int> vFields;
@@ -91,7 +90,9 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 `)
 
 	f.WriteString("    int iLen = strlen(GetByNonPrimaySQL_" + BigTable + ");\n")
-	f.WriteString("    int iTotalLen = 64*vFields.size() + iLen + table_" + table.Name + ".ByteSizeLong() + 32;\n")
+	f.WriteString("    int iTotalLen = 64*vFields.size() + iLen  + 32;\n")
+	f.WriteString("    if (table_" + table.Name + " != nullptr)")
+	f.WriteString("        iTotalLen += table_" + table.Name + ".ByteSizeLong()")
 
 	var bufferName string = "pReqData"
 	var bufferSize string = "iTotalLen"
@@ -121,62 +122,10 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 	return 0
 }
 
-func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_OneDEBUG(table common.TableInfo, f *os.File) int {
-	return 0
-	var BigTable string = strings.ToUpper(table.Name)
-	var defineSQL string = CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_GetDefineSql(table, true)
-	f.WriteString("#ifdef GORM_DEBUG\n")
-	f.WriteString((defineSQL))
-	f.WriteString("int GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One_DEBUG(shared_ptr<GORM_MemPool> &pMemPool, GORM_MySQLEvent *pMySQLEvent, int iTableIndex, const GORM_PB_CUSTEM_COLUMNS &pbColumns, const GORM_PB_Table_" + table.Name + " &table_" + table.Name + ", const GORM_PB_REQ_HEADER &header, GORM_MemPoolData *&pReqData)\n")
-	f.WriteString("{\n")
-	f.WriteString(`
-	MYSQL* mysql = pMySQLEvent->m_pMySQL;
-	string fieldMode = header.fieldmode();
-    if (fieldMode == "")
-        return GORM_REQ_NO_RECORDS;
-    vector<int> vFields = GORM_FieldsOpt::GetFields(fieldMode.c_str(), fieldMode.size());
-`)
-
-	f.WriteString("    int iLen = strlen(GetByNonPrimaySQL_" + BigTable + "_DEBUG);\n")
-	f.WriteString("    int iTotalLen = 64*vFields.size() + pbColumns.ByteSizeLong() + iLen + table_" + table.Name + ".ByteSizeLong();\n")
-
-	var bufferName string = "pReqData"
-	var bufferSize string = "iTotalLen"
-	PrintGetBuffFromMemPool(f, bufferName, bufferSize)
-
-	f.WriteString("    char *szSQLBegin = pReqData->m_uszData;\n")
-	f.WriteString("    strncpy(szSQLBegin, " + "GetByNonPrimaySQL_" + BigTable + "_DEBUG, iLen);\n")
-	var columnLen string = strconv.FormatInt(int64(len(table.TableColumns)), 10)
-	f.WriteString("    vector<string> &vColumns = pMySQLEvent->m_mapTablesColumnOrder[\"" + table.Name + "\"];\n")
-	f.WriteString("    for (int i=" + columnLen + "; i<vColumns.size(); i++)\n")
-	f.WriteString("    {\n")
-	f.WriteString("        iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \", `%s`\", vColumns[i].c_str());\n")
-	f.WriteString("    }\n")
-	f.WriteString("    iLen += GORM_SafeSnprintf(szSQLBegin+iLen, iTotalLen-iLen, \" from " + table.Name + " where \");\n")
-	f.WriteString("    for(int i=0; i<vFields.size(); i++)\n")
-	f.WriteString("    {\n")
-	f.WriteString("        switch (vFields[i])\n")
-	f.WriteString("        {\n")
-	if 0 != CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One_COL(table, f) {
-		return -1
-	}
-	f.WriteString("        }\n")
-	f.WriteString("    }\n")
-
-	f.WriteString("    pReqData->m_sUsedSize = iLen;\n")
-	f.WriteString("    return GORM_OK;\n")
-	f.WriteString("}\n")
-	f.WriteString("#endif\n")
-	return 0
-}
-
 func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []common.XmlCfg, f *os.File) int {
 	for _, game := range games {
 		for _, table := range game.DB.TableList {
 			if 0 != CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table, f) {
-				return -1
-			}
-			if 0 != CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_OneDEBUG(table, f) {
 				return -1
 			}
 			var BigTable string = strings.ToUpper(table.Name)
@@ -189,18 +138,16 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []common.XmlCfg, f *o
         return GORM_REQ_MSG_NO_HEADER;
     int iTableNum = pMsg->tables_size();
     if (iTableNum == 0)
-        return GORM_REQ_NO_RECORDS;
+`)
+			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(pMemPool, mysql, iTableIndex, nullptr, pMsg->header(), pReqData);\n")
+			f.WriteString(`    return GORM_REQ_NO_RECORDS;
     for (int i=0; i<iTableNum; i++)
     {
         const GORM_PB_TABLE &table = pMsg->tables(i);
 `)
 			f.WriteString("        if (!table.has_" + table.Name + "())\n")
 			f.WriteString("            return GORM_REQ_NO_RECORDS;\n")
-			f.WriteString("        const GORM_PB_Table_" + table.Name + " &table_" + table.Name + " = table." + table.Name + "();\n")
-			/*f.WriteString("#ifdef GORM_DEBUG\n")
-			f.WriteString("        GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One_DEBUG(pMemPool, pMySQLEvent, iTableIndex, table.custom_columns(), table_" + table.Name + ", pMsg->header(), pReqData);\n")
-			f.WriteString("#endif\n")*/
+			f.WriteString("        const GORM_PB_Table_" + table.Name + " *table_" + table.Name + " = table.mutable_" + table.Name + "();\n")
 			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(pMemPool, mysql, iTableIndex, table_" + table.Name + ", pMsg->header(), pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")
