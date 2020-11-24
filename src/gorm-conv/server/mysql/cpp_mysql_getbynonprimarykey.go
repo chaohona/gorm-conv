@@ -92,7 +92,7 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables_One(table common.TableInfo,
 	f.WriteString("    int iLen = strlen(GetByNonPrimaySQL_" + BigTable + ");\n")
 	f.WriteString("    int iTotalLen = 64*vFields.size() + iLen  + 32;\n")
 	f.WriteString("    if (table_" + table.Name + " != nullptr)")
-	f.WriteString("        iTotalLen += table_" + table.Name + ".ByteSizeLong()")
+	f.WriteString("        iTotalLen += table_" + table.Name + "->ByteSizeLong();\n")
 
 	var bufferName string = "pReqData"
 	var bufferSize string = "iTotalLen"
@@ -143,11 +143,11 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []common.XmlCfg, f *o
 			f.WriteString(`    return GORM_REQ_NO_RECORDS;
     for (int i=0; i<iTableNum; i++)
     {
-        const GORM_PB_TABLE &table = pMsg->tables(i);
+        GORM_PB_TABLE *table = pMsg->mutable_tables(i);
 `)
-			f.WriteString("        if (!table.has_" + table.Name + "())\n")
+			f.WriteString("        if (!table->has_" + table.Name + "())\n")
 			f.WriteString("            return GORM_REQ_NO_RECORDS;\n")
-			f.WriteString("        const GORM_PB_Table_" + table.Name + " *table_" + table.Name + " = table.mutable_" + table.Name + "();\n")
+			f.WriteString("        GORM_PB_Table_" + table.Name + " *table_" + table.Name + " = table->mutable_" + table.Name + "();\n")
 			f.WriteString("        return GORM_PackGet_By_Non_Primary_KeySQL" + BigTable + "_One(pMemPool, mysql, iTableIndex, table_" + table.Name + ", pMsg->header(), pReqData);\n")
 			f.WriteString("    }\n")
 			f.WriteString("    return GORM_OK;\n")
