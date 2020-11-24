@@ -43,18 +43,17 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
+	int sendResult = GORM_ClientThreadPool::Instance()->SendRequest(clientMsg);
+    if (GORM_OK != sendResult)
     {
         delete clientMsg;
-        return GORM_ERROR;
+        return sendResult;
     }
 `)
 
 	// 支持协程
 	if SupportCppCoroutine {
-		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
-		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     cbId = clientMsg->cbId;
@@ -141,17 +140,17 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
+    int sendResult = GORM_ClientThreadPool::Instance()->SendRequest(clientMsg);
+    if (GORM_OK != sendResult)
     {
         delete clientMsg;
-        return GORM_ERROR;
+        return sendResult;
     }
     cbId = clientMsg->cbId;
+
 `)
 	if SupportCppCoroutine {
-		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
-		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     clientMsg->Wait();	// 等待响应
@@ -247,16 +246,16 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	f.WriteString("} // end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
+    int sendResult = GORM_ClientThreadPool::Instance()->SendRequest(clientMsg);
+    if (GORM_OK != sendResult)
     {
         delete clientMsg;
-        return GORM_ERROR;
+        return sendResult;
     }
+
 `)
 	if SupportCppCoroutine {
-		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
-		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     cbId = clientMsg->cbId;
@@ -359,16 +358,16 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
+    int sendResult = GORM_ClientThreadPool::Instance()->SendRequest(clientMsg);
+    if (GORM_OK != sendResult)
     {
         delete clientMsg;
-        return GORM_ERROR;
+        return sendResult;
     }
+
 `)
 	if SupportCppCoroutine {
-		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
-		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     clientMsg->Wait();	// 等待响应
@@ -451,16 +450,16 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetAllRows(tabl
 	f.WriteString("}// end of unique_lock<mutex> msgLk(clientMsg->mtx)\n")
 	f.WriteString(`
     // 发送Get请求
-    if (GORM_OK != GORM_ClientThreadPool::Instance()->SendRequest(clientMsg))
+    int sendResult = GORM_ClientThreadPool::Instance()->SendRequest(clientMsg);
+    if (GORM_OK != sendResult)
     {
         delete clientMsg;
-        return GORM_ERROR;
+        return sendResult;
     }
+
 `)
 	if SupportCppCoroutine {
-		f.WriteString("cout <<\"request cbid is:\" << clientMsg->cbId << endl;\n");
 		f.WriteString("    clientMsg->YieldCo();\n")
-		f.WriteString("cout <<\"response cbid is:\" << clientMsg->cbId << endl;\n");
 	} else {
 		f.WriteString(`
     clientMsg->Wait();	// 等待响应
