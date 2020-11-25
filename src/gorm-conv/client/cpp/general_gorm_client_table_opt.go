@@ -162,7 +162,9 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 		setColFunc := "Set" + colStructName
 		f.WriteString("    table->" + setColFunc + "(" + col.Name + ");\n")
 	}
-	f.WriteString("    return table->Delete(cbId, cbFunc);\n")
+	f.WriteString("    int iRet = table->Delete(cbId, cbFunc);\n")
+	f.WriteString("    table->tablePbValue = nullptr;\n")
+	f.WriteString("    return iRet;\n")
 	f.WriteString("}\n")
 
 	// static SetPbMsg函数
