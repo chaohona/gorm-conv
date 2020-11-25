@@ -153,17 +153,17 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_H_Columns_Define(tabl
 	// static Delete函数
 	f.WriteString("inline int " + structName + "::Delete(int region, int logic_zone, int physics_zone, " + GeneralClientCPPCodes_GeneralGormClientTableOpt_Table_SplitInfo(table) + ", uint32 &cbId, GORM_CbFun cbFunc)\n")
 	f.WriteString("{\n")
-	f.WriteString("    shared_ptr<" + structName + "> table = make_shared<" + structName + ">();\n")
-	f.WriteString("    shared_ptr<" + pbStructName + "> pbTable = make_shared<" + pbStructName + ">();\n")
-	f.WriteString("    table->tablePbValue = pbTable.get();\n")
+	f.WriteString("    " + structName + " table;\n")
+	f.WriteString("    " + pbStructName + " pbTable;\n")
+	f.WriteString("    table.tablePbValue = &pbTable;\n")
 	for _, c := range table.SplitInfo.SplitCols {
 		col := table.GetColumn(c)
 		colStructName := common.CPP_TableColumnName(col.Name)
 		setColFunc := "Set" + colStructName
-		f.WriteString("    table->" + setColFunc + "(" + col.Name + ");\n")
+		f.WriteString("    table." + setColFunc + "(" + col.Name + ");\n")
 	}
-	f.WriteString("    int iRet = table->Delete(cbId, cbFunc);\n")
-	f.WriteString("    table->tablePbValue = nullptr;\n")
+	f.WriteString("    int iRet = table.Delete(cbId, cbFunc);\n")
+	f.WriteString("    table.tablePbValue = nullptr;\n")
 	f.WriteString("    return iRet;\n")
 	f.WriteString("}\n")
 
