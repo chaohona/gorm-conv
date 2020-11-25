@@ -143,7 +143,8 @@ func CPPFieldsMapPackGetByNonPrimaryKeySQL_ForTables(games []common.XmlCfg, f *o
 			f.WriteString(`    return GORM_REQ_NO_RECORDS;
     for (int i=0; i<iTableNum; i++)
     {
-        GORM_PB_TABLE *table = pMsg->mutable_tables(i);
+        GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ *ptmpMsg = (GORM_PB_GET_BY_NON_PRIMARY_KEY_REQ*)pMsg;
+        GORM_PB_TABLE *table = ptmpMsg->mutable_tables(i);
 `)
 			f.WriteString("        if (!table->has_" + table.Name + "())\n")
 			f.WriteString("            return GORM_REQ_NO_RECORDS;\n")
