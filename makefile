@@ -22,8 +22,11 @@ install:
 	cp -rf bin/gorm-conv /root/gorm/cpp/bin
 	cp -rf bin/gorm-conv /root/gorm_cpp/bin
 	cp -rf bin/gorm-conv /root/hongchao/gorm/tools/bin
+	cp -rf bin/gorm-conv /root/daobatu/gorm/tools/bin
 	cp -rf bin/gorm-conv /root/github.com/gorm_make/tools/bin
 	cp -rf bin/gorm-conv /root/database/gorm_client_cpp/bin
+	cp -rf bin/gorm-conv /root/database/gorm/tools/bin
+	cp -rf bin/gorm-conv /root/github.com/async/gorm/tools/bin
 
 	
 clean:
