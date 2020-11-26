@@ -60,7 +60,7 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL(table common.TableInfo) (string,
 	DefineSQL += where
 	DefineSQL += " limit 1"
 
-	DefineSQL += ";\n"
+	DefineSQL += ";\"\n"
 	return DefineSQL, 0
 }
 
