@@ -40,7 +40,6 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL_Where(table common.TableInfo) (s
 		}
 	}
 
-	DefineSQL += ";\""
 	return DefineSQL, 0
 }
 
@@ -59,7 +58,9 @@ func CPPFieldsMapPackGetSQL_ForTables_DefineSQL(table common.TableInfo) (string,
 		return "", -1
 	}
 	DefineSQL += where
+	DefineSQL += " limit 1;"
 
+	DefineSQL += ";\n"
 	return DefineSQL, 0
 }
 
@@ -279,9 +280,6 @@ func CPPFieldsMapPackGetSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 			if 0 != CPPFieldsMapPackGetSQL_ForTables_One(table, definesqllen, f) {
 				return -1
 			}
-			if 0 != CPPFieldsMapPackGetSQL_ForTables_One_Debug(table, definesqllen, f) {
-				return -1
-			}
 
 			f.WriteString("int GORM_PackGetSQL")
 			f.WriteString(strings.ToUpper(table.Name))
@@ -307,12 +305,6 @@ func CPPFieldsMapPackGetSQL_ForTables(games []common.XmlCfg, f *os.File) int {
 			}
 
 			f.WriteString("    \n")
-			/*
-				f.WriteString("#ifdef GORM_DEBUG\n")
-				f.WriteString("    GORM_MySQLUpdateTableSchema(pMySQLEvent, \"" + table.Name + "\", table.custom_columns());\n")
-				f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE_DEBUG(pMemPool, pMySQLEvent, iTableIndex, table_" + table.Name + ", pReqData);\n")
-				f.WriteString("#endif\n")
-			*/
 			f.WriteString("    return GORM_PackGetSQL" + strings.ToUpper(table.Name) + "_ONE(pMemPool, mysql, iTableIndex, table_" + table.Name + ", pReqData);\n")
 			f.WriteString("}\n")
 		}
