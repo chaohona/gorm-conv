@@ -22,6 +22,10 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("    clientMsg->fieldOpt = &this->fieldOpt;\n")
 	f.WriteString("    GORM_PB_" + bigOpt + "_REQ getReq;\n")
 	f.WriteString("    clientMsg->pbReqMsg = &getReq;\n")
+	f.WriteString("    " + pbStructName + " *tmpPbValue = nullptr;\n")
+	f.WriteString("    if (this->tablePbValue != nullptr)\n")
+	f.WriteString("        tmpPbValue = this->tablePbValue;\n")
+
 	if bigOpt == "DELETE" {
 		f.WriteString("    GORM_PB_TABLE *pbTableAll = getReq.mutable_table();\n")
 	} else {
