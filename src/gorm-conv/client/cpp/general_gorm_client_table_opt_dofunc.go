@@ -43,7 +43,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 		col := table.GetColumn(s)
 		colType := common.CPPField_CPPType(col.Type)
 		if colType == "string" {
-			f.WriteString("    string &hashCol = this->tablePbValue->" + s + "());\n")
+			f.WriteString("    string &hashCol = this->tablePbValue->" + s + "();\n")
 			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
 		} else {
 			f.WriteString("    hashValue = uint32(this->tablePbValue->" + s + "());\n")
@@ -156,7 +156,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 		col := table.GetColumn(s)
 		colType := common.CPPField_CPPType(col.Type)
 		if colType == "string" {
-			f.WriteString("    string &hashCol = tmpPbValue->" + s + "());\n")
+			f.WriteString("    string &hashCol = tmpPbValue->" + s + "();\n")
 			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
 		} else {
 			f.WriteString("    hashValue = uint32(tmpPbValue->" + s + "());\n")
@@ -278,7 +278,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 		col := table.GetColumn(s)
 		colType := common.CPPField_CPPType(col.Type)
 		if colType == "string" {
-			f.WriteString("    string &hashCol = tmpPbValue->" + s + "());\n")
+			f.WriteString("    string &hashCol = tmpPbValue->" + s + "();\n")
 			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
 		} else {
 			f.WriteString("    hashValue = uint32(tmpPbValue->" + s + "());\n")
@@ -406,7 +406,7 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 		col := table.GetColumn(s)
 		colType := common.CPPField_CPPType(col.Type)
 		if colType == "string" {
-			f.WriteString("    string &hashCol = tmpPbValue->" + s + "());\n")
+			f.WriteString("    string &hashCol = tmpPbValue->" + s + "();\n")
 			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
 		} else {
 			f.WriteString("    hashValue = uint32(tmpPbValue->" + s + "());\n")
