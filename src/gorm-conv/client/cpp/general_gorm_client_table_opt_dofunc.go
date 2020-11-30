@@ -38,19 +38,19 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("    }\n")
 
 	// 设置hash值
-	f.WriteString("    uint32 hashValue = 0;\n")
+	f.WriteString("    uint64 hashValue = 0;\n")
 	for _, s := range table.SplitInfo.SplitCols {
 		col := table.GetColumn(s)
 		colType := common.CPPField_CPPType(col.Type)
 		if colType == "string" {
-			f.WriteString("    const string &hashCol = this->tablePbValue->" + s + "();\n")
-			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
+			f.WriteString("    const string &hashCol = tmpPbValue->" + s + "();\n")
+			f.WriteString("    hashValue = uint64(GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length()));\n")
 		} else {
-			f.WriteString("    hashValue = uint32(this->tablePbValue->" + s + "());\n")
+			f.WriteString("    hashValue = uint64(tmpPbValue->" + s + "());\n")
 		}
 		break
 	}
-	f.WriteString("    clientMsg->hashValue = hashValue%GORM_ClientConfig::Instance()->connNum;\n")
+	f.WriteString("    clientMsg->hashValue = hashValue;\n")
 
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 
@@ -151,19 +151,19 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("    }\n")
 
 	// 设置hash值
-	f.WriteString("    uint32 hashValue = 0;\n")
+	f.WriteString("    uint64 hashValue = 0;\n")
 	for _, s := range table.SplitInfo.SplitCols {
 		col := table.GetColumn(s)
 		colType := common.CPPField_CPPType(col.Type)
 		if colType == "string" {
 			f.WriteString("    const string &hashCol = tmpPbValue->" + s + "();\n")
-			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
+			f.WriteString("    hashValue = uint64(GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length()));\n")
 		} else {
-			f.WriteString("    hashValue = uint32(tmpPbValue->" + s + "());\n")
+			f.WriteString("    hashValue = uint64(tmpPbValue->" + s + "());\n")
 		}
 		break
 	}
-	f.WriteString("    clientMsg->hashValue = hashValue%GORM_ClientConfig::Instance()->connNum;\n")
+	f.WriteString("    clientMsg->hashValue = hashValue;\n")
 
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 
@@ -273,19 +273,19 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	f.WriteString("    }\n")
 
 	// 设置hash值
-	f.WriteString("    uint32 hashValue = 0;\n")
+	f.WriteString("    uint64 hashValue = 0;\n")
 	for _, s := range table.SplitInfo.SplitCols {
 		col := table.GetColumn(s)
 		colType := common.CPPField_CPPType(col.Type)
 		if colType == "string" {
 			f.WriteString("    const string &hashCol = tmpPbValue->" + s + "();\n")
-			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
+			f.WriteString("    hashValue = uint64(GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length()));\n")
 		} else {
-			f.WriteString("    hashValue = uint32(tmpPbValue->" + s + "());\n")
+			f.WriteString("    hashValue = uint64(tmpPbValue->" + s + "());\n")
 		}
 		break
 	}
-	f.WriteString("    clientMsg->hashValue = hashValue%GORM_ClientConfig::Instance()->connNum;\n")
+	f.WriteString("    clientMsg->hashValue = hashValue;\n")
 
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 
@@ -401,19 +401,19 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	f.WriteString("    }\n")
 
 	// 设置hash值
-	f.WriteString("    uint32 hashValue = 0;\n")
+	f.WriteString("    uint64 hashValue = 0;\n")
 	for _, s := range table.SplitInfo.SplitCols {
 		col := table.GetColumn(s)
 		colType := common.CPPField_CPPType(col.Type)
 		if colType == "string" {
 			f.WriteString("    const string &hashCol = tmpPbValue->" + s + "();\n")
-			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
+			f.WriteString("    hashValue = uint64(GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length()));\n")
 		} else {
-			f.WriteString("    hashValue = uint32(tmpPbValue->" + s + "());\n")
+			f.WriteString("    hashValue = uint64(tmpPbValue->" + s + "());\n")
 		}
 		break
 	}
-	f.WriteString("    clientMsg->hashValue = hashValue%GORM_ClientConfig::Instance()->connNum;\n")
+	f.WriteString("    clientMsg->hashValue = hashValue;\n")
 
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 
