@@ -549,6 +549,8 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP(game common.XmlCfg, out
 	f.WriteString("#include \"gorm_client_thread.h\"\n")
 	f.WriteString("#include \"gorm_utils.h\"\n")
 	f.WriteString("#include \"gorm_pb_proto.pb.h\"\n")
+	f.WriteString("#include \"gorm_client_conf.h\"\n")
+	f.WriteString("#include \"gorm_hash.h\"\n")
 	if SupportCppCoroutine {
 		f.WriteString("#include \"gamesh/framework/framework.h\"\n")
 		f.WriteString("#include \"gamesh/coroutine/coroutine_mgr.h\"\n")

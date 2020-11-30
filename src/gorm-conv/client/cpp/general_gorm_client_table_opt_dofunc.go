@@ -36,6 +36,22 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table comm
 	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        return GORM_ERROR;\n")
 	f.WriteString("    }\n")
+
+	// 设置hash值
+	f.WriteString("    uint32 hashValue = 0;")
+	for _, s := range table.SplitInfo.SplitCols {
+		col := table.GetColumn(s)
+		colType := common.CPPField_CPPType(col.Type)
+		if colType == "string" {
+			f.WriteString("    string &hashCol = this->tablePbValue->" + s + "());\n")
+			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
+		} else {
+			f.WriteString("    hashValue = uint32(this->tablePbValue->" + s + "());\n")
+		}
+		break
+	}
+	f.WriteString("    clientMsg->hashValue = hashValue%GORM_ClientConfig::Instance()->connNum;\n")
+
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 
 	f.WriteString("    // 使用完，交还外部数据\n")
@@ -133,6 +149,22 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGet(table commo
 	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        return GORM_ERROR;\n")
 	f.WriteString("    }\n")
+
+	// 设置hash值
+	f.WriteString("    uint32 hashValue = 0;")
+	for _, s := range table.SplitInfo.SplitCols {
+		col := table.GetColumn(s)
+		colType := common.CPPField_CPPType(col.Type)
+		if colType == "string" {
+			f.WriteString("    string &hashCol = this->tablePbValue->" + s + "());\n")
+			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
+		} else {
+			f.WriteString("    hashValue = uint32(this->tablePbValue->" + s + "());\n")
+		}
+		break
+	}
+	f.WriteString("    clientMsg->hashValue = hashValue%GORM_ClientConfig::Instance()->connNum;\n")
+
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 
 	f.WriteString("    // 使用完，交还外部数据\n")
@@ -239,6 +271,22 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetByIndex(tabl
 	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        return GORM_ERROR;\n")
 	f.WriteString("    }\n")
+
+	// 设置hash值
+	f.WriteString("    uint32 hashValue = 0;")
+	for _, s := range table.SplitInfo.SplitCols {
+		col := table.GetColumn(s)
+		colType := common.CPPField_CPPType(col.Type)
+		if colType == "string" {
+			f.WriteString("    string &hashCol = this->tablePbValue->" + s + "());\n")
+			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
+		} else {
+			f.WriteString("    hashValue = uint32(this->tablePbValue->" + s + "());\n")
+		}
+		break
+	}
+	f.WriteString("    clientMsg->hashValue = hashValue%GORM_ClientConfig::Instance()->connNum;\n")
+
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 
 	f.WriteString("    // 使用完，交还外部数据\n")
@@ -351,6 +399,22 @@ func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoGetVector(table
 	f.WriteString("        delete clientMsg;\n")
 	f.WriteString("        return GORM_PACK_REQ_ERROR;\n")
 	f.WriteString("    }\n")
+
+	// 设置hash值
+	f.WriteString("    uint32 hashValue = 0;")
+	for _, s := range table.SplitInfo.SplitCols {
+		col := table.GetColumn(s)
+		colType := common.CPPField_CPPType(col.Type)
+		if colType == "string" {
+			f.WriteString("    string &hashCol = this->tablePbValue->" + s + "());\n")
+			f.WriteString("    hashValue = GORM_Hash::Crc32_1(hashCol.c_str(), hashCol.length());\n")
+		} else {
+			f.WriteString("    hashValue = uint32(this->tablePbValue->" + s + "());\n")
+		}
+		break
+	}
+	f.WriteString("    clientMsg->hashValue = hashValue%GORM_ClientConfig::Instance()->connNum;\n")
+
 	f.WriteString("    clientMsg->mtx.unlock();\n")
 
 	f.WriteString("    // 使用完，交还外部数据\n")
