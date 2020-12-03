@@ -9,6 +9,7 @@ import (
 func GeneralClientCPPCodes_GeneralGormClientTableOpt_CPP_Table_DoFunc(table common.TableInfo, f *os.File, opt string) int {
 	var bigOpt string = strings.ToUpper(opt)
 	var bigTableName string = strings.ToUpper(table.Name)
+	pbStructName := "GORM_PB_Table_" + table.Name
 
 	f.WriteString("    GORM_ClientMsg *clientMsg = nullptr;\n")
 	f.WriteString("    clientMsg = new GORM_ClientMsg();\n")

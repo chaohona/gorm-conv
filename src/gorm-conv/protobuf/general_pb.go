@@ -522,6 +522,7 @@ enum GORM_CMD
     GORM_CMD_GET_BY_PARTKEY     = 9;    // 部分key查询请求
     GORM_CMD_UPDATE             = 10;    // 更新请求
     GORM_CMD_GET_BY_NON_PRIMARY_KEY = 11;   // 通过非主键批量获取 
+    GORM_CMD_SERVER_WILL_UPGRADE = 1001;	// 服务器将要升级
 }
 
 message GORM_PB_SPLIT_INFO
@@ -574,7 +575,17 @@ message GORM_PB_HEART_REQ
 message GORM_PB_HEART_RSP
 {
 	optional GORM_PB_Ret_Code 		RetCode = 1;
-} 
+}
+
+message GORM_PB_SERVER_WILL_UPGRADE_REQ
+{
+	optional GORM_PB_REQ_HEADER 		Header = 1; 
+}
+
+message GORM_PB_SERVER_WILL_UPGRADE_RSP
+{
+	optional GORM_PB_Ret_Code 		RetCode = 1;
+}
 
 message GORM_PB_TABLE_SCHEMA_INFO_COLUMN
 {
