@@ -522,7 +522,7 @@ enum GORM_CMD
     GORM_CMD_GET_BY_PARTKEY     = 9;    // 部分key查询请求
     GORM_CMD_UPDATE             = 10;    // 更新请求
     GORM_CMD_GET_BY_NON_PRIMARY_KEY = 11;   // 通过非主键批量获取 
-    GORM_CMD_SERVER_WILL_UPGRADE = 1001;	// 服务器将要升级
+    GORM_CMD_SERVER_WILL_UPGRADE = 127;	// 服务器将要升级
 }
 
 message GORM_PB_SPLIT_INFO
